@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
+import { headers } from "next/headers"
+import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -13,11 +16,19 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
-export default function RootLayout({
+export const metadata: Metadata = {
+  title: "AP Automation",
+  description: "Accounts payable automation",
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Per-request CSP nonce from proxy.ts (forces dynamic rendering).
+  const nonce = (await headers()).get("x-nonce") ?? undefined
+
   return (
     <html
       lang="en"
@@ -25,7 +36,12 @@ export default function RootLayout({
       className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider nonce={nonce}>
+          {/* Stacking context required by Base UI portals (Cubby UI). */}
+          <div className="root">
+            <AuthKitProvider>{children}</AuthKitProvider>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )
