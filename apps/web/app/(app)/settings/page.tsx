@@ -1,4 +1,4 @@
-import { withAuth } from "@workos-inc/authkit-nextjs"
+import { getWorkOS } from "@workos-inc/authkit-nextjs"
 
 import {
   Card,
@@ -8,19 +8,25 @@ import {
   CardTitle,
 } from "@workspace/ui/components/ui/cubby-ui/card"
 
+import { requireOrganization } from "@/lib/auth"
+import { roleName } from "@/lib/roles"
+
+import { DeleteAccount } from "./delete-account"
+
 export const metadata = { title: "Settings · AP Automation" }
 
 export default async function SettingsPage() {
-  const { user, organizationId, role } = await withAuth({
-    ensureSignedIn: true,
-  })
+  const { user, organizationId, role } = await requireOrganization()
+  const organization = await getWorkOS()
+    .organizations.getOrganization(organizationId)
+    .catch(() => null)
 
   const rows = [
     ["Name", [user.firstName, user.lastName].filter(Boolean).join(" ") || "—"],
     ["Email", user.email],
     ["Email verified", user.emailVerified ? "Yes" : "No"],
-    ["Organization", organizationId ?? "—"],
-    ["Role", role ?? "—"],
+    ["Organization", organization?.name ?? organizationId],
+    ["Role", roleName(role)],
   ]
 
   return (
@@ -44,6 +50,20 @@ export default async function SettingsPage() {
               </div>
             ))}
           </dl>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6 max-w-xl">
+        <CardHeader>
+          <CardTitle>Delete account</CardTitle>
+          <CardDescription>
+            Permanently deletes your account and removes you from your
+            organization. If you are its only member, the organization is
+            deleted too. This cannot be undone.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteAccount email={user.email} />
         </CardContent>
       </Card>
     </>

@@ -9,10 +9,12 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "workos:roles": "node --env-file=.env.local scripts/sync-workos-roles.ts"
   },
   "dependencies": {
     "@workos-inc/authkit-nextjs": "^4.6.3",
+    "@workos-inc/node": "^12.4.0",
     "@workspace/crypto": "*",
     "@workspace/ui": "*",
     "lucide-react": "^1.77.0",
