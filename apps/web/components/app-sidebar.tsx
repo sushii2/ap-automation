@@ -2,12 +2,26 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, LogOut, Settings } from "lucide-react"
+import {
+  ChartColumn,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  ShoppingCart,
+  Upload,
+} from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
 
+import { CommandMenu } from "@/components/command-menu"
+
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/upload", label: "Upload", icon: Upload },
+  { href: "/invoices", label: "Invoice log", icon: FileText },
+  { href: "/purchase-orders", label: "Purchase orders", icon: ShoppingCart },
+  { href: "/analytics", label: "Analytics", icon: ChartColumn },
   { href: "/settings", label: "Settings", icon: Settings },
 ]
 
@@ -26,6 +40,10 @@ export function AppSidebar({
   return (
     <aside className="sticky top-0 flex h-svh w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="px-4 py-5 text-sm font-semibold">AP Automation</div>
+
+      <div className="px-2 pb-2">
+        <CommandMenu className={cn(itemClass, "cursor-pointer")} />
+      </div>
 
       <nav aria-label="Main" className="flex flex-1 flex-col gap-1 px-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {

@@ -18,6 +18,7 @@
     "ui": "@workspace/ui/components"
   },
   "registries": {
-    "@cubby-ui": "https://www.cubby-ui.dev/r/{name}.json"
+    "@cubby-ui": "https://www.cubby-ui.dev/r/{name}.json",
+    "@uploadcn": "https://uploadcn.dev/r/{style}/{name}.json"
   }
 }
