@@ -1,6 +1,7 @@
-import { signOut, withAuth } from "@workos-inc/authkit-nextjs"
+import { signOut } from "@workos-inc/authkit-nextjs"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { requireOrganization } from "@/lib/auth"
 
 async function signOutAction() {
   "use server"
@@ -10,7 +11,7 @@ async function signOutAction() {
 export default async function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { user } = await withAuth({ ensureSignedIn: true })
+  const { user } = await requireOrganization()
   const name = [user.firstName, user.lastName].filter(Boolean).join(" ")
 
   return (

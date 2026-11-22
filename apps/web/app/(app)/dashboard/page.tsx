@@ -1,9 +1,9 @@
-import { withAuth } from "@workos-inc/authkit-nextjs"
+import { requireOrganization } from "@/lib/auth"
 
 export const metadata = { title: "Dashboard · AP Automation" }
 
 export default async function DashboardPage() {
-  const { user } = await withAuth({ ensureSignedIn: true })
+  const { user } = await requireOrganization()
 
   return (
     <>
