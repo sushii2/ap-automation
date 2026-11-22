@@ -1,0 +1,492 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+@source "../../../apps/**/*.{ts,tsx}";
+@source "../../../components/**/*.{ts,tsx}";
+@source "../**/*.{ts,tsx}";
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-neutral: var(--neutral);
+    --color-neutral-foreground: var(--neutral-foreground);
+    --color-emphasis: var(--emphasis);
+    --color-emphasis-foreground: var(--emphasis-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-input-hover: var(--input-hover);
+    --color-control-track: var(--control-track);
+    --color-code-panel: var(--code-panel);
+    --color-ring: var(--ring);
+    --color-scrollbar: var(--scrollbar);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-danger: var(--danger);
+    --color-danger-foreground: var(--danger-foreground);
+    --color-danger-border: var(--danger-border);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning-border: var(--warning-border);
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+    --color-info-border: var(--info-border);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-success-border: var(--success-border);
+    --radius-xs: calc(var(--radius) - 6px);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 2px);
+    --radius-2xl: calc(var(--radius) + 4px);
+    --radius-3xl: calc(var(--radius) + 6px);
+    --radius-4xl: calc(var(--radius) + 8px);
+    --ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+    --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+    --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --shadow-inset: 0 1px 2px 0 oklch(0 0 0 / 0.08);
+    --shadow-inset-highlight: 0 -1px oklch(1 0 0 / 0.04);
+    --color-surface-1: var(--surface-1);
+    --color-surface-2: var(--surface-2);
+    --color-surface-3: var(--surface-3);
+    --color-surface-4: var(--surface-4);
+    --color-surface-5: var(--surface-5);
+    --color-surface-6: var(--surface-6);
+    --color-surface-7: var(--surface-7);
+    --color-surface-8: var(--surface-8);
+    --color-surface-hover: var(--surface-hover);
+    --color-surface-active: var(--surface-active);
+    --color-surface-selected: var(--surface-selected);
+    --color-surface-ring-high: var(--surface-ring-high);
+    --color-surface-ring-mid: var(--surface-ring-mid);
+    --color-surface-ring-base: var(--surface-ring-base);
+    --color-surface-hi-peak: var(--surface-hi-peak);
+    --color-surface-hi-high: var(--surface-hi-high);
+    --color-surface-hi-mid: var(--surface-hi-mid);
+    --color-surface-hi-base: var(--surface-hi-base);
+    --surface-shadow-combined-8: var(--surface-shadow-combined-8);
+    --surface-shadow-combined-7: var(--surface-shadow-combined-7);
+    --surface-shadow-combined-6: var(--surface-shadow-combined-6);
+    --surface-shadow-combined-5: var(--surface-shadow-combined-5);
+    --surface-shadow-combined-4: var(--surface-shadow-combined-4);
+    --surface-shadow-combined-3: var(--surface-shadow-combined-3);
+    --surface-shadow-combined-2: var(--surface-shadow-combined-2);
+    --surface-shadow-combined-1: var(--surface-shadow-combined-1);
+    --surface-rim-8: var(--surface-rim-8);
+    --surface-rim-7: var(--surface-rim-7);
+    --surface-rim-6: var(--surface-rim-6);
+    --surface-rim-5: var(--surface-rim-5);
+    --surface-rim-4: var(--surface-rim-4);
+    --surface-rim-3: var(--surface-rim-3);
+    --surface-rim-2: var(--surface-rim-2);
+    --surface-rim-1: var(--surface-rim-1);
+    --surface-shadow-8: var(--surface-shadow-8);
+    --surface-shadow-7: var(--surface-shadow-7);
+    --surface-shadow-6: var(--surface-shadow-6);
+    --surface-shadow-5: var(--surface-shadow-5);
+    --surface-shadow-4: var(--surface-shadow-4);
+    --surface-shadow-3: var(--surface-shadow-3);
+    --surface-shadow-2: var(--surface-shadow-2);
+    --surface-shadow-1: var(--surface-shadow-1);
+    --color-surface-shadow-ambient: var(--surface-shadow-ambient);
+    --color-surface-shadow-far: var(--surface-shadow-far);
+    --color-surface-shadow-mid: var(--surface-shadow-mid);
+    --color-surface-shadow-near: var(--surface-shadow-near);
+    --color-surface-shadow-ring: var(--surface-shadow-ring);
+    --color-surface-rim-color: var(--surface-rim-color);
+    --color-inverse-ring: var(--inverse-ring);
+    --color-inverse-outline-border: var(--inverse-outline-border);
+    --color-inverse-success-foreground: var(--inverse-success-foreground);
+    --color-inverse-info-foreground: var(--inverse-info-foreground);
+    --color-inverse-warning-foreground: var(--inverse-warning-foreground);
+    --color-inverse-danger-foreground: var(--inverse-danger-foreground);
+    --sidebar-ring: var(--sidebar-ring);
+    --sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --sidebar-accent: var(--sidebar-accent);
+    --sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --sidebar-primary: var(--sidebar-primary);
+    --sidebar-foreground: var(--sidebar-foreground);
+    --sidebar: var(--sidebar);
+    --code-panel: var(--code-panel);
+    --color-control-off-hover: var(--control-off-hover);
+    --color-control-off: var(--control-off);
+    --color-input-active: var(--input-active);
+    --border: var(--border);
+    --outline-active: var(--outline-active);
+    --secondary-active: var(--secondary-active);
+    --destructive-active: var(--destructive-active);
+    --emphasis-active: var(--emphasis-active);
+    --neutral-active: var(--neutral-active);
+    --primary-active: var(--primary-active);
+    --outline-hover: var(--outline-hover);
+    --secondary-hover: var(--secondary-hover);
+    --destructive-hover: var(--destructive-hover);
+    --emphasis-hover: var(--emphasis-hover);
+    --neutral-hover: var(--neutral-hover);
+    --primary-hover: var(--primary-hover);
+    --outline-border: var(--outline-border);
+    --outline: var(--outline);
+    --destructive-soft-foreground: var(--destructive-soft-foreground);
+    --primary-soft-foreground: var(--primary-soft-foreground);
+    --popover-foreground: var(--popover-foreground);
+    --popover: var(--popover);
+    --card-foreground: var(--card-foreground);
+    --card: var(--card);
+    --background: var(--background);
+    --neutral-chroma-low: var(--neutral-chroma-low);
+    --neutral-chroma: var(--neutral-chroma);
+    --neutral-hue: var(--neutral-hue);
+}
+
+:root {
+    --radius: 0.75rem;
+    --neutral-hue: 270;
+    --neutral-chroma: 0.004;
+    --neutral-chroma-low: 0.002;
+    --background: var(--surface-1);
+    --foreground: oklch(0.3 var(--neutral-chroma) var(--neutral-hue));
+    --card: var(--surface-3);
+    --card-foreground: var(--foreground);
+    --popover: var(--surface-3);
+    --popover-foreground: var(--foreground);
+    --primary: oklch(0.68 0.16 232.65);
+    --primary-foreground: oklch(1 0 0);
+    --primary-soft-foreground: color-mix(in oklch, var(--primary), black 25%);
+    --neutral: oklch(0.29 var(--neutral-chroma) var(--neutral-hue));
+    --neutral-foreground: oklch(
+    0.98 var(--neutral-chroma-low) var(--neutral-hue)
+  );
+    --emphasis: oklch(0.45 var(--neutral-chroma) var(--neutral-hue));
+    --emphasis-foreground: oklch(1 0 0);
+    --secondary: oklch(0.93 0 0);
+    --secondary-foreground: oklch(0.32 var(--neutral-chroma) var(--neutral-hue));
+    --muted: oklch(0.95 0 0);
+    --muted-foreground: oklch(0.53 var(--neutral-chroma) var(--neutral-hue));
+    --accent: oklch(0.91 0 0);
+    --accent-foreground: oklch(0.3 var(--neutral-chroma) var(--neutral-hue));
+    --destructive: oklch(0.53 0.19 25);
+    --destructive-foreground: oklch(
+    0.98 var(--neutral-chroma-low) var(--neutral-hue)
+  );
+    --destructive-soft-foreground: var(--destructive);
+    --outline: var(--card);
+    --outline-border: var(--border);
+    --primary-hover: color-mix(in oklch, var(--primary), black 5%);
+    --neutral-hover: color-mix(in oklch, var(--neutral), white 10%);
+    --emphasis-hover: color-mix(in oklch, var(--emphasis), black 8%);
+    --destructive-hover: color-mix(in oklch, var(--destructive), black 5%);
+    --secondary-hover: color-mix(in oklch, var(--secondary), black 5%);
+    --outline-hover: color-mix(in oklch, var(--outline), black 4%);
+    --primary-active: color-mix(in oklch, var(--primary), black 8%);
+    --neutral-active: color-mix(in oklch, var(--neutral), white 14%);
+    --emphasis-active: color-mix(in oklch, var(--emphasis), black 12%);
+    --destructive-active: color-mix(in oklch, var(--destructive), black 8%);
+    --secondary-active: color-mix(in oklch, var(--secondary), black 8%);
+    --outline-active: color-mix(in oklch, var(--outline), black 7%);
+    --border: color-mix(in oklab, var(--foreground) 10%, transparent);
+    --input: oklch(0 0 0 / 4.5%);
+    --input-hover: oklch(0 0 0 / 7.5%);
+    --input-active: oklch(0 0 0 / 10.5%);
+    --control-off: oklch(0 0 0 / 15%);
+    --control-off-hover: oklch(0 0 0 / 19%);
+    --control-track: oklch(0 0 0 / 9%);
+    --code-panel: var(--outline);
+    --ring: oklch(0.6 0.15 232.65);
+    --scrollbar: oklch(0.87 0 0);
+    --sidebar: var(--surface-1);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--accent);
+    --sidebar-accent-foreground: var(--accent-foreground);
+    --sidebar-border: oklch(0.9 var(--neutral-chroma) var(--neutral-hue));
+    --sidebar-ring: var(--ring);
+    --danger: oklch(0.97 0.04 25);
+    --danger-foreground: oklch(0.55 0.18 25);
+    --danger-border: oklch(0.9 0.1 25);
+    --warning: oklch(0.98 0.06 85);
+    --warning-foreground: oklch(0.58 0.14 85);
+    --warning-border: oklch(0.92 0.1 85);
+    --info: oklch(0.97 0.03 232.65);
+    --info-foreground: oklch(0.5 0.13 232.65);
+    --info-border: oklch(0.9 0.07 232.65);
+    --success: oklch(0.97 0.04 145);
+    --success-foreground: oklch(0.48 0.18 145);
+    --success-border: oklch(0.9 0.1 145);
+    --inverse-danger-foreground: oklch(0.75 0.15 25);
+    --inverse-warning-foreground: oklch(0.78 0.12 85);
+    --inverse-info-foreground: oklch(0.78 0.13 232.65);
+    --inverse-success-foreground: oklch(0.72 0.15 145);
+    --inverse-outline-border: oklch(1 0 0 / 0.08);
+    --inverse-ring: oklch(0.75 0.15 232.65);
+    --surface-1: oklch(0.99 0 0);
+    --surface-2: oklch(0.995 0 0);
+    --surface-3: oklch(1 0 0);
+    --surface-4: oklch(1 0 0);
+    --surface-5: oklch(1 0 0);
+    --surface-6: oklch(1 0 0);
+    --surface-7: oklch(1 0 0);
+    --surface-8: oklch(1 0 0);
+    --surface-hover: oklch(0 0 0 / 0.06);
+    --surface-active: oklch(0 0 0 / 0.08);
+    --surface-selected: oklch(0 0 0 / 0.1);
+    --surface-rim-color: oklch(0 0 0 / 0);
+    --surface-shadow-ring: oklch(0 0 0 / 0.045);
+    --surface-shadow-near: oklch(0 0 0 / 0.06);
+    --surface-shadow-mid: oklch(0 0 0 / 0.06);
+    --surface-shadow-far: oklch(0 0 0 / 0.05);
+    --surface-shadow-ambient: oklch(0 0 0 / 0.04);
+    --surface-shadow-1: 0 0 0 1px var(--surface-shadow-ring);
+    --surface-shadow-2: 0 0 0 1px var(--surface-shadow-ring),
+    0 1px 1px -0.5px var(--surface-shadow-near);
+    --surface-shadow-3: 0 0 0 1px var(--surface-shadow-ring),
+    0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid);
+    --surface-shadow-4: 0 0 0 1px var(--surface-shadow-ring),
+    0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid);
+    --surface-shadow-5: 0 0 0 1px var(--surface-shadow-ring),
+    0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid),
+    0 12px 12px -6px var(--surface-shadow-far);
+    --surface-shadow-6: 0 0 0 1px var(--surface-shadow-ring),
+    0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid),
+    0 12px 12px -6px var(--surface-shadow-far),
+    0 24px 24px -12px var(--surface-shadow-far);
+    --surface-shadow-7: 0 0 0 1px var(--surface-shadow-ring),
+    0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid),
+    0 12px 12px -6px var(--surface-shadow-far),
+    0 24px 24px -12px var(--surface-shadow-far),
+    0 48px 48px -24px var(--surface-shadow-ambient);
+    --surface-shadow-8: 0 0 0 1px var(--surface-shadow-ring),
+    0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid),
+    0 12px 12px -6px var(--surface-shadow-far),
+    0 24px 24px -12px var(--surface-shadow-far),
+    0 48px 48px -24px var(--surface-shadow-ambient),
+    0 96px 96px -48px var(--surface-shadow-ambient);
+    --surface-rim-1: 0 0 transparent;
+    --surface-rim-2: 0 0 transparent;
+    --surface-rim-3: 0 0 transparent;
+    --surface-rim-4: 0 0 transparent;
+    --surface-rim-5: 0 0 transparent;
+    --surface-rim-6: 0 0 transparent;
+    --surface-rim-7: 0 0 transparent;
+    --surface-rim-8: 0 0 transparent;
+    --surface-shadow-combined-1: var(--surface-shadow-1), var(--surface-rim-1);
+    --surface-shadow-combined-2: var(--surface-shadow-2), var(--surface-rim-2);
+    --surface-shadow-combined-3: var(--surface-shadow-3), var(--surface-rim-3);
+    --surface-shadow-combined-4: var(--surface-shadow-4), var(--surface-rim-4);
+    --surface-shadow-combined-5: var(--surface-shadow-5), var(--surface-rim-5);
+    --surface-shadow-combined-6: var(--surface-shadow-6), var(--surface-rim-6);
+    --surface-shadow-combined-7: var(--surface-shadow-7), var(--surface-rim-7);
+    --surface-shadow-combined-8: var(--surface-shadow-8), var(--surface-rim-8);
+}
+
+.dark {
+    --foreground: oklch(0.94 var(--neutral-chroma) var(--neutral-hue));
+    --neutral: oklch(0.9 var(--neutral-chroma) var(--neutral-hue));
+    --neutral-foreground: oklch(0.13 var(--neutral-chroma) var(--neutral-hue));
+    --emphasis: oklch(0.56 var(--neutral-chroma) var(--neutral-hue));
+    --ring: oklch(0.75 0.15 232.65);
+    --secondary: oklch(0.35 var(--neutral-chroma) var(--neutral-hue));
+    --secondary-foreground: oklch(0.94 var(--neutral-chroma) var(--neutral-hue));
+    --muted: oklch(0.24 var(--neutral-chroma) var(--neutral-hue));
+    --muted-foreground: oklch(0.73 var(--neutral-chroma) var(--neutral-hue));
+    --accent: oklch(0.31 var(--neutral-chroma) var(--neutral-hue));
+    --accent-foreground: oklch(0.95 var(--neutral-chroma) var(--neutral-hue));
+    --destructive: oklch(0.5 0.22 25);
+    --destructive-foreground: oklch(1 0 0);
+    --primary: oklch(0.75 0.16 232.65);
+    --primary-soft-foreground: color-mix(in oklch, var(--primary), white 30%);
+    --destructive-soft-foreground: color-mix(
+    in oklch,
+    var(--destructive),
+    white 30%
+  );
+    --outline: oklch(0 0 0 / 0.3);
+    --outline-border: oklch(1 0 0 / 0.08);
+    --primary-hover: color-mix(in oklch, var(--primary), white 10%);
+    --neutral-hover: color-mix(in oklch, var(--neutral), black 10%);
+    --emphasis-hover: color-mix(in oklch, var(--emphasis), white 10%);
+    --destructive-hover: color-mix(in oklch, var(--destructive), white 15%);
+    --secondary-hover: color-mix(in oklch, var(--secondary), white 5%);
+    --outline-hover: oklch(1 0 0 / 0.03);
+    --primary-active: color-mix(in oklch, var(--primary), white 14%);
+    --neutral-active: color-mix(in oklch, var(--neutral), black 14%);
+    --emphasis-active: color-mix(in oklch, var(--emphasis), white 14%);
+    --destructive-active: color-mix(in oklch, var(--destructive), black 8%);
+    --secondary-active: color-mix(in oklch, var(--secondary), white 8%);
+    --outline-active: oklch(1 0 0 / 0.05);
+    --border: color-mix(in oklab, var(--foreground) 10%, transparent);
+    --input: oklch(1 0 0 / 5%);
+    --input-hover: oklch(1 0 0 / 9%);
+    --input-active: oklch(1 0 0 / 13%);
+    --control-off: oklch(1 0 0 / 15%);
+    --control-off-hover: oklch(1 0 0 / 19%);
+    --control-track: oklch(1 0 0 / 8%);
+    --code-panel: color-mix(in oklab, var(--muted), black 30%);
+    --scrollbar: oklch(0.7 var(--neutral-chroma) var(--neutral-hue));
+    --sidebar-border: oklch(0.28 var(--neutral-chroma) var(--neutral-hue));
+    --danger: oklch(0.26 0.07 25);
+    --danger-foreground: oklch(0.75 0.15 25);
+    --danger-border: oklch(0.36 0.11 25);
+    --warning: oklch(0.28 0.06 85);
+    --warning-foreground: oklch(0.78 0.12 85);
+    --warning-border: oklch(0.38 0.09 85);
+    --info: oklch(0.26 0.06 232.65);
+    --info-foreground: oklch(0.78 0.13 232.65);
+    --info-border: oklch(0.36 0.09 232.65);
+    --success: oklch(0.26 0.07 145);
+    --success-foreground: oklch(0.72 0.15 145);
+    --success-border: oklch(0.36 0.11 145);
+    --inverse-danger-foreground: oklch(0.55 0.18 25);
+    --inverse-warning-foreground: oklch(0.58 0.14 85);
+    --inverse-info-foreground: oklch(0.5 0.13 232.65);
+    --inverse-success-foreground: oklch(0.48 0.18 145);
+    --inverse-outline-border: color-mix(
+    in oklab,
+    oklch(0.3 var(--neutral-chroma) var(--neutral-hue)) 10%,
+    transparent
+  );
+    --inverse-ring: oklch(0.55 0.15 232.65);
+    --surface-1: oklch(0.205 var(--neutral-chroma) var(--neutral-hue));
+    --surface-2: oklch(0.235 var(--neutral-chroma) var(--neutral-hue));
+    --surface-3: oklch(0.264 var(--neutral-chroma) var(--neutral-hue));
+    --surface-4: oklch(0.293 var(--neutral-chroma) var(--neutral-hue));
+    --surface-5: oklch(0.321 var(--neutral-chroma) var(--neutral-hue));
+    --surface-6: oklch(0.348 var(--neutral-chroma) var(--neutral-hue));
+    --surface-7: oklch(0.375 var(--neutral-chroma) var(--neutral-hue));
+    --surface-8: oklch(0.402 var(--neutral-chroma) var(--neutral-hue));
+    --surface-hover: oklch(1 0 0 / 0.06);
+    --surface-active: oklch(1 0 0 / 0.08);
+    --surface-selected: oklch(1 0 0 / 0.1);
+    --surface-rim-color: oklch(1 0 0 / 0.04);
+    --surface-hi-base: oklch(1 0 0 / 0.01);
+    --surface-hi-mid: oklch(1 0 0 / 0.02);
+    --surface-hi-high: oklch(1 0 0 / 0.04);
+    --surface-hi-peak: oklch(1 0 0 / 0.06);
+    --surface-ring-base: oklch(1 0 0 / 0.02);
+    --surface-ring-mid: oklch(1 0 0 / 0.04);
+    --surface-ring-high: oklch(1 0 0 / 0.06);
+    --surface-shadow-near: oklch(0 0 0 / 0.18);
+    --surface-shadow-mid: oklch(0 0 0 / 0.16);
+    --surface-shadow-far: oklch(0 0 0 / 0.14);
+    --surface-shadow-ambient: oklch(0 0 0 / 0.12);
+    --surface-shadow-1: 0 0 transparent;
+    --surface-shadow-2: 0 1px 1px -0.5px var(--surface-shadow-near);
+    --surface-shadow-3: 0 0 0 1px oklch(0 0 0 / 0.08), 0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid);
+    --surface-shadow-4: 0 0 0 1px oklch(0 0 0 / 0.1), 0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid);
+    --surface-shadow-5: 0 0 0 1px oklch(0 0 0 / 0.12), 0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid),
+    0 12px 12px -6px var(--surface-shadow-far);
+    --surface-shadow-6: 0 0 0 1px oklch(0 0 0 / 0.14), 0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid),
+    0 12px 12px -6px var(--surface-shadow-far),
+    0 24px 24px -12px var(--surface-shadow-far);
+    --surface-shadow-7: 0 0 0 1px oklch(0 0 0 / 0.16), 0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid),
+    0 12px 12px -6px var(--surface-shadow-far),
+    0 24px 24px -12px var(--surface-shadow-far),
+    0 48px 48px -24px var(--surface-shadow-ambient);
+    --surface-shadow-8: 0 0 0 1px oklch(0 0 0 / 0.18), 0 1px 1px -0.5px var(--surface-shadow-near),
+    0 3px 3px -1.5px var(--surface-shadow-mid),
+    0 6px 6px -3px var(--surface-shadow-mid),
+    0 12px 12px -6px var(--surface-shadow-far),
+    0 24px 24px -12px var(--surface-shadow-far),
+    0 48px 48px -24px var(--surface-shadow-ambient),
+    0 96px 96px -48px var(--surface-shadow-ambient);
+    --surface-rim-1: inset 0 0 0 1px var(--surface-ring-base);
+    --surface-rim-2: inset 0 1px 0 0 var(--surface-hi-base),
+    inset 0 0 0 1px var(--surface-ring-base);
+    --surface-rim-3: inset 0 1px 0 0 var(--surface-hi-mid),
+    inset 0 0 0 1px var(--surface-ring-base);
+    --surface-rim-4: inset 0 1px 0 0 var(--surface-hi-mid),
+    inset 0 0 0 1px var(--surface-ring-mid);
+    --surface-rim-5: inset 0 1px 0 0 var(--surface-hi-high),
+    inset 0 0 0 1px var(--surface-ring-mid);
+    --surface-rim-6: inset 0 1px 0 0 var(--surface-hi-high),
+    inset 0 0 0 1px var(--surface-ring-high);
+    --surface-rim-7: inset 0 1px 0 0 var(--surface-hi-peak),
+    inset 0 0 0 1px var(--surface-ring-high);
+    --surface-rim-8: inset 0 1px 0 0 var(--surface-hi-peak),
+    inset 0 0 0 1px var(--surface-ring-high);
+    --surface-shadow-combined-1: var(--surface-shadow-1), var(--surface-rim-1);
+    --surface-shadow-combined-2: var(--surface-shadow-2), var(--surface-rim-2);
+    --surface-shadow-combined-3: var(--surface-shadow-3), var(--surface-rim-3);
+    --surface-shadow-combined-4: var(--surface-shadow-4), var(--surface-rim-4);
+    --surface-shadow-combined-5: var(--surface-shadow-5), var(--surface-rim-5);
+    --surface-shadow-combined-6: var(--surface-shadow-6), var(--surface-rim-6);
+    --surface-shadow-combined-7: var(--surface-shadow-7), var(--surface-rim-7);
+    --surface-shadow-combined-8: var(--surface-shadow-8), var(--surface-rim-8);
+}
+
+@layer base {
+  body {
+    position: relative;
+    }
+  .root {
+    isolation: isolate;
+    }
+}
+  [data-surface="inverse"] {
+    --foreground: var(--neutral-foreground);
+    --muted-foreground: color-mix(
+    in oklab,
+    var(--neutral-foreground) 71%,
+    var(--neutral)
+  );
+    --border: color-mix(in oklab, var(--neutral-foreground) 12%, transparent);
+    --muted: color-mix(in oklab, var(--neutral-foreground) 10%, transparent);
+    --accent: var(--muted);
+    --accent-foreground: var(--neutral-foreground);
+    --surface-hover: var(--muted);
+    --surface-active: color-mix(
+    in oklab,
+    var(--neutral-foreground) 14%,
+    transparent
+  );
+    --outline: transparent;
+    --outline-border: var(--inverse-outline-border);
+    --outline-hover: var(--surface-hover);
+    --outline-active: var(--surface-active);
+    --danger-foreground: var(--inverse-danger-foreground);
+    --warning-foreground: var(--inverse-warning-foreground);
+    --info-foreground: var(--inverse-info-foreground);
+    --success-foreground: var(--inverse-success-foreground);
+    --ring: var(--inverse-ring);
+}
