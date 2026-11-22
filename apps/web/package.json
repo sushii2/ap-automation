@@ -13,6 +13,8 @@
     "workos:roles": "node --env-file=.env.local scripts/sync-workos-roles.ts"
   },
   "dependencies": {
+    "@uploadcn/core": "^0.1.5",
+    "@uploadcn/react": "^0.1.5",
     "@workos-inc/authkit-nextjs": "^4.6.3",
     "@workos-inc/node": "^12.4.0",
     "@workspace/crypto": "*",
