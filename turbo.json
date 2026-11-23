@@ -22,6 +22,7 @@
         "BLIND_INDEX_KEY",
         "DATABASE_URL",
         "WORKOS_*",
+        "TRIGGER_*",
         "NEXT_PUBLIC_WORKOS_REDIRECT_URI"
       ]
     },
