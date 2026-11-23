@@ -19,6 +19,7 @@
   "include": [
     "next-env.d.ts",
     "next.config.ts",
+    "trigger.config.ts",
     "**/*.ts",
     "**/*.tsx",
     "**/*.mts",

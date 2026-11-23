@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:trigger": "trigger dev",
+    "deploy:trigger": "trigger deploy",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -13,6 +15,7 @@
     "workos:roles": "node --env-file=.env.local scripts/sync-workos-roles.ts"
   },
   "dependencies": {
+    "@trigger.dev/sdk": "^4.8.10",
     "@uploadcn/core": "^0.1.5",
     "@uploadcn/react": "^0.1.5",
     "@workos-inc/authkit-nextjs": "^4.6.3",
@@ -29,12 +32,14 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@trigger.dev/build": "^4.8.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@workspace/eslint-config": "*",
     "@workspace/typescript-config": "*",
     "eslint": "^10",
+    "trigger.dev": "^4.8.10",
     "typescript": "^5"
   }
 }
