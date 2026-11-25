@@ -4,14 +4,21 @@ import { put } from "@vercel/blob"
 
 export type DocumentKind = "invoice" | "purchase_order"
 
+const MAX_NAME_LENGTH = 120
+
 /** Keeps a file name readable while making it safe to use as a path segment. */
 export function safeFileName(name: string) {
   const cleaned = name
     .normalize("NFKD")
     .replace(/[^A-Za-z0-9._-]+/g, "_")
     .replace(/^[._]+/, "")
-    .slice(-120)
-  return cleaned || "document"
+  if (cleaned.length <= MAX_NAME_LENGTH) return cleaned || "document"
+
+  // Too long: keep the start of the name and the extension, cut the middle.
+  const dot = cleaned.lastIndexOf(".")
+  const extension =
+    dot > 0 && cleaned.length - dot <= 10 ? cleaned.slice(dot) : ""
+  return cleaned.slice(0, MAX_NAME_LENGTH - extension.length) + extension
 }
 
 /** Where an uploaded document lives: one folder per organization and kind. */
