@@ -1,6 +1,7 @@
 import { runs } from "@trigger.dev/sdk"
 import { withAuth } from "@workos-inc/authkit-nextjs"
 
+import "@/lib/trigger"
 import type { ingestInvoice } from "@/src/trigger/ingest-invoice"
 import type { ingestPurchaseOrder } from "@/src/trigger/ingest-purchase-order"
 

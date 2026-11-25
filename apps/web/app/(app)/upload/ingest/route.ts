@@ -2,6 +2,8 @@ import { tasks } from "@trigger.dev/sdk"
 import { withAuth } from "@workos-inc/authkit-nextjs"
 import Reducto from "reductoai"
 
+import { storeDocument, type DocumentKind } from "@/lib/document-storage"
+import "@/lib/trigger"
 import type { ingestInvoice } from "@/src/trigger/ingest-invoice"
 import type { ingestPurchaseOrder } from "@/src/trigger/ingest-purchase-order"
 
@@ -15,8 +17,8 @@ const TASKS = {
 } as const
 
 /**
- * Receives one document, stores it with Reducto and starts the ingestion run.
- * There is no object storage yet, so Reducto's upload store holds the file.
+ * Receives one document, saves the original to Blob storage, hands a copy to
+ * Reducto for parsing and starts the ingestion run.
  */
 export async function POST(request: Request) {
   const { user, organizationId } = await withAuth()
@@ -44,13 +46,24 @@ export async function POST(request: Request) {
     )
   }
 
+  // Keep the original before anything else touches it: Reducto's copy is temporary.
+  const blobPathname = await storeDocument(
+    organizationId,
+    kind as DocumentKind,
+    file
+  )
+
   const upload = await new Reducto().upload({ file, extension })
 
   const handle = await tasks.trigger<
     typeof ingestInvoice | typeof ingestPurchaseOrder
   >(
     TASKS[kind as keyof typeof TASKS],
-    { fileName: file.name, reductoFileId: upload.file_id },
+    {
+      fileName: file.name,
+      reductoFileId: upload.file_id,
+      ...(blobPathname ? { blobPathname } : {}),
+    },
     // Tagged so only members of this organization can read the run.
     { tags: [`org:${organizationId}`] }
   )

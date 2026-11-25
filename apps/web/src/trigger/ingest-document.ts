@@ -40,7 +40,7 @@ type IngestOptions<T> = {
  * Must be called from inside a task run.
  */
 export async function ingestDocument<T>({
-  payload: { fileName, fileUrl, reductoFileId },
+  payload: { fileName, fileUrl, reductoFileId, blobPathname },
   documentType,
   label,
   schema,
@@ -104,6 +104,7 @@ export async function ingestDocument<T>({
 
   const source = {
     fileName,
+    blobPathname: blobPathname ?? null,
     reductoFileId: upload.file_id,
     reductoJobId: parsed.jobId,
     pageCount: parsed.pageCount,
