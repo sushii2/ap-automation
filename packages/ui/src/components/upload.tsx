@@ -1,15 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   formatBytes,
   formatDuration,
   formatSpeed,
   matchesAccept,
   toAcceptAttribute,
-  type UploadItem as UploadItemData,
-  type ValidationOptions,
-} from "@uploadcn/core"
+} from "@uploadcn/core";
 import {
   getPreviewKind,
   getStatusLabel,
@@ -20,18 +18,47 @@ import {
   useUploadItem,
   useUploadProgress,
   useUploadSelector,
-  type UploadRootProps,
-} from "@uploadcn/react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@workspace/ui/lib/utils"
-import { buttonVariants } from "@workspace/ui/components/button"
-import { UploadIcon, Loader2Icon, ImageIcon, VideoIcon, MusicIcon, FileTextIcon, FileSpreadsheetIcon, FileArchiveIcon, FileIcon, CircleAlertIcon, CircleCheckIcon, LoaderCircleIcon, ShieldCheckIcon, PauseIcon, XIcon, RotateCcwIcon, PlayIcon } from "lucide-react"
+} from "@uploadcn/react";
+import { cva } from "class-variance-authority";
+import {
+  UploadIcon,
+  Loader2Icon,
+  ImageIcon,
+  VideoIcon,
+  MusicIcon,
+  FileTextIcon,
+  FileSpreadsheetIcon,
+  FileArchiveIcon,
+  FileIcon,
+  CircleAlertIcon,
+  CircleCheckIcon,
+  LoaderCircleIcon,
+  ShieldCheckIcon,
+  PauseIcon,
+  XIcon,
+  RotateCcwIcon,
+  PlayIcon,
+} from "lucide-react";
+import { cn } from "@workspace/ui/lib/utils";
+import { buttonVariants } from "@workspace/ui/components/button";
+import type { VariantProps } from "class-variance-authority";
+import type { UploadRootProps } from "@uploadcn/react";
+import type {
+  UploadItem as UploadItemData,
+  ValidationOptions,
+} from "@uploadcn/core";
 
-/* -------------------------------------------------------------------------- */
-/* Button                                                                     */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Button
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
-type ButtonVariantProps = VariantProps<typeof buttonVariants>
+type ButtonVariantProps = VariantProps<typeof buttonVariants>;
 
 /**
  * A native `<button>` with your design system's button styles. Used instead
@@ -54,12 +81,18 @@ function NativeButton({
       className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     />
-  )
+  );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Root                                                                       */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Root
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
 function Upload<TResult = unknown>({
   className,
@@ -71,16 +104,22 @@ function Upload<TResult = unknown>({
       className={cn("flex w-full min-w-0 flex-col gap-3", className)}
       {...(props as UploadRootProps<TResult>)}
     />
-  )
+  );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Dropzone                                                                   */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Dropzone
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
 const uploadDropzoneVariants = cva(
   [
-    "rounded-xl group/upload-dropzone relative flex w-full min-w-0 text-balance outline-none select-none",
+    "group/upload-dropzone relative flex w-full min-w-0 rounded-xl text-balance outline-none select-none",
     "transition-[background-color,border-color,box-shadow] duration-200 ease-out",
     "focus-visible:ring-3 focus-visible:ring-ring/50 [&[role=button]]:cursor-pointer",
     "data-disabled:pointer-events-none data-disabled:opacity-50",
@@ -116,7 +155,7 @@ const uploadDropzoneVariants = cva(
       size: "default",
     },
   }
-)
+);
 
 function UploadDropzone({
   className,
@@ -137,7 +176,7 @@ function UploadDropzone({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function UploadDropzoneHeader({
@@ -153,7 +192,7 @@ function UploadDropzoneHeader({
       )}
       {...props}
     />
-  )
+  );
 }
 
 const uploadDropzoneMediaVariants = cva(
@@ -163,12 +202,12 @@ const uploadDropzoneMediaVariants = cva(
       variant: {
         default:
           "text-muted-foreground group-data-dragging/upload-dropzone:-translate-y-1 [&_svg:not([class*='size-'])]:size-6",
-        icon: "bg-muted text-foreground flex size-8 shrink-0 items-center justify-center rounded-lg [&_svg:not([class*='size-'])]:size-4 mb-1.5 group-hover/upload-dropzone:-translate-y-0.5 group-hover/upload-dropzone:text-foreground group-data-drag-reject/upload-dropzone:text-destructive group-data-dragging/upload-dropzone:-translate-y-1 group-data-dragging/upload-dropzone:scale-110 group-data-dragging/upload-dropzone:text-foreground group-data-[orientation=horizontal]/upload-dropzone:mb-0 [&_svg:not([class*='size-'])]:size-4",
+        icon: "mb-1.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground group-hover/upload-dropzone:-translate-y-0.5 group-hover/upload-dropzone:text-foreground group-data-drag-reject/upload-dropzone:text-destructive group-data-dragging/upload-dropzone:-translate-y-1 group-data-dragging/upload-dropzone:scale-110 group-data-dragging/upload-dropzone:text-foreground group-data-[orientation=horizontal]/upload-dropzone:mb-0 [&_svg:not([class*='size-'])]:size-4",
       },
     },
     defaultVariants: { variant: "default" },
   }
-)
+);
 
 function UploadDropzoneMedia({
   className,
@@ -185,12 +224,9 @@ function UploadDropzoneMedia({
       className={cn(uploadDropzoneMediaVariants({ variant }), className)}
       {...props}
     >
-      {children ?? (
-        <UploadIcon
-        />
-      )}
+      {children ?? <UploadIcon />}
     </div>
-  )
+  );
 }
 
 function UploadDropzoneTitle({
@@ -203,7 +239,7 @@ function UploadDropzoneTitle({
       className={cn("text-sm font-medium tracking-tight", className)}
       {...props}
     />
-  )
+  );
 }
 
 function UploadDropzoneDescription({
@@ -219,7 +255,7 @@ function UploadDropzoneDescription({
       )}
       {...props}
     />
-  )
+  );
 }
 
 /**
@@ -236,7 +272,7 @@ function UploadDropzonePasteHint({
     <p
       data-slot="upload-dropzone-paste-hint"
       className={cn(
-        "text-sm/relaxed hidden text-muted-foreground group-data-paste/upload-dropzone:block [&>kbd]:font-sans [&>kbd]:font-medium",
+        "hidden text-sm/relaxed text-muted-foreground group-data-paste/upload-dropzone:block [&>kbd]:font-sans [&>kbd]:font-medium",
         className
       )}
       {...props}
@@ -251,7 +287,7 @@ function UploadDropzonePasteHint({
         </>
       )}
     </p>
-  )
+  );
 }
 
 function UploadDropzoneContent({
@@ -267,12 +303,18 @@ function UploadDropzoneContent({
       )}
       {...props}
     />
-  )
+  );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Trigger                                                                    */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Trigger
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
 /**
  * Opens the file picker. Renders an outline button by default; pass
@@ -295,15 +337,21 @@ function UploadTrigger({
       }
       {...props}
     />
-  )
+  );
 }
 
-/* -------------------------------------------------------------------------- */
-/* List & items                                                               */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+List & items
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
 const uploadListVariants = cva(
-  "w-full min-w-0 *:animate-in *:duration-200 *:fade-in-0 *:slide-in-from-bottom-1 data-empty:hidden motion-reduce:*:animate-none",
+  "*:animate-in *:fade-in-0 *:slide-in-from-bottom-1 w-full min-w-0 *:duration-200 data-empty:hidden motion-reduce:*:animate-none",
   {
     variants: {
       variant: {
@@ -314,7 +362,7 @@ const uploadListVariants = cva(
     },
     defaultVariants: { variant: "list" },
   }
-)
+);
 
 function UploadList({
   className,
@@ -329,12 +377,12 @@ function UploadList({
       className={cn(uploadListVariants({ variant }), className)}
       {...props}
     />
-  )
+  );
 }
 
 const uploadItemVariants = cva(
   [
-    "rounded-lg text-sm group/upload-item relative flex min-w-0 outline-none",
+    "group/upload-item relative flex min-w-0 rounded-lg text-sm outline-none",
     "transition-[background-color,border-color] duration-150",
   ],
   {
@@ -356,7 +404,7 @@ const uploadItemVariants = cva(
     compoundVariants: [{ variant: "tile", className: "gap-0 p-0" }],
     defaultVariants: { variant: "outline", size: "default" },
   }
-)
+);
 
 function UploadItem({
   className,
@@ -377,19 +425,27 @@ function UploadItem({
       )}
       {...props}
     />
-  )
+  );
 }
 
 type FileKind =
-  "image" | "video" | "audio" | "document" | "spreadsheet" | "archive" | "file"
+  "image" | "video" | "audio" | "document" | "spreadsheet" | "archive" | "file";
 
 function getFileKind(file: { type: string; name: string }): FileKind {
-  const kind = getPreviewKind(file)
-  if (kind === "image" || kind === "video" || kind === "audio") return kind
-  if (kind === "pdf" || file.type.startsWith("text/")) return "document"
-  if (/sheet|excel|csv/.test(file.type)) return "spreadsheet"
-  if (/zip|compressed|tar|rar|7z/.test(file.type)) return "archive"
-  return "file"
+  const kind = getPreviewKind(file);
+  if (kind === "image" || kind === "video" || kind === "audio") {
+    return kind;
+  }
+  if (kind === "pdf" || file.type.startsWith("text/")) {
+    return "document";
+  }
+  if (/sheet|excel|csv/.test(file.type)) {
+    return "spreadsheet";
+  }
+  if (/zip|compressed|tar|rar|7z/.test(file.type)) {
+    return "archive";
+  }
+  return "file";
 }
 
 /**
@@ -403,50 +459,49 @@ function UploadSpinner({
   ...props
 }: Omit<React.ComponentProps<"svg">, "children" | "strokeWidth">) {
   return (
-    <Loader2Icon data-slot="upload-spinner" role="status" aria-label="Loading" className={cn("size-4 animate-spin", className)} {...props} />
-  )
+    <Loader2Icon
+      data-slot="upload-spinner"
+      role="status"
+      aria-label="Loading"
+      className={cn("size-4 animate-spin", className)}
+      {...props}
+    />
+  );
 }
 
 /**
  * The icon for the current item's file type. Only `className` is passed on,
  * so the component fits every icon library's prop types.
  */
-function UploadFileIcon({ className }: { className?: string }) {
-  const item = useUploadItem()
+function UploadFileIcon({ className }: { readonly className?: string }) {
+  const item = useUploadItem();
   const iconProps = {
     "data-slot": "upload-file-icon",
     "aria-hidden": true,
     className,
-  }
+  };
   switch (getFileKind(item.file)) {
-    case "image":
-      return (
-        <ImageIcon {...iconProps} />
-      )
-    case "video":
-      return (
-        <VideoIcon {...iconProps} />
-      )
-    case "audio":
-      return (
-        <MusicIcon {...iconProps} />
-      )
-    case "document":
-      return (
-        <FileTextIcon {...iconProps} />
-      )
-    case "spreadsheet":
-      return (
-        <FileSpreadsheetIcon {...iconProps} />
-      )
-    case "archive":
-      return (
-        <FileArchiveIcon {...iconProps} />
-      )
-    default:
-      return (
-        <FileIcon {...iconProps} />
-      )
+    case "image": {
+      return <ImageIcon {...iconProps} />;
+    }
+    case "video": {
+      return <VideoIcon {...iconProps} />;
+    }
+    case "audio": {
+      return <MusicIcon {...iconProps} />;
+    }
+    case "document": {
+      return <FileTextIcon {...iconProps} />;
+    }
+    case "spreadsheet": {
+      return <FileSpreadsheetIcon {...iconProps} />;
+    }
+    case "archive": {
+      return <FileArchiveIcon {...iconProps} />;
+    }
+    default: {
+      return <FileIcon {...iconProps} />;
+    }
   }
 }
 
@@ -455,14 +510,15 @@ const uploadItemMediaVariants = cva(
   {
     variants: {
       variant: {
-        default: "size-10 rounded-sm group-data-[size=sm]/upload-item:size-8 group-data-[size=xs]/upload-item:size-6 border bg-muted",
-        icon: "size-10 rounded-sm group-data-[size=sm]/upload-item:size-8 group-data-[size=xs]/upload-item:size-6 size-8 border bg-muted group-data-[size=xs]/upload-item:size-6",
+        default:
+          "size-10 rounded-sm border bg-muted group-data-[size=sm]/upload-item:size-8 group-data-[size=xs]/upload-item:size-6",
+        icon: "size-8 size-10 rounded-sm border bg-muted group-data-[size=sm]/upload-item:size-8 group-data-[size=xs]/upload-item:size-6",
         cover: "absolute inset-0 size-full overflow-hidden bg-muted",
       },
     },
     defaultVariants: { variant: "default" },
   }
-)
+);
 
 /**
  * The item's media. `default` shows an image thumbnail when possible and a
@@ -476,7 +532,9 @@ function UploadItemMedia({
   children,
   ...props
 }: React.ComponentProps<"div"> &
-  VariantProps<typeof uploadItemMediaVariants> & { thumbnailSize?: number }) {
+  VariantProps<typeof uploadItemMediaVariants> & {
+    readonly thumbnailSize?: number;
+  }) {
   return (
     <div
       data-slot="upload-item-media"
@@ -491,37 +549,41 @@ function UploadItemMedia({
           <UploadPrimitive.Preview
             thumbnailSize={thumbnailSize ?? (variant === "cover" ? 400 : 128)}
             fallback={<UploadFileIcon />}
-            className="size-full animate-in rounded-[inherit] object-cover duration-300 fade-in-0 motion-reduce:animate-none"
+            className="animate-in fade-in-0 size-full rounded-[inherit] object-cover duration-300 motion-reduce:animate-none"
           />
         ))}
       {variant === "cover" ? null : <UploadItemMediaBadge />}
     </div>
-  )
+  );
 }
 
-/** A small check or alert on the media corner once the file settles. */
+/**
+A small check or alert on the media corner once the file settles.
+*/
 function UploadItemMediaBadge() {
-  const item = useUploadItem()
-  const failed = item.status === "error" || item.status === "rejected"
-  if (item.status !== "success" && !failed) return null
+  const item = useUploadItem();
+  const isFailed = item.status === "error" || item.status === "rejected";
+  if (item.status !== "success" && !isFailed) {
+    return null;
+  }
   return (
     <span
       aria-hidden
       data-slot="upload-item-media-badge"
       className={cn(
-        "absolute -right-1 -bottom-1 flex size-4 animate-in items-center justify-center rounded-full ring-2 ring-card duration-300 zoom-in-50 motion-reduce:animate-none [&_svg]:!size-4",
-        failed
+        "animate-in zoom-in-50 absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-full ring-2 ring-card duration-300 motion-reduce:animate-none [&_svg]:!size-4",
+        isFailed
           ? "bg-destructive text-white"
           : "bg-primary text-primary-foreground"
       )}
     >
-      {failed ? (
+      {isFailed ? (
         <CircleAlertIcon strokeWidth={2.5} />
       ) : (
         <CircleCheckIcon strokeWidth={2.5} />
       )}
     </span>
-  )
+  );
 }
 
 function UploadItemContent({
@@ -537,29 +599,31 @@ function UploadItemContent({
       )}
       {...props}
     />
-  )
+  );
 }
 
-/** The file name, unless you pass children. */
+/**
+The file name, unless you pass children.
+*/
 function UploadItemTitle({
   className,
   children,
   ...props
 }: React.ComponentProps<"div">) {
-  const item = useUploadItem()
+  const item = useUploadItem();
   return (
     <div
       data-slot="upload-item-title"
       title={typeof children === "string" ? children : item.name}
       className={cn(
-        "text-sm leading-snug font-medium min-w-0 truncate group-data-[variant=tile]/upload-item:text-xs",
+        "min-w-0 truncate text-sm leading-snug font-medium group-data-[variant=tile]/upload-item:text-xs",
         className
       )}
       {...props}
     >
       {children ?? item.name}
     </div>
-  )
+  );
 }
 
 function describeItem(
@@ -567,7 +631,7 @@ function describeItem(
   statusLabel: string
 ): React.ReactNode {
   if (item.status === "error" || item.status === "rejected") {
-    return item.issues[0]?.message ?? item.error?.message ?? statusLabel
+    return item.issues[0]?.message ?? item.error?.message ?? statusLabel;
   }
   if (item.status === "uploading" || item.status === "paused") {
     const parts = [
@@ -575,94 +639,94 @@ function describeItem(
       item.status === "paused"
         ? statusLabel
         : `${Math.round(item.progress.percent)}%`,
-    ]
+    ];
     if (item.status === "uploading" && item.progress.speed) {
-      parts.push(formatSpeed(item.progress.speed))
-      const eta = formatDuration(item.progress.eta)
-      if (eta) parts.push(`${eta} left`)
+      parts.push(formatSpeed(item.progress.speed));
+      const eta = formatDuration(item.progress.eta);
+      if (eta) {
+        parts.push(`${eta} left`);
+      }
     }
-    return parts.join(" · ")
+    return parts.join(" · ");
   }
-  return `${formatBytes(item.size)} · ${statusLabel}`
+  return `${formatBytes(item.size)} · ${statusLabel}`;
 }
 
 /**
- * Size and status by default, "4.2 MB of 9.8 MB · 43% · 1.2 MB/s · 4s left"
- * while uploading, the reason when failed. Pass children to customize.
+ * Size and status by default, "4.2 MB of 9.8 MB · 43% · 1.2 MB/s · 4s left" while uploading, the reason when failed. Pass children to customize.
  */
 function UploadItemDescription({
   className,
   children,
   ...props
 }: React.ComponentProps<"p">) {
-  const item = useUploadItem()
-  const { messages } = useUploadContext()
+  const item = useUploadItem();
+  const { messages } = useUploadContext();
   return (
     <p
       data-slot="upload-item-description"
       data-status={item.status}
       className={cn(
-        "text-sm leading-normal line-clamp-2 text-muted-foreground tabular-nums data-[status=error]:text-destructive data-[status=rejected]:text-destructive",
+        "line-clamp-2 text-sm leading-normal text-muted-foreground tabular-nums data-[status=error]:text-destructive data-[status=rejected]:text-destructive",
         className
       )}
       {...props}
     >
       {children ?? describeItem(item, getStatusLabel(item, messages) ?? "")}
     </p>
-  )
+  );
 }
 
-/** The status icon. Each icon is a placeholder the shadcn CLI resolves to
- * your project's icon library on install. */
+/**
+The status icon. Each icon is a placeholder the shadcn CLI resolves to your project's icon library on install.
+*/
 function StatusIcon({
   status,
   className,
 }: {
-  status: UploadItemData["status"]
-  className?: string
+  readonly status: UploadItemData["status"];
+  readonly className?: string;
 }) {
   switch (status) {
     case "validating":
     case "uploading":
-    case "processing":
-      return (
-        <LoaderCircleIcon aria-hidden className={className} />
-      )
-    case "scanning":
-      return (
-        <ShieldCheckIcon aria-hidden className={className} />
-      )
-    case "success":
-      return (
-        <CircleCheckIcon aria-hidden className={className} />
-      )
+    case "processing": {
+      return <LoaderCircleIcon aria-hidden className={className} />;
+    }
+    case "scanning": {
+      return <ShieldCheckIcon aria-hidden className={className} />;
+    }
+    case "success": {
+      return <CircleCheckIcon aria-hidden className={className} />;
+    }
     case "error":
-    case "rejected":
-      return (
-        <CircleAlertIcon aria-hidden className={className} />
-      )
-    case "paused":
-      return (
-        <PauseIcon aria-hidden className={className} />
-      )
-    default:
-      return null
+    case "rejected": {
+      return <CircleAlertIcon aria-hidden className={className} />;
+    }
+    case "paused": {
+      return <PauseIcon aria-hidden className={className} />;
+    }
+    default: {
+      return null;
+    }
   }
 }
 
-/** A compact status label with an icon. */
+/**
+A compact status label with an icon.
+*/
 function UploadItemStatus({
   className,
   showIcon = true,
   ...props
 }: React.ComponentProps<typeof UploadPrimitive.Status> & {
-  showIcon?: boolean
+  readonly showIcon?: boolean;
 }) {
-  const item = useUploadItem()
-  const spinning =
+  const item = useUploadItem();
+  const isSpinning =
     item.status === "uploading" ||
     item.status === "validating" ||
-    item.status === "processing"
+    item.status === "processing";
   return (
     <span
       data-slot="upload-item-status"
@@ -677,8 +741,8 @@ function UploadItemStatus({
           status={item.status}
           className={cn(
             item.status === "success" &&
-              "animate-in duration-300 zoom-in-50 motion-reduce:animate-none",
-            spinning && "animate-spin motion-reduce:animate-none",
+              "animate-in zoom-in-50 duration-300 motion-reduce:animate-none",
+            isSpinning && "animate-spin motion-reduce:animate-none",
             item.status === "scanning" &&
               "animate-pulse motion-reduce:animate-none"
           )}
@@ -686,10 +750,12 @@ function UploadItemStatus({
       ) : null}
       <UploadPrimitive.Status {...props} />
     </span>
-  )
+  );
 }
 
-/** Validation or upload error. Renders nothing unless the item failed. */
+/**
+Validation or upload error. Renders nothing unless the item failed.
+*/
 function UploadItemError({
   className,
   ...props
@@ -698,17 +764,23 @@ function UploadItemError({
     <UploadPrimitive.Error
       data-slot="upload-item-error"
       className={cn(
-        "animate-in text-xs text-destructive fade-in-0 motion-reduce:animate-none",
+        "animate-in fade-in-0 text-xs text-destructive motion-reduce:animate-none",
         className
       )}
       {...props}
     />
-  )
+  );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Progress                                                                   */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Progress
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
 const ACTIVE_PROGRESS = new Set([
   "validating",
@@ -717,7 +789,7 @@ const ACTIVE_PROGRESS = new Set([
   "paused",
   "processing",
   "scanning",
-])
+]);
 
 function ProgressBar({
   className,
@@ -726,7 +798,7 @@ function ProgressBar({
   return (
     <UploadPrimitive.Progress
       className={cn(
-        "h-1 rounded-full group/upload-progress relative w-full overflow-hidden bg-muted",
+        "group/upload-progress relative h-1 w-full overflow-hidden rounded-full bg-muted",
         className
       )}
       {...props}
@@ -739,7 +811,7 @@ function ProgressBar({
         )}
       />
     </UploadPrimitive.Progress>
-  )
+  );
 }
 
 /**
@@ -751,10 +823,12 @@ function UploadItemProgress({
   forceMount = false,
   ...props
 }: React.ComponentProps<typeof UploadPrimitive.Progress> & {
-  forceMount?: boolean
+  readonly forceMount?: boolean;
 }) {
-  const item = useUploadItem()
-  if (!forceMount && !ACTIVE_PROGRESS.has(item.status)) return null
+  const item = useUploadItem();
+  if (!forceMount && !ACTIVE_PROGRESS.has(item.status)) {
+    return null;
+  }
   return (
     <ProgressBar
       data-slot="upload-item-progress"
@@ -764,22 +838,30 @@ function UploadItemProgress({
       )}
       {...props}
     />
-  )
+  );
 }
 
-/** Aggregate progress of the whole queue. */
+/**
+Aggregate progress of the whole queue.
+*/
 function UploadProgress(
   props: React.ComponentProps<typeof UploadPrimitive.Progress>
 ) {
-  return <ProgressBar data-slot="upload-progress" {...props} />
+  return <ProgressBar data-slot="upload-progress" {...props} />;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Actions                                                                    */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Actions
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
 type ActionProps = React.ComponentProps<typeof UploadPrimitive.Remove> &
-  ButtonVariantProps
+  ButtonVariantProps;
 
 function createAction(
   Primitive: React.ComponentType<
@@ -805,44 +887,39 @@ function createAction(
       >
         {children ?? icon}
       </Primitive>
-    )
+    );
   }
-  Action.displayName = slot
-  return Action
+  Action.displayName = slot;
+  return Action;
 }
 
 const UploadItemRemove = createAction(
   UploadPrimitive.Remove,
   "upload-item-remove",
-  <XIcon
-  />
-)
+  <XIcon />
+);
 const UploadItemCancel = createAction(
   UploadPrimitive.Cancel,
   "upload-item-cancel",
-  <XIcon
-  />
-)
+  <XIcon />
+);
 const UploadItemRetry = createAction(
   UploadPrimitive.Retry,
   "upload-item-retry",
-  <RotateCcwIcon
-  />
-)
+  <RotateCcwIcon />
+);
 const UploadItemPause = createAction(
   UploadPrimitive.Pause,
   "upload-item-pause",
-  <PauseIcon
-  />
-)
+  <PauseIcon />
+);
 const UploadItemResume = createAction(
   UploadPrimitive.Resume,
   "upload-item-resume",
-  <PlayIcon
-  />
-)
+  <PlayIcon />
+);
 
-const FINISHED = new Set(["success", "error", "rejected", "cancelled"])
+const FINISHED = new Set(["success", "error", "rejected", "cancelled"]);
 
 /**
  * Item actions. Without children it shows the applicable ones: pause,
@@ -854,7 +931,7 @@ function UploadItemActions({
   children,
   ...props
 }: React.ComponentProps<"div">) {
-  const item = useUploadItem()
+  const item = useUploadItem();
   return (
     <div
       data-slot="upload-item-actions"
@@ -877,12 +954,18 @@ function UploadItemActions({
         </>
       )}
     </div>
-  )
+  );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Queue-level                                                                */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Queue-level
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
 /**
  * Turns any content into a drop target: while files are dragged over it, a
@@ -896,8 +979,8 @@ function UploadOverlay({
   children,
   ...props
 }: Omit<React.ComponentProps<typeof UploadPrimitive.Dropzone>, "clickable"> & {
-  label?: React.ReactNode
-  description?: React.ReactNode
+  readonly label?: React.ReactNode;
+  readonly description?: React.ReactNode;
 }) {
   return (
     <UploadPrimitive.Dropzone
@@ -920,7 +1003,7 @@ function UploadOverlay({
         ) : null}
       </div>
     </UploadPrimitive.Dropzone>
-  )
+  );
 }
 
 function UploadHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -933,7 +1016,7 @@ function UploadHeader({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 function UploadFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -946,7 +1029,7 @@ function UploadFooter({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 /**
@@ -958,21 +1041,25 @@ function UploadSummary({
   children,
   ...props
 }: React.ComponentProps<"p">) {
-  const { uploader } = useUploadContext()
-  const summary = useUploadProgress(uploader)
-  if (summary.total === 0 && children == null) return null
+  const { uploader } = useUploadContext();
+  const summary = useUploadProgress(uploader);
+  if (summary.total === 0 && children == null) {
+    return null;
+  }
   const parts = [
     `${summary.total} file${summary.total === 1 ? "" : "s"}`,
     formatBytes(summary.size),
-  ]
+  ];
   if (summary.isUploading) {
-    parts.push(`${Math.round(summary.percent)}%`)
-    const eta = formatDuration(summary.eta)
-    if (eta) parts.push(`${eta} left`)
+    parts.push(`${Math.round(summary.percent)}%`);
+    const eta = formatDuration(summary.eta);
+    if (eta) {
+      parts.push(`${eta} left`);
+    }
   } else if (summary.hasErrors) {
-    parts.push(`${summary.counts.error} failed`)
+    parts.push(`${summary.counts.error} failed`);
   } else if (summary.isComplete) {
-    parts.push("all uploaded")
+    parts.push("all uploaded");
   }
   return (
     <p
@@ -983,21 +1070,29 @@ function UploadSummary({
     >
       {children ?? parts.join(" · ")}
     </p>
-  )
+  );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Slot                                                                       */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Slot
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
-/** The file in a named slot, if any. Use inside `<Upload>`. */
+/**
+The file in a named slot, if any. Use inside `<Upload>`.
+*/
 function useUploadSlot(name: string) {
-  const { uploader } = useUploadContext()
+  const { uploader } = useUploadContext();
   return useUploadSelector(uploader, (state) =>
     state.items.find(
       (item) => item.meta.slot === name && item.status !== "cancelled"
     )
-  )
+  );
 }
 
 /**
@@ -1018,39 +1113,45 @@ function UploadSlot({
   children,
   ...props
 }: Omit<React.ComponentProps<"div">, "children"> & {
-  name: string
-  label: React.ReactNode
-  description?: React.ReactNode
-  accept?: ValidationOptions["accept"]
-  icon?: React.ReactNode
-  required?: boolean
-  /** Content for a filled slot. Defaults to the file with its actions. */
-  children?: React.ReactNode
+  readonly name: string;
+  readonly label: React.ReactNode;
+  readonly description?: React.ReactNode;
+  readonly accept?: ValidationOptions["accept"];
+  readonly icon?: React.ReactNode;
+  readonly required?: boolean;
+  /**
+  Content for a filled slot. Defaults to the file with its actions.
+  */
+  readonly children?: React.ReactNode;
 }) {
-  const { uploader, disabled } = useUploadContext()
-  const item = useUploadSlot(name)
-  const inputRef = React.useRef<HTMLInputElement>(null)
-  const [issue, setIssue] = React.useState<string | null>(null)
-  const inputId = React.useId()
+  const { uploader, disabled } = useUploadContext();
+  const item = useUploadSlot(name);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [issue, setIssue] = React.useState<string | null>(null);
+  const inputId = React.useId();
 
   const add = (files: File[]) => {
-    const file = files[0]
-    if (!file || disabled) return
-    if (accept && !matchesAccept(file, accept)) {
-      setIssue(`${file.name} isn't an accepted file type`)
-      return
+    const file = files[0];
+    if (!file || disabled) {
+      return;
     }
-    setIssue(null)
-    if (item) uploader.remove(item.id)
-    void uploader.add([file], { meta: { slot: name } })
-  }
+    if (accept && !matchesAccept(file, accept)) {
+      setIssue(`${file.name} isn't an accepted file type`);
+      return;
+    }
+    setIssue(null);
+    if (item) {
+      uploader.remove(item.id);
+    }
+    void uploader.add([file], { meta: { slot: name } });
+  };
   const { isDragging, isDragReject, handlers } = useDropzone({
     onDrop: add,
     accept,
     multiple: false,
     disabled,
-  })
-  const open = () => inputRef.current?.click()
+  });
+  const open = () => inputRef.current?.click();
 
   return (
     <div
@@ -1063,7 +1164,7 @@ function UploadSlot({
       data-dragging={isDragging ? "" : undefined}
       data-drag-reject={isDragReject ? "" : undefined}
       className={cn(
-        "rounded-lg text-sm group/upload-slot relative flex min-w-0 flex-col border border-dashed border-input transition-colors",
+        "group/upload-slot relative flex min-w-0 flex-col rounded-lg border border-dashed border-input text-sm transition-colors",
         "data-filled:border-solid data-filled:bg-card data-[status=error]:border-destructive/50 data-[status=rejected]:border-destructive/50",
         "data-drag-reject:border-destructive data-dragging:border-primary data-dragging:bg-muted/60",
         className
@@ -1083,14 +1184,14 @@ function UploadSlot({
         accept={toAcceptAttribute(accept)}
         disabled={disabled}
         onChange={(event) => {
-          add(Array.from(event.currentTarget.files ?? []))
-          event.currentTarget.value = ""
+          add(Array.from(event.currentTarget.files ?? []));
+          event.currentTarget.value = "";
         }}
       />
       {item ? (
         <UploadItemContext.Provider value={item}>
           {children ?? (
-            <div className="gap-2.5 px-3 py-2.5 flex min-w-0 flex-wrap items-center">
+            <div className="flex min-w-0 flex-wrap items-center gap-2.5 px-3 py-2.5">
               <UploadItemMedia />
               <UploadItemContent>
                 <span className="text-xs text-muted-foreground">{label}</span>
@@ -1118,13 +1219,10 @@ function UploadSlot({
           type="button"
           onClick={open}
           disabled={disabled}
-          className="gap-2.5 px-3 py-2.5 flex min-w-0 items-center rounded-[inherit] text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+          className="flex min-w-0 items-center gap-2.5 rounded-[inherit] px-3 py-2.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
         >
-          <span className="size-10 rounded-sm group-data-[size=sm]/upload-item:size-8 group-data-[size=xs]/upload-item:size-6 flex shrink-0 items-center justify-center border bg-muted text-muted-foreground transition-transform group-data-dragging/upload-slot:scale-110 [&_svg:not([class*='size-'])]:size-4">
-            {icon ?? (
-              <UploadIcon
-              />
-            )}
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-sm border bg-muted text-muted-foreground transition-transform group-data-dragging/upload-slot:scale-110 group-data-[size=sm]/upload-item:size-8 group-data-[size=xs]/upload-item:size-6 [&_svg:not([class*='size-'])]:size-4">
+            {icon ?? <UploadIcon />}
           </span>
           <span className="flex min-w-0 flex-col gap-0.5">
             <span className="text-sm leading-snug font-medium">
@@ -1150,18 +1248,24 @@ function UploadSlot({
         </p>
       ) : null}
     </div>
-  )
+  );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Modal                                                                      */
-/* -------------------------------------------------------------------------- */
+/*
+--------------------------------------------------------------------------
+*/
+/*
+Modal
+*/
+/*
+--------------------------------------------------------------------------
+*/
 
 const ModalContext = React.createContext<{
-  titleId: string
-  descriptionId: string
-  close: () => void
-} | null>(null)
+  titleId: string;
+  descriptionId: string;
+  close: () => void;
+} | null>(null);
 
 /**
  * A modal built on the native `<dialog>` element: focus trap, Escape and the
@@ -1176,26 +1280,32 @@ function UploadModal({
   children,
   ...props
 }: Omit<React.ComponentProps<"dialog">, "open"> & {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  showCloseButton?: boolean
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly showCloseButton?: boolean;
 }) {
-  const ref = React.useRef<HTMLDialogElement>(null)
-  const titleId = React.useId()
-  const descriptionId = React.useId()
+  const ref = React.useRef<HTMLDialogElement>(null);
+  const titleId = React.useId();
+  const descriptionId = React.useId();
 
   React.useEffect(() => {
-    const dialog = ref.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+    const dialog = ref.current;
+    if (!dialog) {
+      return;
+    }
+    if (open && !dialog.open) {
+      dialog.showModal();
+    }
+    if (!open && dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
 
-  const close = React.useCallback(() => onOpenChange(false), [onOpenChange])
+  const close = React.useCallback(() => onOpenChange(false), [onOpenChange]);
   const context = React.useMemo(
     () => ({ titleId, descriptionId, close }),
     [titleId, descriptionId, close]
-  )
+  );
 
   return (
     <dialog
@@ -1204,23 +1314,25 @@ function UploadModal({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       onCancel={(event) => {
-        event.preventDefault()
-        close()
+        event.preventDefault();
+        close();
       }}
       onClick={(event) => {
         // A click on the dialog element itself is a click on the backdrop.
-        if (event.target === event.currentTarget) close()
+        if (event.target === event.currentTarget) {
+          close();
+        }
       }}
       className={cn(
-        "ring-foreground/10 rounded-xl text-sm ring-1 mx-4 my-auto w-auto max-w-lg bg-popover p-0 text-popover-foreground outline-none sm:mx-auto sm:w-full",
-        "backdrop:bg-black/50 open:animate-in open:fade-in-0 open:zoom-in-95 motion-reduce:open:animate-none",
+        "mx-4 my-auto w-auto max-w-lg rounded-xl bg-popover p-0 text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none sm:mx-auto sm:w-full",
+        "open:animate-in open:fade-in-0 open:zoom-in-95 backdrop:bg-black/50 motion-reduce:open:animate-none",
         className
       )}
       {...props}
     >
       <ModalContext.Provider value={context}>
         {open ? (
-          <div className="gap-4 p-4 relative flex flex-col">
+          <div className="relative flex flex-col gap-4 p-4">
             {children}
             {showCloseButton ? (
               <NativeButton
@@ -1230,21 +1342,22 @@ function UploadModal({
                 className="absolute top-3 right-3"
                 onClick={close}
               >
-                <XIcon
-                />
+                <XIcon />
               </NativeButton>
             ) : null}
           </div>
         ) : null}
       </ModalContext.Provider>
     </dialog>
-  )
+  );
 }
 
 function useModal() {
-  const context = React.useContext(ModalContext)
-  if (!context) throw new Error("Modal parts must be inside <UploadModal>")
-  return context
+  const context = React.useContext(ModalContext);
+  if (!context) {
+    throw new Error("Modal parts must be inside <UploadModal>");
+  }
+  return context;
 }
 
 function UploadModalHeader({
@@ -1257,11 +1370,11 @@ function UploadModalHeader({
       className={cn("flex flex-col gap-1.5 pe-8 text-left", className)}
       {...props}
     />
-  )
+  );
 }
 
 function UploadModalTitle({ className, ...props }: React.ComponentProps<"h2">) {
-  const { titleId } = useModal()
+  const { titleId } = useModal();
   return (
     <h2
       id={titleId}
@@ -1269,22 +1382,25 @@ function UploadModalTitle({ className, ...props }: React.ComponentProps<"h2">) {
       className={cn("text-base leading-none font-medium", className)}
       {...props}
     />
-  )
+  );
 }
 
 function UploadModalDescription({
   className,
   ...props
 }: React.ComponentProps<"p">) {
-  const { descriptionId } = useModal()
+  const { descriptionId } = useModal();
   return (
     <p
       id={descriptionId}
       data-slot="upload-modal-description"
-      className={cn("text-muted-foreground *:[a]:hover:text-foreground text-sm *:[a]:underline *:[a]:underline-offset-3", className)}
+      className={cn(
+        "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+        className
+      )}
       {...props}
     />
-  )
+  );
 }
 
 function UploadModalFooter({
@@ -1300,11 +1416,11 @@ function UploadModalFooter({
       )}
       {...props}
     />
-  )
+  );
 }
 
-const UploadEmpty = UploadPrimitive.Empty
-const UploadSuccess = UploadPrimitive.Success
+const UploadEmpty = UploadPrimitive.Empty;
+const UploadSuccess = UploadPrimitive.Success;
 
 function UploadStart({
   variant = "default",
@@ -1320,7 +1436,7 @@ function UploadStart({
       }
       {...props}
     />
-  )
+  );
 }
 
 function UploadClear({
@@ -1337,12 +1453,11 @@ function UploadClear({
       }
       {...props}
     />
-  )
+  );
 }
 
 /**
- * The default queue, composed from the parts above. Copy it into your own
- * component when you need a different layout.
+ * The default queue, composed from the parts above. Copy it into your own component when you need a different layout.
  */
 function UploadQueue({
   className,
@@ -1350,8 +1465,8 @@ function UploadQueue({
   variant = "outline",
   size = "default",
 }: {
-  className?: string
-  filter?: (item: UploadItemData) => boolean
+  readonly className?: string;
+  readonly filter?: (item: UploadItemData) => boolean;
 } & VariantProps<typeof uploadItemVariants>) {
   return (
     <UploadList className={className} filter={filter}>
@@ -1367,7 +1482,7 @@ function UploadQueue({
         </UploadItem>
       )}
     </UploadList>
-  )
+  );
 }
 
 export {
@@ -1418,4 +1533,4 @@ export {
   getFileKind,
   uploadDropzoneVariants,
   uploadItemVariants,
-}
+};

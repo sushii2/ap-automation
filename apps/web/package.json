@@ -40,7 +40,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@workspace/eslint-config": "*",
     "@workspace/typescript-config": "*",
     "eslint": "^10",
     "trigger.dev": "^4.8.10",

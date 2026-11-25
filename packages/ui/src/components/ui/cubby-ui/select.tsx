@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -11,16 +11,13 @@ import {
   UnfoldMoreIcon,
 } from "@hugeicons/core-free-icons";
 
+import { elevatedSurface } from "@workspace/ui/lib/cubby-ui/elevated";
 import { cn } from "@workspace/ui/lib/utils";
 import { POPUP_ITEM } from "@workspace/ui/lib/cubby-ui/popup-search";
-import {
-  elevatedSurface,
-  type SurfaceLevel,
-} from "@workspace/ui/lib/cubby-ui/elevated";
-import {
-  ScrollArea,
-  type ScrollAreaProps,
-} from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
+import { ScrollArea } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
+import type { SurfaceLevel } from "@workspace/ui/lib/cubby-ui/elevated";
+import type { VariantProps } from "class-variance-authority";
+import type { ScrollAreaProps } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
 
 const Select = BaseSelect.Root;
 
@@ -51,9 +48,9 @@ const selectTriggerVariants = cva(
     // Layout — w-fit by default since selects size to their value, not full-width
     "group/select-trigger relative inline-flex w-fit items-center justify-between gap-2.5 rounded-lg border border-transparent",
     // Focus ring
-    "focus-visible:outline-ring ease-out-expo outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1",
+    "outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 ease-out-expo outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-ring",
     // Invalid state
-    "aria-invalid:outline-destructive aria-invalid:outline-2 aria-invalid:-outline-offset-1 aria-invalid:outline-solid",
+    "aria-invalid:outline-2 aria-invalid:-outline-offset-1 aria-invalid:outline-destructive aria-invalid:outline-solid",
     // Text + placeholder + icon
     "text-base font-normal whitespace-nowrap sm:not-pointer-coarse:text-sm",
     "data-placeholder:text-muted-foreground",
@@ -72,30 +69,30 @@ const selectTriggerVariants = cva(
         default: "bg-input hover:bg-input-hover data-popup-open:bg-input-hover",
         // Outline: the outline Button's fill and edge.
         outline:
-          "bg-(--outline) border-(--outline-border) bg-clip-padding hover:bg-(--outline-hover) data-popup-open:bg-(--outline-hover)",
+          "border-(--outline-border) bg-(--outline) bg-clip-padding hover:bg-(--outline-hover) data-popup-open:bg-(--outline-hover)",
         // Chromeless — mirrors the button's ghost variant for use in toolbars
         // and inline next to ghost buttons. Chevron follows the text on hover.
         ghost:
           "border-transparent bg-transparent text-muted-foreground hover:bg-surface-hover hover:text-foreground data-popup-open:bg-surface-hover data-popup-open:text-foreground group-hover/select-trigger:[&_svg:not([class*='text-'])]:text-foreground",
       },
       size: {
-        default: "h-10 px-3.5 pr-2.5 py-2 sm:not-pointer-coarse:h-9",
+        default: "h-10 px-3.5 py-2 pr-2.5 sm:not-pointer-coarse:h-9",
         // Compact trigger. Note: tighter than the Button sm size (px-3), so
         // ghost triggers in toolbars pair best with icon-size ghost buttons,
         // which carry no horizontal padding.
-        sm: "h-9 px-3 pr-2 py-1.5 sm:not-pointer-coarse:h-8",
+        sm: "h-9 px-3 py-1.5 pr-2 sm:not-pointer-coarse:h-8",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
     },
-  },
+  }
 );
 
 type SelectTriggerProps = BaseSelect.Trigger.Props &
   VariantProps<typeof selectTriggerVariants> & {
-    hideChevronRotation?: boolean;
+    readonly hideChevronRotation?: boolean;
   };
 
 function SelectTrigger({
@@ -134,12 +131,16 @@ interface SelectContentProps
       | "hideScrollbar"
       | "nativeScroll"
     > {
-  className?: string;
-  size?: "default" | "sm";
-  /** Surface elevation level for the popup bg (1-8). Bump when nesting inside a Dialog or other elevated container. Defaults to 3. */
-  level?: SurfaceLevel;
-  /** Shadow weight (1-8). Pinned to 3 by default so the dropdown reads the same regardless of nesting depth. */
-  shadowLevel?: SurfaceLevel;
+  readonly className?: string;
+  readonly size?: "default" | "sm";
+  /**
+  Surface elevation level for the popup bg (1-8). Bump when nesting inside a Dialog or other elevated container. Defaults to 3.
+  */
+  readonly level?: SurfaceLevel;
+  /**
+  Shadow weight (1-8). Pinned to 3 by default so the dropdown reads the same regardless of nesting depth.
+  */
+  readonly shadowLevel?: SurfaceLevel;
 }
 
 function SelectContent({
@@ -173,7 +174,7 @@ function SelectContent({
           data-level={level}
           className={cn(
             // Combobox-style popup
-            "text-popover-foreground relative flex flex-col overflow-clip rounded-xl",
+            "relative flex flex-col overflow-clip rounded-xl text-popover-foreground",
             // Surface elevation — bg tracks `level`, shadow weight tracks `shadowLevel` (defaults to `level`)
             elevatedSurface(level, shadowLevel),
             // Size constraints
@@ -182,11 +183,11 @@ function SelectContent({
             // when data side does not equal none
             "not-data-[side=none]:max-h-(--available-height)",
             // Animation (disabled for alignItemWithTrigger via data-[side=none] to prevent Firefox jiggle)
-            "ease-out-expo origin-(--transform-origin) transition-[transform,scale,opacity] duration-100 data-[side=none]:duration-50",
-            "data-ending-style:scale-97 data-ending-style:opacity-0 data-starting-style:scale-97 data-starting-style:opacity-0",
+            "origin-(--transform-origin) transition-[transform,scale,opacity] duration-100 ease-out-expo data-[side=none]:duration-50",
+            "data-ending-style:scale-97 data-ending-style:opacity-0 data-starting-style:scale-97 data-starting-style:opacity-0"
           )}
         >
-          {alignItemWithTrigger && (
+          {!!alignItemWithTrigger && (
             <BaseSelect.ScrollUpArrow
               data-slot="select-scroll-up-arrow"
               className="top-0 z-1 flex w-full cursor-default items-center justify-center rounded-t-xl bg-linear-to-b from-(--popup-surface,var(--popover)) from-50% to-transparent py-0.5"
@@ -222,7 +223,7 @@ function SelectContent({
               {children}
             </BaseSelect.List>
           </ScrollArea>
-          {alignItemWithTrigger && (
+          {!!alignItemWithTrigger && (
             <BaseSelect.ScrollDownArrow
               data-slot="select-scroll-down-arrow"
               className="bottom-0 z-1 flex w-full cursor-default items-center justify-center rounded-b-xl bg-linear-to-t from-(--popup-surface,var(--popover)) from-50% to-transparent py-0.5"
@@ -256,13 +257,13 @@ function SelectItem({ className, children, ...props }: BaseSelect.Item.Props) {
         "mx-1 first:mt-1 last:mb-1",
         // Hover and highlight states — uses --surface-hover overlay so the
         // delta is the same regardless of the popup's surface level.
-        "data-highlighted:text-accent-foreground data-highlighted:bg-surface-hover",
+        "data-highlighted:bg-surface-hover data-highlighted:text-accent-foreground",
         // Icon and text styling
         "[&_svg:not([class*='text-'])]:text-muted-foreground",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         // Disabled state
         "data-disabled:pointer-events-none data-disabled:opacity-60",
-        className,
+        className
       )}
       {...props}
     >
@@ -284,8 +285,8 @@ function SelectGroupLabel({
     <BaseSelect.GroupLabel
       data-slot="select-group-label"
       className={cn(
-        "text-muted-foreground bg-(--popup-surface,var(--popover)) px-3.5 py-1.5 pt-2.5 text-xs font-semibold",
-        className,
+        "bg-(--popup-surface,var(--popover)) px-3.5 py-1.5 pt-2.5 text-xs font-semibold text-muted-foreground",
+        className
       )}
       {...props}
     />
@@ -296,7 +297,7 @@ function SelectSeparator({ className, ...props }: BaseSelect.Separator.Props) {
   return (
     <BaseSelect.Separator
       data-slot="select-separator"
-      className={cn("bg-border mx-1 my-1 h-px min-h-px", className)}
+      className={cn("mx-1 my-1 h-px min-h-px bg-border", className)}
       {...props}
     />
   );
@@ -307,8 +308,8 @@ function SelectLabel({ className, ...props }: BaseSelect.Label.Props) {
     <BaseSelect.Label
       data-slot="select-label"
       className={cn(
-        "text-foreground text-sm leading-5 font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-60 peer-disabled:cursor-not-allowed peer-disabled:opacity-60",
-        className,
+        "text-sm leading-5 font-medium text-foreground select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-60 peer-disabled:cursor-not-allowed peer-disabled:opacity-60",
+        className
       )}
       {...props}
     />

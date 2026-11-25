@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { Progress as BaseProgress } from "@base-ui/react/progress";
-import { cva, type VariantProps } from "class-variance-authority";
-
+import { cva } from "class-variance-authority";
 import { cn } from "@workspace/ui/lib/utils";
+import type { VariantProps } from "class-variance-authority";
 
 import "./progress.css";
 
@@ -33,7 +33,7 @@ const progressRootVariants = cva(
     defaultVariants: {
       color: "neutral",
     },
-  },
+  }
 );
 
 // Remounts the indicator and ring when value toggles null, so neither tweens
@@ -44,10 +44,14 @@ export interface ProgressRootProps
   extends
     Omit<React.ComponentProps<typeof BaseProgress.Root>, "color">,
     VariantProps<typeof progressRootVariants> {
-  /** Track thickness. */
-  size?: "sm" | "md" | "lg";
-  /** Secondary value drawn behind the indicator, like loaded media. */
-  buffer?: number;
+  /**
+  Track thickness.
+  */
+  readonly size?: "sm" | "md" | "lg";
+  /**
+  Secondary value drawn behind the indicator, like loaded media.
+  */
+  readonly buffer?: number;
 }
 
 function ProgressRoot({
@@ -67,7 +71,7 @@ function ProgressRoot({
   const vars = {
     "--progress-percent": percent,
     "--progress-buffer":
-      buffer !== undefined ? `${toPercent(buffer, min, max)}%` : undefined,
+      buffer === undefined ? undefined : `${toPercent(buffer, min, max)}%`,
   } as React.CSSProperties;
 
   return (
@@ -92,8 +96,9 @@ function ProgressRoot({
 }
 
 function toPercent(value: number, min: number, max: number): number {
-  if (max <= min) return 0;
-  return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+  return max <= min
+    ? 0
+    : Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
 }
 
 function ProgressTrack({
@@ -104,11 +109,11 @@ function ProgressTrack({
     <BaseProgress.Track
       data-slot="progress-track"
       className={cn(
-        "bg-control-track relative w-full overflow-hidden rounded-full",
+        "relative w-full overflow-hidden rounded-full bg-control-track",
         // The sweep runs left to right; mirroring the track reverses it in RTL
         "rtl:data-indeterminate:-scale-x-100",
         "group-data-[size=lg]/progress:h-2.5 group-data-[size=md]/progress:h-1.5 group-data-[size=sm]/progress:h-1",
-        className,
+        className
       )}
       {...props}
     />
@@ -127,19 +132,21 @@ function ProgressIndicator({
       data-slot="progress-indicator"
       className={cn(
         "relative h-full rounded-full bg-(--progress-color)",
-        "ease-out-expo transition-[width,background-color] duration-500 motion-reduce:transition-none",
+        "transition-[width,background-color] duration-500 ease-out-expo motion-reduce:transition-none",
         // Indeterminate: a 40% sweep, or a full-width breathe under reduced motion
         "data-indeterminate:absolute data-indeterminate:inset-y-0 data-indeterminate:left-0 data-indeterminate:w-2/5",
         "data-indeterminate:animate-[progress-indeterminate_1.6s_var(--ease-in-out-cubic)_infinite]",
         "motion-reduce:data-indeterminate:w-full motion-reduce:data-indeterminate:animate-[progress-breathe_2.4s_ease-in-out_infinite]",
-        className,
+        className
       )}
       {...props}
     />
   );
 }
 
-/** Draws the root's `buffer`. Place it before `ProgressIndicator` in the track. */
+/**
+Draws the root's `buffer`. Place it before `ProgressIndicator` in the track.
+*/
 function ProgressBuffer({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -147,9 +154,9 @@ function ProgressBuffer({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="progress-buffer"
       className={cn(
         "absolute inset-y-0 start-0 w-(--progress-buffer,0%) rounded-full bg-(--progress-color) opacity-25",
-        "ease-out-expo transition-[width] duration-500 motion-reduce:transition-none",
+        "transition-[width] duration-500 ease-out-expo motion-reduce:transition-none",
         "group-data-indeterminate/progress:hidden",
-        className,
+        className
       )}
       {...props}
     />
@@ -160,15 +167,23 @@ export interface ProgressCircleProps extends Omit<
   React.ComponentProps<"span">,
   "children"
 > {
-  /** Diameter in px. */
-  size?: number;
-  /** Stroke width in px. Defaults to a tenth of `size`, at least 2. */
-  thickness?: number;
-  /** Content centered inside the ring, typically `ProgressValue`. */
-  children?: React.ReactNode;
+  /**
+  Diameter in px.
+  */
+  readonly size?: number;
+  /**
+  Stroke width in px. Defaults to a tenth of `size`, at least 2.
+  */
+  readonly thickness?: number;
+  /**
+  Content centered inside the ring, typically `ProgressValue`.
+  */
+  readonly children?: React.ReactNode;
 }
 
-/** A ring used in place of `ProgressTrack`, driven by the same root. */
+/**
+A ring used in place of `ProgressTrack`, driven by the same root.
+*/
 function ProgressCircle({
   className,
   style,
@@ -188,8 +203,8 @@ function ProgressCircle({
       className={cn(
         "relative inline-grid shrink-0 place-items-center",
         // A centered ProgressValue scales with the ring
-        "[&>[data-slot=progress-value]]:text-foreground [&>[data-slot=progress-value]]:text-[length:inherit] [&>[data-slot=progress-value]]:leading-none [&>[data-slot=progress-value]]:font-medium",
-        className,
+        "[&>[data-slot=progress-value]]:text-[length:inherit] [&>[data-slot=progress-value]]:leading-none [&>[data-slot=progress-value]]:font-medium [&>[data-slot=progress-value]]:text-foreground",
+        className
       )}
       style={{
         width: size,
@@ -207,7 +222,7 @@ function ProgressCircle({
         className={cn(
           "absolute inset-0 -rotate-90",
           // Indeterminate: a spinning quarter arc, or a breathe under reduced motion
-          "group-data-indeterminate/progress:animate-spin motion-reduce:group-data-indeterminate/progress:animate-none",
+          "group-data-indeterminate/progress:animate-spin motion-reduce:group-data-indeterminate/progress:animate-none"
         )}
       >
         <circle
@@ -230,11 +245,11 @@ function ProgressCircle({
           strokeDasharray="100 100"
           className={cn(
             "stroke-(--progress-color) [stroke-dashoffset:calc(100_-_var(--progress-percent,0))]",
-            "ease-out-expo transition-[stroke-dashoffset,stroke,opacity] duration-500 motion-reduce:transition-none",
+            "transition-[stroke-dashoffset,stroke,opacity] duration-500 ease-out-expo motion-reduce:transition-none",
             // Round caps paint a dot at zero length; fade once the arc drains
             "group-data-empty/progress:opacity-0 group-data-empty/progress:[transition-delay:0s,0s,300ms]",
             "group-data-indeterminate/progress:[stroke-dashoffset:75]",
-            "motion-reduce:group-data-indeterminate/progress:animate-[progress-breathe_2.4s_ease-in-out_infinite]",
+            "motion-reduce:group-data-indeterminate/progress:animate-[progress-breathe_2.4s_ease-in-out_infinite]"
           )}
         />
       </svg>
@@ -251,8 +266,8 @@ function ProgressLabel({
     <BaseProgress.Label
       data-slot="progress-label"
       className={cn(
-        "text-foreground col-start-1 text-sm font-medium",
-        className,
+        "col-start-1 text-sm font-medium text-foreground",
+        className
       )}
       {...props}
     />
@@ -267,17 +282,19 @@ function ProgressValue({
     <BaseProgress.Value
       data-slot="progress-value"
       className={cn(
-        "text-muted-foreground text-sm tabular-nums",
+        "text-sm text-muted-foreground tabular-nums",
         // Base UI prints "indeterminate" when value is null
         "data-indeterminate:hidden",
-        className,
+        className
       )}
       {...props}
     />
   );
 }
 
-/** Root, track, and indicator in one. Children render above the track. */
+/**
+Root, track, and indicator in one. Children render above the track.
+*/
 function Progress({ children, buffer, ...props }: ProgressRootProps) {
   return (
     <ProgressRoot buffer={buffer} {...props}>

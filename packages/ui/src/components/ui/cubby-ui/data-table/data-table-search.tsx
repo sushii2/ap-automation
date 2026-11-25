@@ -17,8 +17,8 @@ interface DataTableSearchProps extends Omit<
   React.ComponentProps<"input">,
   "value" | "onChange" | "size"
 > {
-  placeholder?: string;
-  size?: "default" | "sm";
+  readonly placeholder?: string;
+  readonly size?: "default" | "sm";
 }
 
 function DataTableSearch({
@@ -34,7 +34,7 @@ function DataTableSearch({
       <InputGroupAddon>
         <HugeiconsIcon
           icon={Search01Icon}
-          className="text-muted-foreground size-4"
+          className="size-4 text-muted-foreground"
           strokeWidth={2}
         />
       </InputGroupAddon>

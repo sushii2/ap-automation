@@ -11,17 +11,23 @@ const EXIT_FADE_MS = 130;
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const ANIMATION_ID = "filters-flow";
 
-/** Marks the bar ready once its first render has painted. */
+/**
+Marks the bar ready once its first render has painted.
+*/
 const READY_ATTR = "data-flow-ready";
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Exit copies to drop if their element remounts (Strict Mode), before it measures the row. */
+/**
+Exit copies to drop if their element remounts (Strict Mode), before it measures the row.
+*/
 const pendingGhosts = new WeakMap<HTMLElement, HTMLElement>();
 
-/** Fractional width: a rounded `offsetWidth` leaves a sub-pixel snap when motion ends. */
+/**
+Fractional width: a rounded `offsetWidth` leaves a sub-pixel snap when motion ends.
+*/
 function widthOf(el: HTMLElement): number {
   return el.getBoundingClientRect().width;
 }
@@ -49,12 +55,11 @@ function isLiveFlowItem(node: Element): node is HTMLElement {
 }
 
 function columnGap(el: Element | null): number {
-  return el ? parseFloat(getComputedStyle(el).columnGap) || 0 : 0;
+  return el ? Number.parseFloat(getComputedStyle(el).columnGap) || 0 : 0;
 }
 
 /**
- * Width plus the gap that goes with it. A lone item has no gap, which also
- * keeps a cleared row from closing one gap more than it had.
+ * Width plus the gap that goes with it. A lone item has no gap, which also keeps a cleared row from closing one gap more than it had.
  */
 function flowSpan(el: HTMLElement): number {
   return widthOf(el) + (isAlone(el) ? 0 : columnGap(el.parentElement));
@@ -64,14 +69,16 @@ function isAlone(el: HTMLElement): boolean {
   const parent = el.parentElement;
   return (
     !parent ||
-    !Array.from(parent.children).some(
-      (node) => node !== el && isLiveFlowItem(node),
+    Array.from(parent.children).every(
+      (node) => node === el || !isLiveFlowItem(node)
     )
   );
 }
 
 function asScroller(row: HTMLElement | null): HTMLElement | null {
-  if (!row) return null;
+  if (!row) {
+    return null;
+  }
   const { overflowX } = getComputedStyle(row);
   return overflowX === "auto" || overflowX === "scroll" ? row : null;
 }
@@ -84,10 +91,14 @@ function overflows(scroller: HTMLElement): boolean {
   return scroller.scrollWidth > scroller.clientWidth + 1;
 }
 
-/** Scrolls the element's sideways-scrolling parent until it clears the edge fades. */
+/**
+Scrolls the element's sideways-scrolling parent until it clears the edge fades.
+*/
 function revealInScroller(el: HTMLElement): void {
   const scroller = inlineScroller(el);
-  if (!scroller || !overflows(scroller)) return;
+  if (!scroller || !overflows(scroller)) {
+    return;
+  }
   // Matches the edge fade's depth: min(12%, 2.5rem).
   const inset = Math.min(scroller.clientWidth * 0.12, 40);
   const bounds = scroller.getBoundingClientRect();
@@ -98,7 +109,9 @@ function revealInScroller(el: HTMLElement): void {
       : rect.left < bounds.left + inset
         ? rect.left - (bounds.left + inset)
         : 0;
-  if (Math.abs(delta) < 1) return;
+  if (Math.abs(delta) < 1) {
+    return;
+  }
   scroller.scrollBy({
     left: delta,
     behavior: prefersReducedMotion() ? "auto" : "smooth",
@@ -108,7 +121,9 @@ function revealInScroller(el: HTMLElement): void {
 function trailingFlow(el: HTMLElement): HTMLElement[] {
   const nodes = [el];
   for (let node = el.nextElementSibling; node; node = node.nextElementSibling) {
-    if (isLiveFlowItem(node)) nodes.push(node);
+    if (isLiveFlowItem(node)) {
+      nodes.push(node);
+    }
   }
   return nodes;
 }
@@ -123,15 +138,14 @@ function crossesRows(el: HTMLElement, span: number): boolean {
   const unpin = pinWidth(el);
   const previous = el.style.marginInlineEnd;
   el.style.marginInlineEnd = `${-span}px`;
-  const moved = nodes.some((node, index) => node.offsetTop !== rows[index]);
+  const isMoved = nodes.some((node, index) => node.offsetTop !== rows[index]);
   el.style.marginInlineEnd = previous;
   unpin();
-  return moved;
+  return isMoved;
 }
 
 /**
- * Entrance pin undos, released synchronously on replacement: the async cancel
- * event would otherwise fire after the new pin and remove it.
+ * Entrance pin undos, released synchronously on replacement: the async cancel event would otherwise fire after the new pin and remove it.
  */
 const entrancePins = new WeakMap<HTMLElement, () => void>();
 
@@ -139,7 +153,9 @@ function enterInFlow(el: HTMLElement): void {
   pendingGhosts.get(el)?.remove();
   pendingGhosts.delete(el);
   for (const animation of el.getAnimations()) {
-    if (animation.id !== ANIMATION_ID) continue;
+    if (animation.id !== ANIMATION_ID) {
+      continue;
+    }
     animation.onfinish = null;
     animation.oncancel = null;
     animation.cancel();
@@ -158,7 +174,7 @@ function enterInFlow(el: HTMLElement): void {
       {
         opacity: [0, 1],
       },
-      { duration: FLOW_MS, easing: EASE },
+      { duration: FLOW_MS, easing: EASE }
     );
     animation.id = ANIMATION_ID;
     revealInScroller(el);
@@ -169,7 +185,9 @@ function enterInFlow(el: HTMLElement): void {
     // Start from the strip as it is now if it was still narrowing (undo a clear).
     cancelAnimations(scroller, SCROLLER_WIDTH_ID);
     holdFade(scroller);
-    if (isAlone(el)) animateOuterGap(scroller, "open");
+    if (isAlone(el)) {
+      animateOuterGap(scroller, "open");
+    }
   }
   const fullSpan = flowSpan(el);
   const span = crossesRows(el, fullSpan) ? 0 : fullSpan;
@@ -177,30 +195,33 @@ function enterInFlow(el: HTMLElement): void {
   entrancePins.set(el, unpin);
   const animation = el.animate(
     { marginInlineEnd: [`${-span}px`, "0px"] },
-    { duration: FLOW_MS, easing: EASE },
+    { duration: FLOW_MS, easing: EASE }
   );
   animation.id = ANIMATION_ID;
   // Gentler curve than the space, so little of the chip shows over its neighbour.
   el.animate(
     { opacity: [0, 1] },
-    { duration: FLOW_MS, easing: "ease-out" },
+    { duration: FLOW_MS, easing: "ease-out" }
   ).id = ANIMATION_ID;
   animation.onfinish = () => {
     unpin();
-    if (entrancePins.get(el) === unpin) entrancePins.delete(el);
+    if (entrancePins.get(el) === unpin) {
+      entrancePins.delete(el);
+    }
     revealInScroller(el);
   };
   animation.oncancel = () => {
     unpin();
-    if (entrancePins.get(el) === unpin) entrancePins.delete(el);
+    if (entrancePins.get(el) === unpin) {
+      entrancePins.delete(el);
+    }
   };
 }
 
 const fadeHolds = new WeakMap<HTMLElement, number>();
 
 /**
- * Turns a strip's edge fade off during motion: the moving chip's full width
- * counts toward scroll width early, so a fitting strip reads as overflowing.
+ * Turns a strip's edge fade off during motion: the moving chip's full width counts toward scroll width early, so a fitting strip reads as overflowing.
  * Restored once every hold has run out.
  */
 function holdFade(scroller: HTMLElement) {
@@ -213,13 +234,17 @@ function holdFade(scroller: HTMLElement) {
   setTimeout(() => {
     const left = (fadeHolds.get(scroller) ?? 1) - 1;
     fadeHolds.set(scroller, left);
-    if (left > 0) return;
+    if (left > 0) {
+      return;
+    }
     scroller.style.removeProperty("mask-image");
     scroller.style.removeProperty("-webkit-mask-image");
   }, FLOW_MS);
 }
 
-/** Keeps an emptied strip shown while its exit is still settling. */
+/**
+Keeps an emptied strip shown while its exit is still settling.
+*/
 const BUSY_ATTR = "data-flow-busy";
 
 const SCROLLER_GAP_ID = "filters-flow-gap";
@@ -231,10 +256,13 @@ const SCROLLER_WIDTH_ID = "filters-flow-width";
  */
 function animateOuterGap(scroller: HTMLElement, direction: "open" | "close") {
   for (const animation of scroller.getAnimations()) {
-    if (animation.id === SCROLLER_GAP_ID) animation.cancel();
+    if (animation.id === SCROLLER_GAP_ID) {
+      animation.cancel();
+    }
   }
   // The resting margin isn't necessarily zero.
-  const rest = parseFloat(getComputedStyle(scroller).marginInlineEnd) || 0;
+  const rest =
+    Number.parseFloat(getComputedStyle(scroller).marginInlineEnd) || 0;
   const open = `${rest}px`;
   const closed = `${rest - columnGap(scroller.parentElement)}px`;
   scroller.animate(
@@ -245,26 +273,29 @@ function animateOuterGap(scroller: HTMLElement, direction: "open" | "close") {
       duration: FLOW_MS,
       easing: EASE,
       fill: direction === "close" ? "forwards" : "none",
-    },
+    }
   ).id = SCROLLER_GAP_ID;
 }
 
 function cancelAnimations(el: HTMLElement, id: string) {
   for (const animation of el.getAnimations()) {
-    if (animation.id === id) animation.cancel();
+    if (animation.id === id) {
+      animation.cancel();
+    }
   }
 }
 
 /**
- * In-flight exit batches per strip. Cleanup waits for the last, or an earlier
- * batch's cleanup would cut a later batch's motion short.
+ * In-flight exit batches per strip. Cleanup waits for the last, or an earlier batch's cleanup would cut a later batch's motion short.
  */
 const scrollerExits = new WeakMap<HTMLElement, number>();
 
 function settleScroller(scroller: HTMLElement) {
   const left = (scrollerExits.get(scroller) ?? 1) - 1;
   scrollerExits.set(scroller, left);
-  if (left > 0) return;
+  if (left > 0) {
+    return;
+  }
   scroller.removeAttribute(BUSY_ATTR);
   cancelAnimations(scroller, SCROLLER_GAP_ID);
   cancelAnimations(scroller, SCROLLER_WIDTH_ID);
@@ -275,12 +306,16 @@ interface Exit {
   ghost: HTMLElement;
   span: number;
   crosses: boolean;
-  /** Progress of an interrupted entrance. */
+  /**
+  Progress of an interrupted entrance.
+  */
   opacity: number;
   margin: number;
 }
 
-/** Exits from one row in the same commit, played together. */
+/**
+Exits from one row in the same commit, played together.
+*/
 const exitBatches = new Map<
   HTMLElement,
   { exits: Exit[]; width: number; overflowed: boolean }
@@ -292,14 +327,18 @@ const exitBatches = new Map<
  */
 function exitInFlow(el: HTMLElement): void {
   const parent = el.parentElement;
-  if (!parent || prefersReducedMotion()) return;
+  if (!parent || prefersReducedMotion()) {
+    return;
+  }
   // Copies carry no animations, so capture an interrupted entrance's progress
   // (or the exit snaps), then cancel it so measurements see resting layout.
   const current = getComputedStyle(el);
-  const opacity = parseFloat(current.opacity);
-  const margin = parseFloat(current.marginInlineEnd) || 0;
+  const opacity = Number.parseFloat(current.opacity);
+  const margin = Number.parseFloat(current.marginInlineEnd) || 0;
   for (const animation of el.getAnimations()) {
-    if (animation.id !== ANIMATION_ID) continue;
+    if (animation.id !== ANIMATION_ID) {
+      continue;
+    }
     animation.onfinish = null;
     animation.oncancel = null;
     animation.cancel();
@@ -307,10 +346,12 @@ function exitInFlow(el: HTMLElement): void {
   entrancePins.get(el)?.();
   entrancePins.delete(el);
   const span = flowSpan(el);
-  const crosses = crossesRows(el, span);
+  const isCrosses = crossesRows(el, span);
   const ghost = el.cloneNode(true) as HTMLElement;
   ghost.removeAttribute("id");
-  for (const node of ghost.querySelectorAll("[id]")) node.removeAttribute("id");
+  for (const node of ghost.querySelectorAll("[id]")) {
+    node.removeAttribute("id");
+  }
   // A distinct slot so lookups for live chips skip the copy.
   ghost.setAttribute("data-slot", `${el.dataset.slot ?? "flow"}-ghost`);
   ghost.setAttribute("data-flow-ghost", "");
@@ -337,7 +378,7 @@ function exitInFlow(el: HTMLElement): void {
   }
   el.before(ghost);
   pendingGhosts.set(el, ghost);
-  batch.exits.push({ el, ghost, span, crosses, opacity, margin });
+  batch.exits.push({ el, ghost, span, crosses: isCrosses, opacity, margin });
 }
 
 function liftOut(ghost: HTMLElement) {
@@ -355,17 +396,19 @@ function fadeOut({ ghost, opacity }: Exit): Animation {
     {
       opacity: [opacity, 0],
     },
-    { duration: EXIT_FADE_MS, easing: EASE, fill: "forwards" },
+    { duration: EXIT_FADE_MS, easing: EASE, fill: "forwards" }
   );
 }
 
 function playExits(
   parent: HTMLElement,
-  batch: { exits: Exit[]; width: number; overflowed: boolean },
+  batch: { exits: Exit[]; width: number; overflowed: boolean }
 ) {
   const { width, overflowed } = batch;
   const exits = batch.exits.filter(({ el, ghost }) => {
-    if (pendingGhosts.get(el) === ghost) pendingGhosts.delete(el);
+    if (pendingGhosts.get(el) === ghost) {
+      pendingGhosts.delete(el);
+    }
     // Still attached: Strict Mode's rehearsal. Row gone: nothing to show.
     if (el.isConnected || !parent.isConnected) {
       ghost.remove();
@@ -373,10 +416,12 @@ function playExits(
     }
     return true;
   });
-  if (exits.length === 0) return;
+  if (exits.length === 0) {
+    return;
+  }
 
   const scroller = asScroller(parent);
-  const emptying =
+  const isEmptying =
     scroller !== null && !Array.from(parent.children).some(isLiveFlowItem);
 
   // The strip's final width. Stop an earlier batch's width motion first, or
@@ -387,38 +432,49 @@ function playExits(
     scrollerExits.set(scroller, (scrollerExits.get(scroller) ?? 0) + 1);
     // Hide every copy, earlier batches' too, or one still collapsing counts.
     const ghosts = Array.from(
-      scroller.querySelectorAll<HTMLElement>(":scope > [data-flow-ghost]"),
+      scroller.querySelectorAll<HTMLElement>(":scope > [data-flow-ghost]")
     );
-    for (const ghost of ghosts) ghost.style.display = "none";
-    settledWidth = emptying ? 0 : widthOf(scroller);
-    for (const ghost of ghosts) ghost.style.display = "";
+    for (const ghost of ghosts) {
+      ghost.style.display = "none";
+    }
+    settledWidth = isEmptying ? 0 : widthOf(scroller);
+    for (const ghost of ghosts) {
+      ghost.style.display = "";
+    }
   }
 
   if (scroller && overflowed && settledWidth !== width) {
     // Closing space inside an overflowing strip happens mostly out of view,
     // then the bar jumps. Fade copies in place and ease the strip's width.
     scroller.style.position ||= "relative";
-    for (const exit of exits) liftOut(exit.ghost);
+    for (const exit of exits) {
+      liftOut(exit.ghost);
+    }
     scroller.animate(
       { width: [`${width}px`, `${settledWidth}px`] },
-      { duration: FLOW_MS, easing: EASE },
+      { duration: FLOW_MS, easing: EASE }
     ).id = SCROLLER_WIDTH_ID;
-    if (emptying) animateOuterGap(scroller, "close");
+    if (isEmptying) {
+      animateOuterGap(scroller, "close");
+    }
     // A lifted copy still widens the scroll range (keeping the edge fade on),
     // so each goes once faded; busy keeps an emptied strip shown meanwhile.
     scroller.setAttribute(BUSY_ATTR, "");
     // It ends up fitting, so drop the fade now rather than mid-motion.
     holdFade(scroller);
     for (const exit of exits) {
-      fadeOut(exit).finished.then(
-        () => exit.ghost.remove(),
-        () => exit.ghost.remove(),
-      );
+      fadeOut(exit)
+        .finished.catch(() => exit.ghost.remove())
+        .then(() => exit.ghost.remove());
     }
   } else {
     // A fitting strip only looks overflowing while space closes.
-    if (scroller && !overflowed) holdFade(scroller);
-    if (emptying && scroller) animateOuterGap(scroller, "close");
+    if (scroller && !overflowed) {
+      holdFade(scroller);
+    }
+    if (isEmptying && scroller) {
+      animateOuterGap(scroller, "close");
+    }
     for (const exit of exits) {
       if (exit.crosses) {
         liftOut(exit.ghost);
@@ -431,15 +487,17 @@ function playExits(
 
   // Copies stay until the space closes, so an emptied strip doesn't hide mid-motion.
   setTimeout(() => {
-    for (const { ghost } of exits) ghost.remove();
-    if (scroller) settleScroller(scroller);
+    for (const { ghost } of exits) {
+      ghost.remove();
+    }
+    if (scroller) {
+      settleScroller(scroller);
+    }
   }, FLOW_MS);
 }
 
 /**
- * Shrinks a copy's box to nothing and pulls it over the preceding gap. A
- * negative margin alone leaves the box in the scroll range, so the edge fade
- * would linger and the range snap on removal.
+ * Shrinks a copy's box to nothing and pulls it over the preceding gap. A negative margin alone leaves the box in the scroll range, so the edge fade would linger and the range snap on removal.
  */
 function collapse({ ghost, span, margin }: Exit) {
   const styles = getComputedStyle(ghost);
@@ -461,13 +519,16 @@ function collapse({ ghost, span, margin }: Exit) {
       // Non-zero if it left mid-entrance.
       marginInlineEnd: [`${margin}px`, "0px"],
     },
-    { duration: FLOW_MS, easing: EASE, fill: "forwards" },
+    { duration: FLOW_MS, easing: EASE, fill: "forwards" }
   );
 }
 
 function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null): void {
-  if (typeof ref === "function") ref(value);
-  else if (ref) ref.current = value;
+  if (typeof ref === "function") {
+    ref(value);
+  } else if (ref) {
+    ref.current = value;
+  }
 }
 
 /**
@@ -477,12 +538,14 @@ function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null): void {
  * every render.
  */
 function useFlowPresence<T extends HTMLElement>(
-  forwardedRef?: React.Ref<T>,
+  forwardedRef?: React.Ref<T>
 ): React.RefCallback<T> {
   const nodeRef = React.useRef<T | null>(null);
   const forwarded = React.useRef(forwardedRef);
   React.useLayoutEffect(() => {
-    if (forwarded.current === forwardedRef) return;
+    if (forwarded.current === forwardedRef) {
+      return;
+    }
     assignRef(forwarded.current, null);
     forwarded.current = forwardedRef;
     assignRef(forwardedRef, nodeRef.current);
@@ -490,9 +553,13 @@ function useFlowPresence<T extends HTMLElement>(
   return React.useCallback((node: T | null) => {
     nodeRef.current = node;
     assignRef(forwarded.current, node);
-    if (!node) return;
-    const row = node.closest(`[${READY_ATTR}]`);
-    if (row) enterInFlow(node);
+    if (!node) {
+      return;
+    }
+    const row = node.closest(`[${CSS.escape(READY_ATTR)}]`);
+    if (row) {
+      enterInFlow(node);
+    }
     return () => {
       nodeRef.current = null;
       assignRef(forwarded.current, null);
@@ -501,23 +568,27 @@ function useFlowPresence<T extends HTMLElement>(
   }, []);
 }
 
-/** Callback ref for the row: marks it ready after first paint so later children animate in. */
+/**
+Callback ref for the row: marks it ready after first paint so later children animate in.
+*/
 function useFlowRow<T extends HTMLElement>(
-  forwardedRef?: React.Ref<T>,
+  forwardedRef?: React.Ref<T>
 ): React.RefCallback<T> {
   return React.useCallback(
     (node: T | null) => {
       assignRef(forwardedRef, node);
-      if (!node) return;
+      if (!node) {
+        return;
+      }
       const frame = requestAnimationFrame(() =>
-        node.setAttribute(READY_ATTR, ""),
+        node.setAttribute(READY_ATTR, "")
       );
       return () => {
         cancelAnimationFrame(frame);
         assignRef(forwardedRef, null);
       };
     },
-    [forwardedRef],
+    [forwardedRef]
   );
 }
 

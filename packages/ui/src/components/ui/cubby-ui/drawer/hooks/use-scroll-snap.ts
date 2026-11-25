@@ -1,15 +1,8 @@
 import * as React from "react";
 
-import type {
-  DrawerDirection,
-  SnapPoint,
-  ScrollGeometry,
-} from "@workspace/ui/components/ui/cubby-ui/drawer/lib/drawer-utils";
 import {
   DIRECTION_CONFIG,
   supportsScrollEnd,
-  supportsScrollTimeline,
-  supportsScrollState,
   supportsScrollSnapChange,
   prefersReducedMotion,
   waitForScrollEnd,
@@ -17,6 +10,11 @@ import {
   calculateSnapScrollPositions,
   calculateScrollProgress,
   calculateSnapProgress,
+} from "@workspace/ui/components/ui/cubby-ui/drawer/lib/drawer-utils";
+import type {
+  DrawerDirection,
+  SnapPoint,
+  ScrollGeometry,
 } from "@workspace/ui/components/ui/cubby-ui/drawer/lib/drawer-utils";
 
 export interface UseScrollSnapOptions {
@@ -28,9 +26,13 @@ export interface UseScrollSnapOptions {
   dismissible: boolean;
   contentSize: number | null;
   open: boolean;
-  /** 0 = open, 1 = closed */
+  /**
+  0 = open, 1 = closed
+  */
   onScrollProgress?: (progress: number) => void;
-  /** 0 = first snap, 1 = last snap */
+  /**
+  0 = first snap, 1 = last snap
+  */
   onSnapProgress?: (progress: number) => void;
   onImmediateClose?: () => void;
   isAnimating?: boolean;
@@ -57,7 +59,9 @@ interface InteractionState {
   isClosing: boolean;
   isPointerDown: boolean;
   prevScrollPos: number | null;
-  /** Firefox: click stops momentum scroll, need to track if scrollend fired while pointer down */
+  /**
+  Firefox: click stops momentum scroll, need to track if scrollend fired while pointer down
+  */
   scrollEndedWhilePointerDown: boolean;
 }
 
@@ -69,10 +73,8 @@ interface InitState {
   rafStableCount: number;
 }
 
-export { supportsScrollTimeline, supportsScrollState };
-
 export function useScrollSnap(
-  options: UseScrollSnapOptions,
+  options: UseScrollSnapOptions
 ): UseScrollSnapReturn {
   const {
     direction,
@@ -122,8 +124,10 @@ export function useScrollSnap(
   const [isClosing, setIsClosingState] = React.useState(false);
   const [isInitialized, setIsInitialized] = React.useState(false);
   const [viewportSize, setViewportSize] = React.useState(() => {
-    if (typeof window === "undefined") return 800;
-    return isVertical ? window.innerHeight : window.innerWidth;
+    if (typeof window === "undefined") {
+      return 800;
+    }
+    return window[isVertical ? "innerHeight" : "innerWidth"];
   });
 
   const setIsClosing = React.useCallback((value: boolean) => {
@@ -136,7 +140,7 @@ export function useScrollSnap(
       setIsScrolling(value);
       onScrollingChange?.(value);
     },
-    [onScrollingChange],
+    [onScrollingChange]
   );
 
   // Fallback size until measured (prevents iOS Safari timing issues)
@@ -148,9 +152,9 @@ export function useScrollSnap(
         viewportSize,
         effectiveSize,
         dismissible,
-        isInverted,
+        isInverted
       ),
-    [viewportSize, effectiveSize, dismissible, isInverted],
+    [viewportSize, effectiveSize, dismissible, isInverted]
   );
 
   const snapScrollPositions = React.useMemo(
@@ -159,9 +163,9 @@ export function useScrollSnap(
         snapPoints,
         geometry,
         dismissible,
-        effectiveSize,
+        effectiveSize
       ),
-    [snapPoints, geometry, dismissible, effectiveSize],
+    [snapPoints, geometry, dismissible, effectiveSize]
   );
 
   const getScrollPositionForSnapPoint = React.useCallback(
@@ -169,22 +173,22 @@ export function useScrollSnap(
       const adjustedIndex = dismissible ? index + 1 : index;
       return snapScrollPositions[adjustedIndex] ?? 0;
     },
-    [snapScrollPositions, dismissible],
+    [snapScrollPositions, dismissible]
   );
 
   const findNearestSnapIndex = React.useCallback(
     (scrollPos: number): { index: number; isDismiss: boolean } => {
       let closestIndex = 0;
-      let closestDistance = Math.abs(
-        scrollPos - (snapScrollPositions[0] ?? 0),
-      );
+      let closestDistance = Math.abs(scrollPos - (snapScrollPositions[0] ?? 0));
 
       for (let i = 1; i < snapScrollPositions.length; i++) {
         const distance = Math.abs(scrollPos - snapScrollPositions[i]!);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = i;
+        if (!(distance < closestDistance)) {
+          continue;
         }
+
+        closestDistance = distance;
+        closestIndex = i;
       }
 
       if (dismissible && closestIndex === 0) {
@@ -194,7 +198,7 @@ export function useScrollSnap(
       const snapIndex = dismissible ? closestIndex - 1 : closestIndex;
       return { index: Math.max(0, snapIndex), isDismiss: false };
     },
-    [snapScrollPositions, dismissible],
+    [snapScrollPositions, dismissible]
   );
 
   const detectAndNotifySnapChange = React.useCallback(
@@ -208,21 +212,25 @@ export function useScrollSnap(
 
       const { index, isDismiss } = findNearestSnapIndex(scrollPos);
       if (
-        !isDismiss &&
-        index !== scrollControlRef.current.lastDetectedSnapIndex
+        isDismiss ||
+        index === scrollControlRef.current.lastDetectedSnapIndex
       ) {
-        scrollControlRef.current.lastDetectedSnapIndex = index;
-        scrollControlRef.current.isFromDetection = true;
-        optionsRef.current.onSnapPointChange(index);
+        return;
       }
+
+      scrollControlRef.current.lastDetectedSnapIndex = index;
+      scrollControlRef.current.isFromDetection = true;
+      optionsRef.current.onSnapPointChange(index);
     },
-    [findNearestSnapIndex],
+    [findNearestSnapIndex]
   );
 
   const scrollToSnapPoint = React.useCallback(
     (index: number, behavior: ScrollBehavior = "smooth") => {
       const container = containerRef.current;
-      if (!container) return;
+      if (!container) {
+        return;
+      }
 
       const scrollPos = getScrollPositionForSnapPoint(index);
       const actualBehavior = prefersReducedMotion() ? "auto" : behavior;
@@ -241,11 +249,13 @@ export function useScrollSnap(
         });
       }
     },
-    [getScrollPositionForSnapPoint, isVertical],
+    [getScrollPositionForSnapPoint, isVertical]
   );
 
   const triggerImmediateDismiss = React.useCallback(() => {
-    if (interactionRef.current.isClosing) return;
+    if (interactionRef.current.isClosing) {
+      return;
+    }
 
     const container = containerRef.current;
     if (container) {
@@ -264,11 +274,13 @@ export function useScrollSnap(
   // Fallback for browsers without scrollend event
   const checkScrollStability = React.useCallback(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {
+      return;
+    }
 
     const { isVertical: isVert } =
       DIRECTION_CONFIG[optionsRef.current.direction];
-    const currentPos = isVert ? container.scrollTop : container.scrollLeft;
+    const currentPos = container[isVert ? "scrollTop" : "scrollLeft"];
     const { rafLastPos } = initRef.current;
 
     if (rafLastPos !== null && Math.abs(currentPos - rafLastPos) < 0.5) {
@@ -292,7 +304,7 @@ export function useScrollSnap(
 
     initRef.current.rafLastPos = currentPos;
     initRef.current.rafId = requestAnimationFrame(
-      checkScrollStabilityRef.current,
+      checkScrollStabilityRef.current
     );
   }, [updateIsScrolling, detectAndNotifySnapChange]);
 
@@ -301,55 +313,64 @@ export function useScrollSnap(
   });
 
   const startScrollStabilityCheck = React.useCallback(() => {
-    if (initRef.current.rafId === null) {
-      initRef.current.rafLastPos = null;
-      initRef.current.rafStableCount = 0;
-      initRef.current.rafId = requestAnimationFrame(checkScrollStability);
+    if (initRef.current.rafId !== null) {
+      return;
     }
+
+    initRef.current.rafLastPos = null;
+    initRef.current.rafStableCount = 0;
+    initRef.current.rafId = requestAnimationFrame(checkScrollStability);
   }, [checkScrollStability]);
 
   const handleScroll = React.useCallback(() => {
-    if (!initRef.current.hasInitialized) return;
+    if (!initRef.current.hasInitialized) {
+      return;
+    }
 
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {
+      return;
+    }
 
     const { isVertical: isVert } =
       DIRECTION_CONFIG[optionsRef.current.direction];
-    const scrollPos = isVert ? container.scrollTop : container.scrollLeft;
+    const scrollPos = container[isVert ? "scrollTop" : "scrollLeft"];
 
-    const progress = calculateScrollProgress(scrollPos, geometry, effectiveSize);
+    const progress = calculateScrollProgress(
+      scrollPos,
+      geometry,
+      effectiveSize
+    );
     optionsRef.current.onScrollProgress?.(progress);
 
     const snapProg = calculateSnapProgress(
       scrollPos,
       snapScrollPositions,
-      optionsRef.current.dismissible,
+      optionsRef.current.dismissible
     );
     optionsRef.current.onSnapProgress?.(snapProg);
 
     // 2px threshold filters scroll-snap micro-adjustments
-    const positionChanged =
+    const isPositionChanged =
       interactionRef.current.prevScrollPos !== null &&
       Math.abs(scrollPos - interactionRef.current.prevScrollPos) > 2;
 
     interactionRef.current.prevScrollPos = scrollPos;
 
-    if (!scrollControlRef.current.isProgrammatic && positionChanged) {
+    if (!scrollControlRef.current.isProgrammatic && isPositionChanged) {
       updateIsScrolling(true);
       if (!supportsScrollEnd) {
         startScrollStabilityCheck();
       }
     }
 
-    if (!scrollControlRef.current.isProgrammatic) {
-      if (
-        optionsRef.current.dismissible &&
-        !interactionRef.current.isClosing &&
-        progress >= 1
-      ) {
-        triggerImmediateDismiss();
-      }
+    if (
+      !scrollControlRef.current.isProgrammatic &&
+      optionsRef.current.dismissible &&
+      !interactionRef.current.isClosing &&
+      progress >= 1
+    ) {
+      triggerImmediateDismiss();
     }
   }, [
     effectiveSize,
@@ -372,13 +393,15 @@ export function useScrollSnap(
     if (container) {
       const { isVertical: isVert } =
         DIRECTION_CONFIG[optionsRef.current.direction];
-      const scrollPos = isVert ? container.scrollTop : container.scrollLeft;
+      const scrollPos = container[isVert ? "scrollTop" : "scrollLeft"];
       detectAndNotifySnapChange(scrollPos);
     }
   }, [updateIsScrolling, detectAndNotifySnapChange]);
 
   const handleScrollSnapChange = React.useCallback((event: Event) => {
-    if (interactionRef.current.isClosing) return;
+    if (interactionRef.current.isClosing) {
+      return;
+    }
 
     const snapEvent = event as Event & {
       snapTargetBlock?: Element | null;
@@ -387,28 +410,36 @@ export function useScrollSnap(
 
     const { isVertical: isVert } =
       DIRECTION_CONFIG[optionsRef.current.direction];
-    const snapTarget = isVert
-      ? snapEvent.snapTargetBlock
-      : snapEvent.snapTargetInline;
+    const snapTarget =
+      snapEvent[isVert ? "snapTargetBlock" : "snapTargetInline"];
 
-    if (!snapTarget) return;
+    if (!snapTarget) {
+      return;
+    }
 
     const snapIndexAttr = snapTarget.getAttribute("data-snap-index");
-    if (snapIndexAttr === null) return;
+    if (snapIndexAttr === null) {
+      return;
+    }
 
     const rawIndex = parseInt(snapIndexAttr, 10);
-    if (isNaN(rawIndex)) return;
+    if (isNaN(rawIndex)) {
+      return;
+    }
 
     const actualIndex = optionsRef.current.dismissible
       ? rawIndex - 1
       : rawIndex;
-    if (actualIndex < 0) return;
-
-    if (actualIndex !== scrollControlRef.current.lastDetectedSnapIndex) {
-      scrollControlRef.current.lastDetectedSnapIndex = actualIndex;
-      scrollControlRef.current.isFromDetection = true;
-      optionsRef.current.onSnapPointChange(actualIndex);
+    if (
+      actualIndex < 0 ||
+      actualIndex === scrollControlRef.current.lastDetectedSnapIndex
+    ) {
+      return;
     }
+
+    scrollControlRef.current.lastDetectedSnapIndex = actualIndex;
+    scrollControlRef.current.isFromDetection = true;
+    optionsRef.current.onSnapPointChange(actualIndex);
   }, []);
 
   // Touch events only (not mouse) - iOS Safari has quirky pointer event behavior
@@ -421,10 +452,12 @@ export function useScrollSnap(
     initRef.current.rafStableCount = 0;
 
     // Firefox: if scrollend fired while pointer down, start stability check
-    if (interactionRef.current.scrollEndedWhilePointerDown) {
-      interactionRef.current.scrollEndedWhilePointerDown = false;
-      startScrollStabilityCheck();
+    if (!interactionRef.current.scrollEndedWhilePointerDown) {
+      return;
     }
+
+    interactionRef.current.scrollEndedWhilePointerDown = false;
+    startScrollStabilityCheck();
   }, [startScrollStabilityCheck]);
 
   // Stable handler refs — keeps the event listener effect from re-running
@@ -456,7 +489,9 @@ export function useScrollSnap(
       return;
     }
 
-    if (contentSize === null) return;
+    if (contentSize === null) {
+      return;
+    }
 
     if (!initRef.current.hasInitialized) {
       const performInitialScroll = () => {
@@ -466,9 +501,7 @@ export function useScrollSnap(
           return;
         }
 
-        const size = isVertical
-          ? container.clientHeight
-          : container.clientWidth;
+        const size = container[isVertical ? "clientHeight" : "clientWidth"];
         if (size === 0) {
           initRef.current.retryTimeout = setTimeout(performInitialScroll, 0);
           return;
@@ -497,14 +530,14 @@ export function useScrollSnap(
         const initialProgress = calculateScrollProgress(
           targetScrollPos,
           geometry,
-          effectiveSize,
+          effectiveSize
         );
         optionsRef.current.onScrollProgress?.(initialProgress);
 
         const initialSnapProgress = calculateSnapProgress(
           targetScrollPos,
           snapScrollPositions,
-          dismissible,
+          dismissible
         );
         optionsRef.current.onSnapProgress?.(initialSnapProgress);
 
@@ -520,10 +553,12 @@ export function useScrollSnap(
 
     const currentInit = initRef.current;
     return () => {
-      if (currentInit.retryTimeout) {
-        clearTimeout(currentInit.retryTimeout);
-        currentInit.retryTimeout = null;
+      if (!currentInit.retryTimeout) {
+        return;
       }
+
+      clearTimeout(currentInit.retryTimeout);
+      currentInit.retryTimeout = null;
     };
   }, [
     open,
@@ -556,9 +591,8 @@ export function useScrollSnap(
 
       const container = containerRef.current;
       if (container) {
-        const currentScrollPos = isVertical
-          ? container.scrollTop
-          : container.scrollLeft;
+        const currentScrollPos =
+          container[isVertical ? "scrollTop" : "scrollLeft"];
         const targetScrollPos =
           getScrollPositionForSnapPoint(activeSnapPointIndex);
 
@@ -579,7 +613,9 @@ export function useScrollSnap(
   // Re-position when geometry changes (e.g., keyboard appears)
   const prevTrackSizeRef = React.useRef(0);
   React.useEffect(() => {
-    if (!open || !initRef.current.hasInitialized) return;
+    if (!open || !initRef.current.hasInitialized) {
+      return;
+    }
 
     const { trackSize } = geometry;
 
@@ -614,7 +650,9 @@ export function useScrollSnap(
 
   React.useEffect(() => {
     const container = containerRef.current;
-    if (!container || !open) return;
+    if (!container || !open) {
+      return;
+    }
 
     // Stable wrappers dispatch through refs so handler dep changes
     // don't tear down and re-register all listeners.
@@ -625,10 +663,10 @@ export function useScrollSnap(
     const onTouchStart = () => handleTouchStartRef.current();
     const onTouchEnd = () => handleTouchEndRef.current();
 
-    container.addEventListener("scroll", onScroll, { passive: true });
+    container.addEventListener("scroll", onScroll);
     container.addEventListener("touchstart", onTouchStart, { passive: true });
     container.addEventListener("touchend", onTouchEnd, { passive: true });
-    container.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    container.addEventListener("touchcancel", onTouchEnd);
 
     if (supportsScrollEnd) {
       container.addEventListener("scrollend", onScrollEnd);
@@ -639,7 +677,7 @@ export function useScrollSnap(
     }
 
     const updateViewportSize = () => {
-      const size = isVertical ? container.clientHeight : container.clientWidth;
+      const size = container[isVertical ? "clientHeight" : "clientWidth"];
       setViewportSize(size);
     };
     window.addEventListener("resize", updateViewportSize);
@@ -666,7 +704,7 @@ export function useScrollSnap(
     (index: number, el: HTMLDivElement | null) => {
       snapTargetRefs.current[index] = el;
     },
-    [],
+    []
   );
 
   return {
@@ -679,3 +717,8 @@ export function useScrollSnap(
     isClosing,
   };
 }
+
+export {
+  supportsScrollTimeline,
+  supportsScrollState,
+} from "@workspace/ui/components/ui/cubby-ui/drawer/lib/drawer-utils";

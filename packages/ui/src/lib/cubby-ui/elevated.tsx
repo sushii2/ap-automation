@@ -1,10 +1,11 @@
-import type * as React from "react";
-
 import { cn } from "@workspace/ui/lib/utils";
+import type * as React from "react";
 
 export type SurfaceLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-/** Every `SurfaceLevel`, for exhaustive iteration. Keep in sync with the type. */
+/**
+Every `SurfaceLevel`, for exhaustive iteration. Keep in sync with the type.
+*/
 export const SURFACE_LEVELS = [
   1, 2, 3, 4, 5, 6, 7, 8,
 ] as const satisfies readonly SurfaceLevel[];
@@ -101,7 +102,7 @@ export const INVERSE_SURFACE = "bg-neutral [--popup-surface:var(--neutral)]";
 
 export function surfaceClasses(
   level: SurfaceLevel,
-  shadowLevel: SurfaceLevel = level,
+  shadowLevel: SurfaceLevel = level
 ): string {
   return `${SURFACE_BG[level]} ${SURFACE_SHADOW[shadowLevel]} ${SURFACE_VAR[level]}`;
 }
@@ -116,7 +117,7 @@ export function surfaceClasses(
  */
 export function elevatedSurface(
   level: SurfaceLevel,
-  shadowLevel: SurfaceLevel = level,
+  shadowLevel: SurfaceLevel = level
 ): string {
   return `${SURFACE_BG[level]} ${SURFACE_SHADOW[shadowLevel]} ${SURFACE_RIM[level]} ${SURFACE_VAR[level]} after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:z-[2]`;
 }
@@ -132,7 +133,7 @@ export function elevatedSurface(
  */
 export function solidSurface(
   level: SurfaceLevel,
-  shadowLevel: SurfaceLevel = level,
+  shadowLevel: SurfaceLevel = level
 ): string {
   return `${SURFACE_BG[level]} ${SURFACE_SHADOW_COMBINED[shadowLevel]} ${SURFACE_VAR[level]}`;
 }
@@ -157,12 +158,14 @@ export const SURFACE_RIM_EDGE: Record<
  * Pair with `surfaceClasses()` (NOT `elevatedSurface()`) for flush variants.
  */
 export function innerEdgeRim(
-  innerEdge: "top" | "bottom" | "left" | "right",
+  innerEdge: "top" | "bottom" | "left" | "right"
 ): string {
   return `after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:z-[2] ${SURFACE_RIM_EDGE[innerEdge]}`;
 }
 
-/** Maps attach-side → inner-facing edge for `innerEdgeRim`. */
+/**
+Maps attach-side → inner-facing edge for `innerEdgeRim`.
+*/
 export const INNER_EDGE_FROM_ATTACH_SIDE: Record<
   "top" | "bottom" | "left" | "right",
   "top" | "bottom" | "left" | "right"
@@ -186,8 +189,7 @@ export const INNER_EDGE_FROM_ATTACH_SIDE: Record<
  * `dark:` shadow inlines oklch(0 0 0 / 0.12) (the level-5 dark ring). The drop
  * layers reference --surface-shadow-near/mid/far, which already redefine per
  * mode, so they're identical between the two and don't need splitting.
- * The ring casts on all four edges — the three viewport-pinned ones fall
- * off-screen.
+ * The ring casts on all four edges — the three viewport-pinned ones fall off-screen.
  */
 export const INNER_EDGE_SHADOW: Record<
   "top" | "bottom" | "left" | "right",
@@ -211,14 +213,14 @@ export const INNER_EDGE_SHADOW: Record<
  */
 export function flushSurface(
   level: SurfaceLevel,
-  innerEdge: "top" | "bottom" | "left" | "right",
+  innerEdge: "top" | "bottom" | "left" | "right"
 ): string {
   return `${SURFACE_BG[level]} ${SURFACE_VAR[level]} ${INNER_EDGE_SHADOW[innerEdge]} ${innerEdgeRim(innerEdge)}`;
 }
 
 export interface ElevatedProps extends React.ComponentProps<"div"> {
-  level: SurfaceLevel;
-  shadowLevel?: SurfaceLevel;
+  readonly level: SurfaceLevel;
+  readonly shadowLevel?: SurfaceLevel;
 }
 
 function Elevated({ level, shadowLevel, className, ...props }: ElevatedProps) {

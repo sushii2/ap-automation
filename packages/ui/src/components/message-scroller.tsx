@@ -1,21 +1,16 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import {
-  MessageScroller as MessageScrollerPrimitive,
-  useMessageScroller,
-  useMessageScrollerScrollable,
-  useMessageScrollerVisibility,
-} from "@shadcn/react/message-scroller"
-import { cn } from "@workspace/ui/lib/utils"
+import * as React from "react";
+import { MessageScroller as MessageScrollerPrimitive } from "@shadcn/react/message-scroller";
+import { ArrowDownIcon } from "lucide-react";
+import { cn } from "@workspace/ui/lib/utils";
 
-import { Button } from "@workspace/ui/components/button"
-import { ArrowDownIcon } from "lucide-react"
+import { Button } from "@workspace/ui/components/button";
 
 function MessageScrollerProvider(
   props: React.ComponentProps<typeof MessageScrollerPrimitive.Provider>
 ) {
-  return <MessageScrollerPrimitive.Provider {...props} />
+  return <MessageScrollerPrimitive.Provider {...props} />;
 }
 
 function MessageScroller({
@@ -31,7 +26,7 @@ function MessageScroller({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function MessageScrollerViewport({
@@ -42,12 +37,12 @@ function MessageScrollerViewport({
     <MessageScrollerPrimitive.Viewport
       data-slot="message-scroller-viewport"
       className={cn(
-        "size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent data-pending-scroll:invisible",
+        "scroll-fade-b size-full min-h-0 min-w-0 scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent data-pending-scroll:invisible",
         className
       )}
       {...props}
     />
-  )
+  );
 }
 
 function MessageScrollerContent({
@@ -60,7 +55,7 @@ function MessageScrollerContent({
       className={cn("flex h-max min-h-full flex-col gap-6", className)}
       {...props}
     />
-  )
+  );
 }
 
 function MessageScrollerItem({
@@ -78,7 +73,7 @@ function MessageScrollerItem({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function MessageScrollerButton({
@@ -107,15 +102,14 @@ function MessageScrollerButton({
     >
       {children ?? (
         <>
-          <ArrowDownIcon
-          />
+          <ArrowDownIcon />
           <span className="sr-only">
             {direction === "end" ? "Scroll to end" : "Scroll to start"}
           </span>
         </>
       )}
     </MessageScrollerPrimitive.Button>
-  )
+  );
 }
 
 export {
@@ -125,7 +119,10 @@ export {
   MessageScrollerContent,
   MessageScrollerItem,
   MessageScrollerButton,
+};
+
+export {
   useMessageScroller,
   useMessageScrollerScrollable,
   useMessageScrollerVisibility,
-}
+} from "@shadcn/react/message-scroller";

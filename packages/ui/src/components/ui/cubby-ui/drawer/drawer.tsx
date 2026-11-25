@@ -1,10 +1,8 @@
 "use client";
 
 import * as React from "react";
-import {
-  Dialog as BaseDialog,
-  type DialogRootChangeEventDetails,
-} from "@base-ui/react/dialog";
+import { Dialog as BaseDialog } from "@base-ui/react/dialog";
+import type { DialogRootChangeEventDetails } from "@base-ui/react/dialog";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cva } from "class-variance-authority";
@@ -14,16 +12,13 @@ import {
   INNER_EDGE_FROM_ATTACH_SIDE,
   elevatedSurface,
   flushSurface,
-  type SurfaceLevel,
 } from "@workspace/ui/lib/cubby-ui/elevated";
-import {
-  ScrollArea,
-  type ScrollAreaProps,
-} from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
+import type { SurfaceLevel } from "@workspace/ui/lib/cubby-ui/elevated";
+import { ScrollArea } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
+import type { ScrollAreaProps } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
 
 import "./drawer.css";
 
-import type { SnapPoint, DrawerDirection } from "@workspace/ui/components/ui/cubby-ui/drawer/lib/drawer-utils";
 import {
   DIRECTION_CONFIG,
   parsePixelValue,
@@ -39,15 +34,18 @@ import { useVisualViewportHeight } from "@workspace/ui/components/ui/cubby-ui/dr
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
-export type { SnapPoint, DrawerDirection };
+import type {
+  SnapPoint,
+  DrawerDirection,
+} from "@workspace/ui/components/ui/cubby-ui/drawer/lib/drawer-utils";
 
 const createDrawerHandle = BaseDialog.createHandle;
 
 const drawerContentVariants = cva(
   [
-    "text-popover-foreground flex flex-col",
+    "flex flex-col text-popover-foreground",
     "relative",
-    "ease-[cubic-bezier(.32,.72,0,1)] transition-[transform,scale,translate] duration-400  will-change-transform",
+    "transition-[transform,scale,translate] duration-400 ease-[cubic-bezier(.32,.72,0,1)] will-change-transform",
     "motion-reduce:transition-none",
     // Nested drawer support: scale down parent when child opens (interpolated during drag)
     "scale-[calc(1-0.05*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))]",
@@ -78,57 +76,57 @@ const drawerContentVariants = cva(
         variant: "default",
         direction: "bottom",
         class:
-          "origin-bottom mx-auto max-h-[95dvh] w-full max-w-full rounded-t-2xl -translate-y-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-starting-style]]:translate-y-[var(--drawer-offset)] [&[data-ending-style]]:translate-y-[var(--drawer-offset)]",
+          "mx-auto max-h-[95dvh] w-full max-w-full origin-bottom -translate-y-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] rounded-t-2xl [&[data-ending-style]]:translate-y-[var(--drawer-offset)] [&[data-starting-style]]:translate-y-[var(--drawer-offset)]",
       },
       {
         variant: "default",
         direction: "top",
         class:
-          "origin-top mx-auto max-h-[95dvh] w-full max-w-full rounded-b-2xl translate-y-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-starting-style]]:-translate-y-[var(--drawer-offset)] [&[data-ending-style]]:-translate-y-[var(--drawer-offset)]",
+          "mx-auto max-h-[95dvh] w-full max-w-full origin-top translate-y-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] rounded-b-2xl [&[data-ending-style]]:-translate-y-[var(--drawer-offset)] [&[data-starting-style]]:-translate-y-[var(--drawer-offset)]",
       },
       {
         variant: "default",
         direction: "right",
         class:
-          "origin-right max-w-screen w-screen sm:max-w-md -translate-x-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-starting-style]]:translate-x-[var(--drawer-offset)] [&[data-ending-style]]:translate-x-[var(--drawer-offset)]",
+          "w-screen max-w-screen origin-right -translate-x-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] sm:max-w-md [&[data-ending-style]]:translate-x-[var(--drawer-offset)] [&[data-starting-style]]:translate-x-[var(--drawer-offset)]",
       },
       {
         variant: "default",
         direction: "left",
         class:
-          "origin-left max-w-screen w-screen sm:max-w-md translate-x-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-starting-style]]:-translate-x-[var(--drawer-offset)] [&[data-ending-style]]:-translate-x-[var(--drawer-offset)]",
+          "w-screen max-w-screen origin-left translate-x-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] sm:max-w-md [&[data-ending-style]]:-translate-x-[var(--drawer-offset)] [&[data-starting-style]]:-translate-x-[var(--drawer-offset)]",
       },
       // Floating variant - direction-specific sizing, transforms, and nesting origin/offset
       {
         variant: "floating",
         direction: "bottom",
         class:
-          "origin-bottom mx-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-[calc(100%-2rem)] -translate-y-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-starting-style]]:translate-y-[var(--drawer-offset)] [&[data-ending-style]]:translate-y-[var(--drawer-offset)]",
+          "mx-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-[calc(100%-2rem)] origin-bottom -translate-y-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-ending-style]]:translate-y-[var(--drawer-offset)] [&[data-starting-style]]:translate-y-[var(--drawer-offset)]",
       },
       {
         variant: "floating",
         direction: "top",
         class:
-          "origin-top mx-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-[calc(100%-2rem)] translate-y-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-starting-style]]:-translate-y-[var(--drawer-offset)] [&[data-ending-style]]:-translate-y-[var(--drawer-offset)]",
+          "mx-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-[calc(100%-2rem)] origin-top translate-y-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-ending-style]]:-translate-y-[var(--drawer-offset)] [&[data-starting-style]]:-translate-y-[var(--drawer-offset)]",
       },
       {
         variant: "floating",
         direction: "right",
         class:
-          "origin-right h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] sm:max-w-md -translate-x-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-starting-style]]:translate-x-[var(--drawer-offset)] [&[data-ending-style]]:translate-x-[var(--drawer-offset)]",
+          "h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] origin-right -translate-x-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] sm:max-w-md [&[data-ending-style]]:translate-x-[var(--drawer-offset)] [&[data-starting-style]]:translate-x-[var(--drawer-offset)]",
       },
       {
         variant: "floating",
         direction: "left",
         class:
-          "origin-left h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] sm:max-w-md translate-x-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] [&[data-starting-style]]:-translate-x-[var(--drawer-offset)] [&[data-ending-style]]:-translate-x-[var(--drawer-offset)]",
+          "h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] origin-left translate-x-[calc(1.5rem*max(0,var(--nested-dialogs,0)-var(--nested-drag-progress,0)))] sm:max-w-md [&[data-ending-style]]:-translate-x-[var(--drawer-offset)] [&[data-starting-style]]:-translate-x-[var(--drawer-offset)]",
       },
     ],
     defaultVariants: {
       variant: "default",
       direction: "bottom",
     },
-  },
+  }
 );
 
 const drawerTrackVariants = cva("pointer-events-none relative flex", {
@@ -150,11 +148,11 @@ const SafariNavColorDetectors = (
   <>
     <div
       aria-hidden="true"
-      className="bg-popover pointer-events-none fixed inset-x-0 bottom-0 hidden h-10 bg-clip-text [@supports(-webkit-touch-callout:none)]:block"
+      className="pointer-events-none fixed inset-x-0 bottom-0 hidden h-10 bg-popover bg-clip-text [@supports(-webkit-touch-callout:none)]:block"
     />
     <div
       aria-hidden="true"
-      className="bg-popover pointer-events-none fixed inset-x-0 top-0 hidden h-10 bg-clip-text [@supports(-webkit-touch-callout:none)]:block"
+      className="pointer-events-none fixed inset-x-0 top-0 hidden h-10 bg-popover bg-clip-text [@supports(-webkit-touch-callout:none)]:block"
     />
   </>
 );
@@ -170,11 +168,17 @@ const backdropAnimationStyles: Record<DrawerDirection, string> = {
 
 // Allows child drawers to propagate drag progress to parent for smooth stacking effects.
 interface DrawerNestingContextValue {
-  /** Set the child's drag progress (0 = open, 1 = closed) on the parent popup */
+  /**
+  Set the child's drag progress (0 = open, 1 = closed) on the parent popup
+  */
   setNestedDragProgress: (progress: number) => void;
-  /** Toggle transition-disabling attribute on the parent popup */
+  /**
+  Toggle transition-disabling attribute on the parent popup
+  */
   setNestedDragging: (dragging: boolean) => void;
-  /** Remove the drag progress CSS variable from the parent popup */
+  /**
+  Remove the drag progress CSS variable from the parent popup
+  */
   clearNestedDragProgress: () => void;
 }
 
@@ -204,7 +208,7 @@ interface DrawerControlContextValue {
   open: boolean;
   onOpenChange: (
     open: boolean,
-    eventDetails?: DialogRootChangeEventDetails,
+    eventDetails?: DialogRootChangeEventDetails
   ) => void;
   dismissViaSwipe: () => void;
   activeSnapPoint: SnapPoint;
@@ -234,7 +238,9 @@ function useDrawerConfig() {
   return context;
 }
 
-/** Subscribes to high-frequency scroll/drag state — re-renders during drag. */
+/**
+Subscribes to high-frequency scroll/drag state — re-renders during drag.
+*/
 function useDrawerScroll() {
   const context = React.useContext(DrawerScrollContext);
   if (!context) {
@@ -243,7 +249,9 @@ function useDrawerScroll() {
   return context;
 }
 
-/** Low-frequency control state and stable setters — does not re-render during drag. */
+/**
+Low-frequency control state and stable setters — does not re-render during drag.
+*/
 function useDrawerControl() {
   const context = React.useContext(DrawerControlContext);
   if (!context) {
@@ -252,20 +260,28 @@ function useDrawerControl() {
   return context;
 }
 
-/** Combines scroll + control contexts. For fewer re-renders use `useDrawerControl()` or `useDrawerScroll()`. */
+/**
+Combines scroll + control contexts. For fewer re-renders use `useDrawerControl()` or `useDrawerScroll()`.
+*/
 function useDrawerAnimation() {
   return { ...useDrawerScroll(), ...useDrawerControl() };
 }
 
-/** All drawer context values. For fewer re-renders use `useDrawerConfig`, `useDrawerControl`, or `useDrawerScroll`. */
+/**
+All drawer context values. For fewer re-renders use `useDrawerConfig`, `useDrawerControl`, or `useDrawerScroll`.
+*/
 function useDrawer() {
   return { ...useDrawerConfig(), ...useDrawerScroll(), ...useDrawerControl() };
 }
 
 interface DrawerRenderProps {
-  /** 0 = first snap, 1 = last snap */
+  /**
+  0 = first snap, 1 = last snap
+  */
   snapProgress: number;
-  /** 0 = open, 1 = closed */
+  /**
+  0 = open, 1 = closed
+  */
   dragProgress: number;
   isDragging: boolean;
   activeSnapPoint: SnapPoint;
@@ -275,29 +291,38 @@ interface DrawerProps extends Omit<
   React.ComponentProps<typeof BaseDialog.Root>,
   "children" | "onOpenChange"
 > {
-  direction?: DrawerDirection;
-  variant?: DrawerVariant;
-  /** Percentages (0-1) or pixel strings (e.g., "200px") */
-  snapPoints?: SnapPoint[];
-  defaultSnapPoint?: SnapPoint;
-  activeSnapPoint?: SnapPoint | null;
-  onActiveSnapPointChange?: (snapPoint: SnapPoint) => void;
-  dismissible?: boolean;
-  /** `true` = modal, `"trap-focus"` = focus trapped but no scroll lock, `false` = non-modal */
-  modal?: boolean | "trap-focus";
-  /** Prevents skipping snap points during fast swipes */
-  sequentialSnap?: boolean;
-  /** Repositions drawer when virtual keyboard appears (bottom only) */
-  repositionInputs?: boolean;
+  readonly direction?: DrawerDirection;
+  readonly variant?: DrawerVariant;
+  /**
+  Percentages (0-1) or pixel strings (e.g., "200px")
+  */
+  readonly snapPoints?: SnapPoint[];
+  readonly defaultSnapPoint?: SnapPoint;
+  readonly activeSnapPoint?: SnapPoint | null;
+  readonly onActiveSnapPointChange?: (snapPoint: SnapPoint) => void;
+  readonly dismissible?: boolean;
+  /**
+  `true` = modal, `"trap-focus"` = focus trapped but no scroll lock, `false` = non-modal
+  */
+  readonly modal?: boolean | "trap-focus";
+  /**
+  Prevents skipping snap points during fast swipes
+  */
+  readonly sequentialSnap?: boolean;
+  /**
+  Repositions drawer when virtual keyboard appears (bottom only)
+  */
+  readonly repositionInputs?: boolean;
   /**
    * Event handler called when the drawer is opened or closed.
    * `eventDetails` may be undefined for internal close actions (e.g., DrawerClose, DrawerHandle).
    */
-  onOpenChange?: (
+  readonly onOpenChange?: (
     open: boolean,
-    eventDetails?: DialogRootChangeEventDetails,
+    eventDetails?: DialogRootChangeEventDetails
   ) => void;
-  children?: React.ReactNode | ((props: DrawerRenderProps) => React.ReactNode);
+  readonly children?:
+    React.ReactNode | ((props: DrawerRenderProps) => React.ReactNode);
 }
 
 const DEFAULT_SNAP_POINTS: SnapPoint[] = [1];
@@ -320,18 +345,18 @@ function Drawer({
   ...props
 }: DrawerProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
-    defaultOpen ?? false,
+    defaultOpen ?? false
   );
   const isOpenControlled = controlledOpen !== undefined;
   const open = isOpenControlled ? controlledOpen : uncontrolledOpen;
 
   const defaultSnapPointIndex =
-    defaultSnapPoint !== undefined
-      ? findSnapPointIndex(snapPoints, defaultSnapPoint)
-      : 0;
+    defaultSnapPoint === undefined
+      ? 0
+      : findSnapPointIndex(snapPoints, defaultSnapPoint);
 
   const [internalSnapPointIndex, setInternalSnapPointIndex] = React.useState(
-    defaultSnapPointIndex,
+    defaultSnapPointIndex
   );
 
   const isSnapPointControlled = controlledSnapPoint !== undefined;
@@ -341,7 +366,7 @@ function Drawer({
 
   const activeSnapPointValue = getSnapPointValue(
     snapPoints,
-    activeSnapPointIndex,
+    activeSnapPointIndex
   );
 
   const [isDragging, setIsDragging] = React.useState(false);
@@ -394,22 +419,24 @@ function Drawer({
         setInternalSnapPointIndex(defaultSnapPointIndex);
         const defaultSnapValue = getSnapPointValue(
           snapPoints,
-          defaultSnapPointIndex,
+          defaultSnapPointIndex
         );
         onActiveSnapPointChange?.(defaultSnapValue);
       }
 
-      if (nextOpen) {
-        setDragProgress(1);
-        setIsDragging(false);
-        setImmediateClose(false);
-        if (!isSnapPointControlled) {
-          const progress =
-            snapPoints.length > 1
-              ? defaultSnapPointIndex / (snapPoints.length - 1)
-              : 0;
-          setSnapProgress(progress);
-        }
+      if (!nextOpen) {
+        return;
+      }
+
+      setDragProgress(1);
+      setIsDragging(false);
+      setImmediateClose(false);
+      if (!isSnapPointControlled) {
+        const progress =
+          snapPoints.length > 1
+            ? defaultSnapPointIndex / (snapPoints.length - 1)
+            : 0;
+        setSnapProgress(progress);
       }
     },
     [
@@ -419,7 +446,7 @@ function Drawer({
       isSnapPointControlled,
       onActiveSnapPointChange,
       defaultSnapPointIndex,
-    ],
+    ]
   );
 
   const dismissViaSwipe = React.useCallback(() => {
@@ -435,7 +462,7 @@ function Drawer({
       }
       onActiveSnapPointChange?.(value);
     },
-    [snapPoints, isSnapPointControlled, onActiveSnapPointChange],
+    [snapPoints, isSnapPointControlled, onActiveSnapPointChange]
   );
 
   const configValue = React.useMemo(
@@ -458,7 +485,7 @@ function Drawer({
       isVertical,
       sequentialSnap,
       repositionInputs,
-    ],
+    ]
   );
 
   const scrollValue = React.useMemo(
@@ -467,7 +494,7 @@ function Drawer({
       dragProgress,
       snapProgress,
     }),
-    [isDragging, dragProgress, snapProgress],
+    [isDragging, dragProgress, snapProgress]
   );
 
   const controlValue = React.useMemo(
@@ -495,7 +522,7 @@ function Drawer({
       contentSize,
       isAnimating,
       immediateClose,
-    ],
+    ]
   );
 
   const resolvedChildren =
@@ -550,11 +577,12 @@ function DrawerClose({
   const handleClick = React.useCallback(
     (event: React.MouseEvent) => {
       onClick?.(event);
-      if (event.defaultPrevented) return;
-      if (isAnimating) return;
+      if (event.defaultPrevented || isAnimating) {
+        return;
+      }
       onOpenChange(false);
     },
-    [onClick, onOpenChange, isAnimating],
+    [onClick, onOpenChange, isAnimating]
   );
 
   const defaultProps = {
@@ -564,13 +592,11 @@ function DrawerClose({
     onClick: handleClick,
   };
 
-  const element = useRender({
+  return useRender({
     defaultTagName: "button",
     render,
     props: mergeProps<"button">(defaultProps, props),
   });
-
-  return element;
 }
 
 function DrawerPortal({
@@ -580,12 +606,16 @@ function DrawerPortal({
 }
 
 interface DrawerContentProps extends BaseDialog.Popup.Props {
-  footerVariant?: "default" | "inset";
-  showCloseButton?: boolean;
-  /** Surface elevation level for the drawer bg (1-8). Defaults to 5 — the dialog/sheet/drawer tier. */
-  level?: SurfaceLevel;
-  /** Shadow weight (1-8). Pinned to 5 by default. */
-  shadowLevel?: SurfaceLevel;
+  readonly footerVariant?: "default" | "inset";
+  readonly showCloseButton?: boolean;
+  /**
+  Surface elevation level for the drawer bg (1-8). Defaults to 5 — the dialog/sheet/drawer tier.
+  */
+  readonly level?: SurfaceLevel;
+  /**
+  Shadow weight (1-8). Pinned to 5 by default.
+  */
+  readonly shadowLevel?: SurfaceLevel;
 }
 
 function DrawerContent({
@@ -615,7 +645,7 @@ function DrawerContent({
 function useContentMeasurement(
   isVertical: boolean,
   floatingMargin: number,
-  setContentSize: (size: number | null) => void,
+  setContentSize: (size: number | null) => void
 ) {
   const observerRef = React.useRef<ResizeObserver | null>(null);
 
@@ -624,10 +654,12 @@ function useContentMeasurement(
       observerRef.current?.disconnect();
       observerRef.current = null;
 
-      if (!node) return;
+      if (!node) {
+        return;
+      }
 
       const measure = () => {
-        const baseSize = isVertical ? node.offsetHeight : node.offsetWidth;
+        const baseSize = node[isVertical ? "offsetHeight" : "offsetWidth"];
         setContentSize(baseSize + floatingMargin);
       };
 
@@ -635,7 +667,7 @@ function useContentMeasurement(
       observerRef.current = new ResizeObserver(measure);
       observerRef.current.observe(node);
     },
-    [isVertical, setContentSize, floatingMargin],
+    [isVertical, setContentSize, floatingMargin]
   );
 
   const popupRef = React.useRef<HTMLDivElement>(null);
@@ -645,7 +677,7 @@ function useContentMeasurement(
       popupRef.current = node;
       measureRef(node);
     },
-    [measureRef],
+    [measureRef]
   );
 
   React.useEffect(() => () => observerRef.current?.disconnect(), []);
@@ -689,22 +721,21 @@ function useDrawerContentStyles({
       return activeSnapPoint;
     }
     const pixels = parsePixelValue(activeSnapPoint);
-    if (!pixels || !contentSize) return 1;
-    return pixels / contentSize;
+    return pixels && contentSize ? pixels / contentSize : 1;
   }, [activeSnapPoint, contentSize]);
 
   const firstSnapRatio =
-    contentSize != null
-      ? snapPointToRatio(snapPoints[0]!, contentSize)
-      : typeof snapPoints[0] === "number"
+    contentSize == null
+      ? typeof snapPoints[0] === "number"
         ? snapPoints[0]
-        : 1;
+        : 1
+      : snapPointToRatio(snapPoints[0]!, contentSize);
   const lastSnapRatio =
-    contentSize != null
-      ? snapPointToRatio(snapPoints[snapPoints.length - 1]!, contentSize)
-      : typeof snapPoints[snapPoints.length - 1] === "number"
-        ? snapPoints[snapPoints.length - 1]
-        : 1;
+    contentSize == null
+      ? typeof snapPoints.at(-1) === "number"
+        ? snapPoints.at(-1)
+        : 1
+      : snapPointToRatio(snapPoints.at(-1)!, contentSize);
 
   const baseOffset =
     typeof activeSnapPoint === "number"
@@ -768,7 +799,7 @@ function useDrawerContentStyles({
       useScrollDrivenAnimation,
       snapProgress,
       direction,
-    ],
+    ]
   );
 
   const popupStyle = React.useMemo<React.CSSProperties>(
@@ -779,7 +810,7 @@ function useDrawerContentStyles({
         viewTimelineAxis: isVertical ? "block" : "inline",
       }),
     }),
-    [animationOffset, isVertical],
+    [animationOffset, isVertical]
   );
 
   return {
@@ -835,7 +866,7 @@ function DrawerContentInner({
     (index: number) => {
       setActiveSnapPoint(getSnapPointValue(snapPoints, index));
     },
-    [snapPoints, setActiveSnapPoint],
+    [snapPoints, setActiveSnapPoint]
   );
 
   const { keyboardHeight, isKeyboardVisible } = useVirtualKeyboard({
@@ -859,13 +890,15 @@ function DrawerContentInner({
   // Skip updates during enter/exit animations — let CSS control the backdrop then.
   const handleScrollProgress = React.useCallback(
     (progress: number) => {
-      if (!isAnimating) {
-        setDragProgress(progress);
-        // Update parent's CSS variable for interpolated nesting scale/translate
-        parentNesting?.setNestedDragProgress(progress);
+      if (isAnimating) {
+        return;
       }
+
+      setDragProgress(progress);
+      // Update parent's CSS variable for interpolated nesting scale/translate
+      parentNesting?.setNestedDragProgress(progress);
     },
-    [isAnimating, setDragProgress, parentNesting],
+    [isAnimating, setDragProgress, parentNesting]
   );
 
   const handleSnapProgress = React.useCallback(
@@ -874,7 +907,7 @@ function DrawerContentInner({
         setSnapProgress(progress);
       }
     },
-    [isAnimating, setSnapProgress],
+    [isAnimating, setSnapProgress]
   );
 
   const {
@@ -908,28 +941,35 @@ function DrawerContentInner({
   // Counts mounted side drawers on <html> for drawer.css. An `html:has()`
   // would re-check <html> on every DOM change.
   React.useLayoutEffect(() => {
-    if (isVertical) return;
+    if (isVertical) {
+      return;
+    }
     const { dataset } = document.documentElement;
     dataset.sideDrawers = String(Number(dataset.sideDrawers ?? 0) + 1);
     return () => {
       const count = Number(dataset.sideDrawers ?? 1) - 1;
-      if (count > 0) dataset.sideDrawers = String(count);
-      else delete dataset.sideDrawers;
+      if (count > 0) {
+        dataset.sideDrawers = String(count);
+      } else {
+        delete dataset.sideDrawers;
+      }
     };
   }, [isVertical]);
 
   React.useLayoutEffect(() => {
-    if (!open) {
-      parentNesting?.clearNestedDragProgress();
-      parentNesting?.setNestedDragging(false);
+    if (open) {
+      return;
     }
+
+    parentNesting?.clearNestedDragProgress();
+    parentNesting?.setNestedDragging(false);
   }, [open, parentNesting]);
 
   const floatingMargin = variant === "floating" ? 16 : 0;
   const { mergedRef, popupRef } = useContentMeasurement(
     isVertical,
     floatingMargin,
-    setContentSize,
+    setContentSize
   );
 
   const nestingValue = React.useMemo<DrawerNestingContextValue>(
@@ -937,11 +977,13 @@ function DrawerContentInner({
       setNestedDragProgress(progress: number) {
         popupRef.current?.style.setProperty(
           "--nested-drag-progress",
-          String(progress),
+          String(progress)
         );
       },
       setNestedDragging(dragging: boolean) {
-        if (!popupRef.current) return;
+        if (!popupRef.current) {
+          return;
+        }
         if (dragging) {
           popupRef.current.dataset.nestedDragging = "";
         } else {
@@ -952,7 +994,7 @@ function DrawerContentInner({
         popupRef.current?.style.removeProperty("--nested-drag-progress");
       },
     }),
-    [popupRef],
+    [popupRef]
   );
 
   const {
@@ -1005,7 +1047,7 @@ function DrawerContentInner({
                 ? useScrollDrivenAnimation
                   ? backdropAnimationStyles[direction]
                   : `opacity-(--drawer-backdrop-dynamic-opacity)`
-                : `opacity-(--drawer-backdrop-static-opacity)`,
+                : `opacity-(--drawer-backdrop-static-opacity)`
             )}
             style={
               {
@@ -1051,7 +1093,7 @@ function DrawerContentInner({
                 : "touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-none",
             isVertical ? "touch-pan-y" : "touch-pan-x",
             "motion-reduce:[scroll-behavior:auto]",
-            "has-data-nested-dialog-open:touch-none has-data-nested-dialog-open:overflow-hidden",
+            "has-data-nested-dialog-open:touch-none has-data-nested-dialog-open:overflow-hidden"
           )}
           style={viewportStyle}
         >
@@ -1077,7 +1119,7 @@ function DrawerContentInner({
                 data-snap-index={index}
                 className={cn(
                   "pointer-events-none absolute",
-                  isVertical ? "inset-x-0 h-px" : "inset-y-0 w-px",
+                  isVertical ? "inset-x-0 h-px" : "inset-y-0 w-px"
                 )}
                 style={
                   {
@@ -1122,7 +1164,7 @@ function DrawerContentInner({
                     ? "[@supports(-webkit-touch-callout:none)]:overflow-x-scroll [@supports(-webkit-touch-callout:none)]:overscroll-x-none"
                     : "[@supports(-webkit-touch-callout:none)]:overflow-y-scroll [@supports(-webkit-touch-callout:none)]:overscroll-y-none",
                 ],
-                className,
+                className
               )}
               style={popupStyle}
               {...props}
@@ -1137,12 +1179,12 @@ function DrawerContentInner({
                     "hidden [@supports(-webkit-touch-callout:none)]:pointer-events-none [@supports(-webkit-touch-callout:none)]:absolute [@supports(-webkit-touch-callout:none)]:inset-0 [@supports(-webkit-touch-callout:none)]:block",
                     isVertical
                       ? "[@supports(-webkit-touch-callout:none)]:w-[calc(100%+0.5px)]"
-                      : "[@supports(-webkit-touch-callout:none)]:h-[calc(100%+1px)]",
+                      : "[@supports(-webkit-touch-callout:none)]:h-[calc(100%+1px)]"
                   )}
                 />
               )}
               {children}
-              {showCloseButton && (
+              {!!showCloseButton && (
                 <DrawerClose
                   aria-label="Close"
                   className="absolute end-2 top-2"
@@ -1165,8 +1207,8 @@ interface DrawerHandleProps extends Omit<
   useRender.ComponentProps<"button">,
   "children"
 > {
-  hidden?: boolean;
-  preventClose?: boolean;
+  readonly hidden?: boolean;
+  readonly preventClose?: boolean;
 }
 
 function DrawerHandle({
@@ -1185,11 +1227,12 @@ function DrawerHandle({
   const handleClick = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       onClick?.(event);
-      if (event.defaultPrevented) return;
-      if (isAnimating || preventClose) return;
+      if (event.defaultPrevented || isAnimating || preventClose) {
+        return;
+      }
       onOpenChange(false);
     },
-    [onClick, onOpenChange, isAnimating, preventClose],
+    [onClick, onOpenChange, isAnimating, preventClose]
   );
 
   const defaultProps = {
@@ -1199,13 +1242,13 @@ function DrawerHandle({
     onClick: handleClick,
     className: cn(
       "appearance-none border-0 bg-transparent p-0",
-      "focus-visible:outline-ring rounded-sm outline-0 -outline-offset-1 outline-transparent outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1",
-      "bg-muted-foreground/30 shrink-0 cursor-pointer rounded-full",
+      "rounded-sm outline-0 -outline-offset-1 outline-transparent outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-ring",
+      "shrink-0 cursor-pointer rounded-full bg-muted-foreground/30",
       isVertical ? "mx-auto my-3 h-1 w-12" : "mx-3 my-auto h-12 w-1",
-      "hover:bg-muted-foreground/50 transition-[color,opacity]",
+      "transition-[color,opacity] hover:bg-muted-foreground/50",
       // Fade out when nested drawer opens, fade back when nested drawer is being dragged
       // "in-data-nested-dialog-open:opacity-0 in-data-nested-dragging:opacity-100",
-      className,
+      className
     ),
   };
 
@@ -1215,9 +1258,7 @@ function DrawerHandle({
     props: mergeProps<"button">(defaultProps, props),
   });
 
-  if (hidden || isHorizontalDrawer) return null;
-
-  return element;
+  return hidden || isHorizontalDrawer ? null : element;
 }
 
 // Padding rules use ancestor `:has()` on `[data-slot=drawer-content]` instead of
@@ -1235,7 +1276,7 @@ function DrawerHeader({ className, ...props }: React.ComponentProps<"div">) {
         "in-[[data-slot=drawer-content]:not(:has([data-slot=drawer-body])):has([data-slot=drawer-footer])]:pb-6",
         "in-[[data-slot=drawer-content]:not(:has([data-slot=drawer-body])):not(:has([data-slot=drawer-footer]))]:pb-6",
         // "transition-opacity in-data-nested-dialog-open:opacity-0 in-data-nested-dragging:opacity-100",
-        className,
+        className
       )}
       {...props}
     />
@@ -1253,9 +1294,9 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
         "[@supports(-webkit-touch-callout:none)]:transform-[translateZ(0)]",
         "in-[[data-slot=drawer-content]:not(:has([data-slot=drawer-header])):not(:has([data-slot=drawer-body]))]:pt-6",
         "not-in-data-[footer-variant=inset]:in-[[data-slot=drawer-content]:has([data-slot=drawer-body])]:pt-3",
-        "in-data-[footer-variant=inset]:bg-muted in-data-[footer-variant=inset]:border-t in-data-[footer-variant=inset]:border-transparent in-data-[footer-variant=inset]:pt-4 in-data-[footer-variant=inset]:pb-4",
+        "in-data-[footer-variant=inset]:border-t in-data-[footer-variant=inset]:border-transparent in-data-[footer-variant=inset]:bg-muted in-data-[footer-variant=inset]:pt-4 in-data-[footer-variant=inset]:pb-4",
         // "transition-opacity in-data-nested-dialog-open:opacity-0 in-data-nested-dragging:opacity-100",
-        className,
+        className
       )}
       {...props}
     />
@@ -1270,8 +1311,8 @@ function DrawerTitle({
     <BaseDialog.Title
       data-slot="drawer-title"
       className={cn(
-        "text-foreground text-lg leading-none font-semibold tracking-tight text-balance",
-        className,
+        "text-lg leading-none font-semibold tracking-tight text-balance text-foreground",
+        className
       )}
       {...props}
     />
@@ -1285,7 +1326,7 @@ function DrawerDescription({
   return (
     <BaseDialog.Description
       data-slot="drawer-description"
-      className={cn("text-muted-foreground text-sm text-pretty", className)}
+      className={cn("text-sm text-pretty text-muted-foreground", className)}
       {...props}
     />
   );
@@ -1302,9 +1343,11 @@ function DrawerBody({
   children,
   ...props
 }: React.ComponentProps<"div"> & {
-  nativeScroll?: boolean;
-  /** Disable scrolling when the drawer is not at its last (full) snap point */
-  scrollLock?: boolean;
+  readonly nativeScroll?: boolean;
+  /**
+  Disable scrolling when the drawer is not at its last (full) snap point
+  */
+  readonly scrollLock?: boolean;
 } & Pick<
     ScrollAreaProps,
     "fadeEdges" | "scrollbarGutter" | "persistScrollbar" | "hideScrollbar"
@@ -1312,7 +1355,7 @@ function DrawerBody({
   const { isVertical, snapPoints } = useDrawerConfig();
   const { activeSnapPoint } = useDrawerControl();
 
-  const isAtFullSnap = activeSnapPoint === snapPoints[snapPoints.length - 1];
+  const isAtFullSnap = activeSnapPoint === snapPoints.at(-1);
 
   return (
     <div
@@ -1323,7 +1366,7 @@ function DrawerBody({
         "in-[[data-slot=drawer-content]:not(:has([data-slot=drawer-header]))]:pt-5",
         "in-[[data-slot=drawer-content]:not(:has([data-slot=drawer-footer]))]:pb-5",
         // Inset footer: still pad body bottom so content doesn't crowd the footer's top border.
-        "in-data-[footer-variant=inset]:in-[[data-slot=drawer-content]:has([data-slot=drawer-footer])]:pb-5",
+        "in-data-[footer-variant=inset]:in-[[data-slot=drawer-content]:has([data-slot=drawer-footer])]:pb-5"
         // "transition-opacity in-data-nested-dialog-open:opacity-0 in-data-nested-dragging:opacity-100",
       )}
     >
@@ -1337,7 +1380,7 @@ function DrawerBody({
         overscrollBehavior="auto"
         viewportClassName={cn(
           isVertical ? "touch-pan-y" : "touch-pan-x",
-          scrollLock && !isAtFullSnap && "!overflow-hidden",
+          scrollLock && !isAtFullSnap && "!overflow-hidden"
         )}
       >
         <div className={cn("px-6 py-1", className)} {...props}>
@@ -1370,4 +1413,9 @@ export {
 
 export type { DrawerRenderProps, DrawerVariant };
 
-export { supportsScrollTimeline, supportsScrollState };
+export {
+  type SnapPoint,
+  type DrawerDirection,
+  supportsScrollTimeline,
+  supportsScrollState,
+} from "@workspace/ui/components/ui/cubby-ui/drawer/lib/drawer-utils";

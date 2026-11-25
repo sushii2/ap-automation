@@ -1,18 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import { Toolbar as BaseToolbar } from "@base-ui/react/toolbar";
 import { ToggleGroup as BaseToggleGroup } from "@base-ui/react/toggle-group";
 
+import { solidSurface } from "@workspace/ui/lib/cubby-ui/elevated";
 import { cn } from "@workspace/ui/lib/utils";
-import { Button, type ButtonProps } from "@workspace/ui/components/ui/cubby-ui/button";
+import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
 import {
   isIconOnly,
   Toggle,
-  type ToggleProps,
 } from "@workspace/ui/components/ui/cubby-ui/toggle";
-import { solidSurface } from "@workspace/ui/lib/cubby-ui/elevated";
+import type { ButtonProps } from "@workspace/ui/components/ui/cubby-ui/button";
+import type { ToggleProps } from "@workspace/ui/components/ui/cubby-ui/toggle";
+import type { VariantProps } from "class-variance-authority";
 import "./toolbar.css";
 
 // A shell, as in Button Group, with Base UI's roving focus. Insets, hit
@@ -46,19 +48,19 @@ const toolbarVariants = cva(
       // on; solid is the emphasis grey, as in Toggle Group and Tabs.
       pressedStyle: {
         subtle:
-          "[--toolbar-pressed:oklch(0_0_0/12%)] dark:[--toolbar-pressed:oklch(1_0_0/12%)] [--toolbar-pressed-foreground:currentColor]",
+          "[--toolbar-pressed-foreground:currentColor] [--toolbar-pressed:oklch(0_0_0/12%)] dark:[--toolbar-pressed:oklch(1_0_0/12%)]",
         solid:
-          "[--toolbar-pressed:var(--emphasis)] [--toolbar-pressed-foreground:var(--emphasis-foreground)]",
+          "[--toolbar-pressed-foreground:var(--emphasis-foreground)] [--toolbar-pressed:var(--emphasis)]",
       },
       // Button's height ladder (one step taller below sm); corners step with it.
       size: {
-        sm: "[--toolbar-h:--spacing(9)] sm:not-pointer-coarse:[--toolbar-h:--spacing(8)] [--toolbar-radius:calc(var(--radius)-2px)]",
+        sm: "[--toolbar-h:--spacing(9)] [--toolbar-radius:calc(var(--radius)-2px)] sm:not-pointer-coarse:[--toolbar-h:--spacing(8)]",
         default:
-          "[--toolbar-h:--spacing(10)] sm:not-pointer-coarse:[--toolbar-h:--spacing(9)] [--toolbar-radius:var(--radius)]",
-        lg: "[--toolbar-h:--spacing(11)] sm:not-pointer-coarse:[--toolbar-h:--spacing(10)] [--toolbar-radius:calc(var(--radius)+2px)]",
+          "[--toolbar-h:--spacing(10)] [--toolbar-radius:var(--radius)] sm:not-pointer-coarse:[--toolbar-h:--spacing(9)]",
+        lg: "[--toolbar-h:--spacing(11)] [--toolbar-radius:calc(var(--radius)+2px)] sm:not-pointer-coarse:[--toolbar-h:--spacing(10)]",
       },
     },
-  },
+  }
 );
 
 // Shared by every item: concentric corners and stretch.
@@ -68,7 +70,7 @@ const itemShell = cn(
   "h-auto self-stretch sm:not-pointer-coarse:h-auto",
   // In a column every item gets the row's paint height, and at least its
   // width, so the column is never narrower than the row is tall.
-  "group-data-[orientation=vertical]/toolbar:box-content group-data-[orientation=vertical]/toolbar:py-0 group-data-[orientation=vertical]/toolbar:h-[calc(var(--toolbar-h)-4px)] sm:not-pointer-coarse:group-data-[orientation=vertical]/toolbar:h-[calc(var(--toolbar-h)-4px)] group-data-[orientation=vertical]/toolbar:min-w-[calc(var(--toolbar-h)-4px)]",
+  "group-data-[orientation=vertical]/toolbar:box-content group-data-[orientation=vertical]/toolbar:h-[calc(var(--toolbar-h)-4px)] group-data-[orientation=vertical]/toolbar:min-w-[calc(var(--toolbar-h)-4px)] group-data-[orientation=vertical]/toolbar:py-0 sm:not-pointer-coarse:group-data-[orientation=vertical]/toolbar:h-[calc(var(--toolbar-h)-4px)]"
 );
 
 // Without the pill, hover lights instantly, so a sweep never shows two items
@@ -106,14 +108,22 @@ const itemSize: Record<ToolbarSize, string> = {
 const iconSize = { sm: "icon_sm", default: "icon", lg: "icon_lg" } as const;
 
 export type ToolbarProps = BaseToolbar.Root.Props & {
-  /** Shell style. */
-  variant?: ToolbarVariant;
-  /** Outer height, on Button's ladder. */
-  size?: ToolbarSize;
-  /** Glide a shared highlight between items on hover and focus. */
-  highlight?: boolean;
-  /** How toggled-on toggles look: a quiet tint or the solid emphasis grey. */
-  pressedStyle?: "subtle" | "solid";
+  /**
+  Shell style.
+  */
+  readonly variant?: ToolbarVariant;
+  /**
+  Outer height, on Button's ladder.
+  */
+  readonly size?: ToolbarSize;
+  /**
+  Glide a shared highlight between items on hover and focus.
+  */
+  readonly highlight?: boolean;
+  /**
+  How toggled-on toggles look: a quiet tint or the solid emphasis grey.
+  */
+  readonly pressedStyle?: "subtle" | "solid";
 };
 
 function Toolbar({
@@ -128,7 +138,7 @@ function Toolbar({
 }: ToolbarProps) {
   const context = React.useMemo(
     () => ({ orientation, size, pressedStyle }),
-    [orientation, size, pressedStyle],
+    [orientation, size, pressedStyle]
   );
 
   return (
@@ -142,12 +152,12 @@ function Toolbar({
         orientation={orientation}
         className={cn(
           toolbarVariants({ variant, size, pressedStyle }),
-          className,
+          className
         )}
         {...props}
       >
         {children}
-        {highlight && (
+        {!!highlight && (
           <span
             aria-hidden
             data-slot="toolbar-highlight"
@@ -178,7 +188,7 @@ function ToolbarButton({
     ? sizeProp.startsWith("icon")
     : isIconOnly(
         props.children,
-        props["aria-label"] ?? props["aria-labelledby"],
+        props["aria-label"] ?? props["aria-labelledby"]
       );
   const size = sizeProp ?? (iconOnly ? iconSize[toolbar.size] : toolbar.size);
 
@@ -200,9 +210,9 @@ function ToolbarButton({
             !variant &&
               cn(
                 "text-current [--btn-bg-active:var(--toolbar-press)] [--btn-bg-hover:var(--toolbar-highlight)] [--btn-bg:transparent] [--btn-border:transparent]",
-                instantHover,
+                instantHover
               ),
-            className,
+            className
           )}
         />
       }
@@ -215,7 +225,9 @@ function ToolbarButton({
 export type ToolbarToggleProps = BaseToolbar.Button.Props &
   Omit<ToggleProps, "variant" | "size" | "pressedStyle">;
 
-/** A Toggle that stays pressed when on, with Toggle Group's deeper tint. */
+/**
+A Toggle that stays pressed when on, with Toggle Group's deeper tint.
+*/
 function ToolbarToggle({
   className,
   children,
@@ -225,7 +237,7 @@ function ToolbarToggle({
   const { size, pressedStyle } = React.use(ToolbarContext);
   const iconOnly = isIconOnly(
     children,
-    props["aria-label"] ?? props["aria-labelledby"],
+    props["aria-label"] ?? props["aria-labelledby"]
   );
 
   return (
@@ -246,7 +258,7 @@ function ToolbarToggle({
             "text-current",
             "[--tgl-bg-active:var(--toolbar-press)] [--tgl-bg-hover:var(--toolbar-highlight)] [--tgl-bg-selected:var(--toolbar-pressed)] data-pressed:text-(--toolbar-pressed-foreground)",
             instantHover,
-            className,
+            className
           )}
         />
       }
@@ -260,8 +272,7 @@ function ToolbarToggle({
 export type ToolbarToggleGroupProps = BaseToggleGroup.Props;
 
 /**
- * Toggles that share a value, like text alignment. Lays its items into the
- * toolbar's row; the toolbar keeps arrow-key focus.
+ * Toggles that share a value, like text alignment. Lays its items into the toolbar's row; the toolbar keeps arrow-key focus.
  */
 function ToolbarToggleGroup({ className, ...props }: ToolbarToggleGroupProps) {
   const { orientation } = React.use(ToolbarContext);
@@ -277,7 +288,9 @@ function ToolbarToggleGroup({ className, ...props }: ToolbarToggleGroupProps) {
 
 export type ToolbarGroupProps = BaseToolbar.Group.Props;
 
-/** Groups items, for example to disable them together. Adds no layout. */
+/**
+Groups items, for example to disable them together. Adds no layout.
+*/
 function ToolbarGroup({ className, ...props }: ToolbarGroupProps) {
   return (
     <BaseToolbar.Group
@@ -298,9 +311,9 @@ function ToolbarSeparator({ className, ...props }: ToolbarSeparatorProps) {
         // Air and line are all borders, so both sides snap alike.
         "pointer-events-none flex shrink-0 self-stretch border-transparent bg-transparent data-[orientation=horizontal]:h-auto data-[orientation=horizontal]:w-auto data-[orientation=horizontal]:flex-col data-[orientation=vertical]:w-auto",
         "before:border-transparent before:content-[''] after:border-transparent after:content-['']",
-        "data-[orientation=vertical]:after:border-s-border data-[orientation=vertical]:border-e-[3px] data-[orientation=vertical]:before:border-s-[3px] data-[orientation=vertical]:after:h-5 data-[orientation=vertical]:after:self-center data-[orientation=vertical]:after:rounded-full data-[orientation=vertical]:after:border-s-[1.5px]",
-        "data-[orientation=horizontal]:after:border-t-border data-[orientation=horizontal]:border-b-[3px] data-[orientation=horizontal]:before:border-t-[3px] data-[orientation=horizontal]:after:w-5 data-[orientation=horizontal]:after:self-center data-[orientation=horizontal]:after:rounded-full data-[orientation=horizontal]:after:border-t-[1.5px]",
-        className,
+        "data-[orientation=vertical]:border-e-[3px] data-[orientation=vertical]:before:border-s-[3px] data-[orientation=vertical]:after:h-5 data-[orientation=vertical]:after:self-center data-[orientation=vertical]:after:rounded-full data-[orientation=vertical]:after:border-s-[1.5px] data-[orientation=vertical]:after:border-s-border",
+        "data-[orientation=horizontal]:border-b-[3px] data-[orientation=horizontal]:before:border-t-[3px] data-[orientation=horizontal]:after:w-5 data-[orientation=horizontal]:after:self-center data-[orientation=horizontal]:after:rounded-full data-[orientation=horizontal]:after:border-t-[1.5px] data-[orientation=horizontal]:after:border-t-border",
+        className
       )}
       {...props}
     />
@@ -309,7 +322,9 @@ function ToolbarSeparator({ className, ...props }: ToolbarSeparatorProps) {
 
 export type ToolbarInputProps = BaseToolbar.Input.Props;
 
-/** A quiet field, inset like the buttons. It lights in place on hover and focus. */
+/**
+A quiet field, inset like the buttons. It lights in place on hover and focus.
+*/
 function ToolbarInput({ className, ...props }: ToolbarInputProps) {
   const { size } = React.use(ToolbarContext);
   return (
@@ -318,12 +333,12 @@ function ToolbarInput({ className, ...props }: ToolbarInputProps) {
       data-toolbar-part=""
       className={cn(
         itemShell,
-        "placeholder:text-muted-foreground min-w-0 bg-transparent bg-clip-padding text-current",
+        "min-w-0 bg-transparent bg-clip-padding text-current placeholder:text-muted-foreground",
         itemSize[size],
         // Instant hover; the focus ring is in toolbar.css.
         "hover:bg-(--toolbar-highlight) focus:bg-(--toolbar-highlight)",
         "data-disabled:cursor-not-allowed data-disabled:opacity-60",
-        className,
+        className
       )}
       {...props}
     />
@@ -332,7 +347,9 @@ function ToolbarInput({ className, ...props }: ToolbarInputProps) {
 
 export type ToolbarLinkProps = BaseToolbar.Link.Props;
 
-/** A quiet link, styled like the buttons. */
+/**
+A quiet link, styled like the buttons.
+*/
 function ToolbarLink({ className, ...props }: ToolbarLinkProps) {
   const { size } = React.use(ToolbarContext);
   return (
@@ -348,7 +365,7 @@ function ToolbarLink({ className, ...props }: ToolbarLinkProps) {
         "before:[transition-duration:0ms,100ms] active:before:[transition-duration:100ms]",
         "hover:before:bg-(--toolbar-highlight) active:before:scale-[0.98] active:before:bg-(--toolbar-press) motion-reduce:active:before:scale-100",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0",
-        className,
+        className
       )}
       {...props}
     />

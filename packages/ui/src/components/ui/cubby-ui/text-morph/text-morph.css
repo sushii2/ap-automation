@@ -10,12 +10,22 @@
 [data-slot="text-morph"] {
   --text-morph-slot-y: 0.3em;
   --text-morph-fade: 0.3em;
+  --text-morph-fade-y: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--text-morph-fade),
+    #000 calc(100% - var(--text-morph-fade)),
+    transparent
+  );
+
   position: relative;
 }
+
 [data-slot="text-morph"][data-mode="morph"] {
   --text-morph-slot-y: 0em;
   --text-morph-fade: 0.15em;
 }
+
 /* In a tight line height the ink reaches past the line box (a comma's tail
    below it), and a fade inside the box faded it until the change settled,
    then popped it. So the slot is at least 1.4em tall, reaching past the box
@@ -24,15 +34,6 @@
   [data-slot="text-morph"][data-mode="morph"] {
     --text-morph-slot-y: max(0em, (1.4em - 1lh) / 2);
   }
-}
-[data-slot="text-morph"] {
-  --text-morph-fade-y: linear-gradient(
-    to bottom,
-    transparent,
-    #000 var(--text-morph-fade),
-    #000 calc(100% - var(--text-morph-fade)),
-    transparent
-  );
 }
 
 /* It flows like the text around it, wrapping between words where the
@@ -54,13 +55,14 @@
    to where its alignment puts it, from the width as layout rounds it (both
    rounded on their own, the text stepped back and forth). */
 [data-slot="text-morph"][data-sizing] {
-  white-space: nowrap;
   text-align: start;
+  white-space: nowrap;
 }
+
 @supports (text-wrap-mode: nowrap) {
   [data-slot="text-morph"][data-sizing] {
-    white-space: inherit;
     text-wrap-mode: nowrap;
+    white-space: inherit;
   }
 }
 
@@ -69,8 +71,8 @@
    selected and copied, so this copy isn't, or a copied selection would
    paste the value twice. */
 [data-slot="text-morph"] > .sr-only {
-  white-space: pre;
   user-select: none;
+  white-space: pre;
 }
 
 .text-morph-stage {
@@ -91,6 +93,7 @@
   padding: var(--text-morph-slot-y) calc(0.5em + var(--reach, 0px));
   margin: calc(-1 * var(--text-morph-slot-y)) calc(-0.5em - var(--reach, 0px));
 }
+
 .text-morph-glyphs[data-playing]
   .text-morph-slot[data-fade]:not([data-travel]) {
   mask-image: var(--text-morph-fade-y);
@@ -107,9 +110,9 @@
   .text-morph-glyphs[data-playing]
     .text-morph-slot[data-fade]:not([data-travel]),
   .text-morph-ghost:not([data-travel]) {
-    mask-repeat: repeat-x;
-    mask-clip: no-clip;
     clip-path: inset(0 -100vw);
+    mask-clip: no-clip;
+    mask-repeat: repeat-x;
   }
 }
 
@@ -126,6 +129,7 @@
 [data-slot="text-morph"] [data-space] {
   white-space: pre-wrap;
 }
+
 @supports (white-space-collapse: preserve) {
   [data-slot="text-morph"] [data-space] {
     white-space: inherit;
@@ -156,18 +160,21 @@
    box would leave ink over a neighbour. */
 .text-morph-ghosts {
   position: absolute;
+
   /* Inline, so its static position is where the value sits on its line. */
   display: inline;
   width: 0;
   height: 0;
   pointer-events: none;
+
   /* Glyphs on their way out aren't part of the value. */
   user-select: none;
 }
+
 .text-morph-ghost-sheet {
   position: absolute;
-  left: var(--ox, 0px);
-  top: var(--oy, 0px);
+  top: var(--oy, 0);
+  left: var(--ox, 0);
   width: 0;
   height: 0;
   direction: ltr;
@@ -182,12 +189,13 @@
    and leaves inside it. */
 .text-morph-ghost {
   position: absolute;
-  left: calc(var(--x) - var(--ox, 0px) - 0.5em);
   top: calc(var(--y) - var(--oy, 0px) - var(--text-morph-slot-y));
+  left: calc(var(--x) - var(--ox, 0px) - 0.5em);
   padding: var(--text-morph-slot-y) 0.5em;
-  white-space: nowrap;
   mask-image: var(--text-morph-fade-y);
+  white-space: nowrap;
 }
+
 /* A ghost swapped as part of a shape slides toward the shape's centre as
    it shrinks, out of its slot; it doesn't roll, so it goes unmasked. */
 .text-morph-ghost[data-travel] {

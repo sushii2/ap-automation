@@ -1,5 +1,5 @@
-import * as React from "react"
-import { cn } from "@workspace/ui/lib/utils"
+import * as React from "react";
+import { cn } from "@workspace/ui/lib/utils";
 
 function MessageGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -8,14 +8,14 @@ function MessageGroup({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("flex min-w-0 flex-col gap-2", className)}
       {...props}
     />
-  )
+  );
 }
 
 function Message({
   className,
   align = "start",
   ...props
-}: React.ComponentProps<"div"> & { align?: "start" | "end" }) {
+}: React.ComponentProps<"div"> & { readonly align?: "start" | "end" }) {
   return (
     <div
       data-slot="message"
@@ -26,7 +26,7 @@ function Message({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function MessageAvatar({ className, ...props }: React.ComponentProps<"div">) {
@@ -39,7 +39,7 @@ function MessageAvatar({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 function MessageContent({ className, ...props }: React.ComponentProps<"div">) {
@@ -52,7 +52,7 @@ function MessageContent({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 function MessageHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -65,7 +65,7 @@ function MessageHeader({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 function MessageFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -78,7 +78,7 @@ function MessageFooter({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -88,4 +88,4 @@ export {
   MessageContent,
   MessageFooter,
   MessageHeader,
-}
+};

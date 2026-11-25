@@ -21,10 +21,10 @@ function FieldLabel({ className, ...props }: BaseField.Label.Props) {
     <BaseField.Label
       data-slot="field-label"
       className={cn(
-        "text-foreground flex items-center gap-2 text-sm leading-5 font-medium select-none",
+        "flex items-center gap-2 text-sm leading-5 font-medium text-foreground select-none",
         "data-disabled:pointer-events-none data-disabled:opacity-60",
         "data-invalid:text-destructive",
-        className,
+        className
       )}
       {...props}
     />
@@ -49,8 +49,8 @@ function FieldDescription({
     <BaseField.Description
       data-slot="field-description"
       className={cn(
-        "text-muted-foreground text-sm data-disabled:opacity-60",
-        className,
+        "text-sm text-muted-foreground data-disabled:opacity-60",
+        className
       )}
       {...props}
     />
@@ -62,14 +62,14 @@ function FieldError({ className, ...props }: BaseField.Error.Props) {
     <BaseField.Error
       data-slot="field-error"
       className={cn(
-        "text-destructive text-sm",
+        "text-sm text-destructive",
         // In a FieldErrorSlot: fades in and out; on a swap the old error
         // hides at once. Set here, not on the slot, to keep `:has()` cheap.
         "[[data-slot=field-error-slot]>&]:transition-opacity [[data-slot=field-error-slot]>&]:duration-140 motion-reduce:[[data-slot=field-error-slot]>&]:transition-none",
         "[[data-slot=field-error-slot]>&[data-ending-style]]:opacity-0 [[data-slot=field-error-slot]>&[data-starting-style]]:opacity-0",
         "[[data-slot=field-error-slot]:has(>[data-slot=field-error]:not([data-ending-style]))>&[data-ending-style]]:hidden",
         "[[data-slot=field-error-slot]:has(>[data-slot=field-error][data-ending-style])>&[data-starting-style]]:opacity-100",
-        className,
+        className
       )}
       {...props}
     />
@@ -82,9 +82,9 @@ function FieldErrorSlot({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="field-error-slot"
       className={cn(
         "-mt-2 grid h-0 overflow-clip [interpolate-size:allow-keywords] *:col-start-1 *:row-start-1",
-        "ease-out-expo transition-[height,margin-top] duration-140 motion-reduce:transition-none",
+        "transition-[height,margin-top] duration-140 ease-out-expo motion-reduce:transition-none",
         "has-[[data-slot=field-error]:not([data-ending-style])]:mt-0 has-[[data-slot=field-error]:not([data-ending-style])]:h-auto",
-        className,
+        className
       )}
       {...props}
     />

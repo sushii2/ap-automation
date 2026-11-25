@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { httpAdapter, UploadError, type UploadStatus } from "@uploadcn/core"
-import { useUploadItem } from "@uploadcn/react"
+import { useState } from "react";
+import { httpAdapter, UploadError } from "@uploadcn/core";
+import { useUploadItem } from "@uploadcn/react";
 
 import {
   ProgressIndicator,
@@ -10,7 +10,7 @@ import {
   ProgressRoot,
   ProgressTrack,
   ProgressValue,
-} from "@workspace/ui/components/ui/cubby-ui/progress/progress"
+} from "@workspace/ui/components/ui/cubby-ui/progress/progress";
 import {
   Upload,
   UploadDropzone,
@@ -25,62 +25,68 @@ import {
   UploadItemMedia,
   UploadItemTitle,
   UploadList,
-} from "@workspace/ui/components/upload"
+} from "@workspace/ui/components/upload";
+import type { UploadStatus } from "@uploadcn/core";
 
 // Extensions only: MIME tokens would be echoed verbatim in the rejection message.
-const ACCEPT = [".pdf", ".docx"]
-const MAX_SIZE = 25 * 1024 * 1024
+const ACCEPT = [".pdf", ".docx"];
+const MAX_SIZE = 25 * 1024 * 1024;
 
-type IngestResult = { runId: string }
-
-type RunState = {
-  status: string
-  stage: string | null
-  done: boolean
-  output: unknown
-  error: string | null
+interface IngestResult {
+  runId: string;
 }
 
-type IngestResponse = { fileName: string; runId: string; output: unknown }
-
-export type DocumentKind = "invoice" | "purchase_order"
+export type DocumentKind = "invoice" | "purchase_order";
 
 // Posts the file to the ingest route, which starts the Trigger.dev run for
 // that kind of document. Module-level so each adapter keeps a stable identity.
 const adapter = (kind: DocumentKind) =>
-  httpAdapter<IngestResult>({ url: "/upload/ingest", fields: { kind } })
+  httpAdapter<IngestResult>({ url: "/upload/ingest", fields: { kind } });
 
 const ADAPTERS: Record<DocumentKind, ReturnType<typeof adapter>> = {
   invoice: adapter("invoice"),
   purchase_order: adapter("purchase_order"),
-}
+};
 
-const POLL_INTERVAL_MS = 1500
+const POLL_INTERVAL_MS = 1500;
 
-/** Polls the run until it finishes, then returns its output. */
+/**
+Polls the run until it finishes, then returns its output.
+*/
 async function waitForRun(runId: string, signal: AbortSignal) {
   for (;;) {
-    const response = await fetch(`/upload/ingest/${runId}`, { signal })
+    interface RunState {
+      status: string;
+      stage: string | null;
+      done: boolean;
+      output: unknown;
+      error: string | null;
+    }
+    const response = await fetch(`/upload/ingest/${runId}`, { signal });
     if (!response.ok) {
       throw new UploadError("Could not read the processing status", {
         code: "http",
-      })
+      });
     }
-    const run = (await response.json()) as RunState
+    const run = (await response.json()) as RunState;
     if (run.done) {
-      if (run.error) throw new UploadError(run.error, { code: "http" })
-      return run.output
+      if (run.error) {
+        throw new UploadError(run.error, { code: "http" });
+      }
+      return run.output;
     }
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
-    signal.throwIfAborted()
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    signal.throwIfAborted();
   }
 }
 
-type ProgressState = {
-  label: string
-  color: "primary" | "success" | "warning" | "danger"
-  /** Indeterminate: the bar animates without a known end. */
-  indeterminate?: boolean
+interface ProgressState {
+  label: string;
+  color: "primary" | "success" | "warning" | "danger";
+  /**
+  Indeterminate: the bar animates without a known end.
+  */
+  indeterminate?: boolean;
 }
 
 const PROGRESS: Partial<Record<UploadStatus, ProgressState>> = {
@@ -96,14 +102,16 @@ const PROGRESS: Partial<Record<UploadStatus, ProgressState>> = {
   scanning: { label: "Scanning…", color: "primary", indeterminate: true },
   success: { label: "Processed", color: "success" },
   error: { label: "Failed", color: "danger" },
-}
+};
 
 function ItemProgress() {
-  const item = useUploadItem()
-  const state = PROGRESS[item.status]
-  if (!state) return null
+  const item = useUploadItem();
+  const state = PROGRESS[item.status];
+  if (!state) {
+    return null;
+  }
 
-  const value = item.status === "success" ? 100 : item.progress.percent
+  const value = item.status === "success" ? 100 : item.progress.percent;
 
   return (
     <ProgressRoot
@@ -117,23 +125,32 @@ function ItemProgress() {
         <ProgressIndicator />
       </ProgressTrack>
     </ProgressRoot>
-  )
+  );
 }
 
-/** A PDF/DOCX dropzone with a per-file upload and processing progress bar. */
+/**
+A PDF/DOCX dropzone with a per-file upload and processing progress bar.
+*/
 export function DocumentUpload({
   kind,
   title,
   maxFiles,
   className,
 }: {
-  /** Decides which ingestion task processes the uploads. */
-  kind: DocumentKind
-  title: string
-  maxFiles?: number
-  className?: string
+  /**
+  Decides which ingestion task processes the uploads.
+  */
+  readonly kind: DocumentKind;
+  readonly title: string;
+  readonly maxFiles?: number;
+  readonly className?: string;
 }) {
-  const [responses, setResponses] = useState<IngestResponse[]>([])
+  interface IngestResponse {
+    fileName: string;
+    runId: string;
+    output: unknown;
+  }
+  const [responses, setResponses] = useState<IngestResponse[]>([]);
 
   return (
     <>
@@ -143,12 +160,12 @@ export function DocumentUpload({
         maxSize={MAX_SIZE}
         maxFiles={maxFiles}
         process={async (item, { setStatus, signal, result }) => {
-          setStatus("processing")
-          const output = await waitForRun(result.runId, signal)
+          setStatus("processing");
+          const output = await waitForRun(result.runId, signal);
           setResponses((current) => [
             { fileName: item.name, runId: result.runId, output },
             ...current,
-          ])
+          ]);
         }}
         className={className}
       >
@@ -185,5 +202,5 @@ export function DocumentUpload({
         </section>
       ))}
     </>
-  )
+  );
 }

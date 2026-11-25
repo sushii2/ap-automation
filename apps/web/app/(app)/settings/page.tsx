@@ -1,4 +1,4 @@
-import { getWorkOS } from "@workos-inc/authkit-nextjs"
+import { getWorkOS } from "@workos-inc/authkit-nextjs";
 
 import {
   Card,
@@ -6,20 +6,19 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/cubby-ui/card"
+} from "@workspace/ui/components/ui/cubby-ui/card";
 
-import { requireOrganization } from "@/lib/auth"
-import { roleName } from "@/lib/roles"
+import { DeleteAccount } from "./delete-account";
+import { requireOrganization } from "@/lib/auth";
+import { roleName } from "@/lib/roles";
 
-import { DeleteAccount } from "./delete-account"
-
-export const metadata = { title: "Settings · AP Automation" }
+export const metadata = { title: "Settings · AP Automation" };
 
 export default async function SettingsPage() {
-  const { user, organizationId, role } = await requireOrganization()
+  const { user, organizationId, role } = await requireOrganization();
   const organization = await getWorkOS()
     .organizations.getOrganization(organizationId)
-    .catch(() => null)
+    .catch(() => null);
 
   const rows = [
     ["Name", [user.firstName, user.lastName].filter(Boolean).join(" ") || "—"],
@@ -27,7 +26,7 @@ export default async function SettingsPage() {
     ["Email verified", user.emailVerified ? "Yes" : "No"],
     ["Organization", organization?.name ?? organizationId],
     ["Role", roleName(role)],
-  ]
+  ];
 
   return (
     <>
@@ -67,5 +66,5 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
     </>
-  )
+  );
 }

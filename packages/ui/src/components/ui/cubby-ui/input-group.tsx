@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 
 import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
-import { Input, type InputProps } from "@workspace/ui/components/ui/cubby-ui/input";
+import { Input } from "@workspace/ui/components/ui/cubby-ui/input";
 import { Textarea } from "@workspace/ui/components/ui/cubby-ui/textarea";
+import type { InputProps } from "@workspace/ui/components/ui/cubby-ui/input";
+import type { VariantProps } from "class-variance-authority";
 
 const inputGroupVariants = cva(
   [
@@ -17,7 +19,7 @@ const inputGroupVariants = cva(
     "h-(--input-group-h) has-[>textarea]:h-auto",
 
     // A block addon sits closer to an input.
-    "[&:has(>input)>[data-align=block-start]]:pt-2.5 [&:has(>input)>[data-align=block-end]]:pb-2.5",
+    "[&:has(>input)>[data-align=block-end]]:pb-2.5 [&:has(>input)>[data-align=block-start]]:pt-2.5",
 
     // Variants based on alignment. The input checks its siblings to keep
     // `:has()` cheap.
@@ -27,10 +29,10 @@ const inputGroupVariants = cva(
     "has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col [&>input:is(:has(~[data-align=block-end]),[data-align=block-end]~*)]:pt-3",
 
     // Focus state.
-    "has-[[data-slot=input-group-control]:focus-visible]:outline-ring has-[[data-slot=input-group-control]:focus-visible]:outline-2 has-[[data-slot=input-group-control]:focus-visible]:-outline-offset-1 has-[[data-slot=input-group-control]:focus-visible]:outline-solid",
+    "has-[[data-slot=input-group-control]:focus-visible]:outline-2 has-[[data-slot=input-group-control]:focus-visible]:-outline-offset-1 has-[[data-slot=input-group-control]:focus-visible]:outline-ring has-[[data-slot=input-group-control]:focus-visible]:outline-solid",
 
     // Error state.
-    "has-[[data-slot][aria-invalid=true]]:outline-destructive has-[[data-slot][aria-invalid=true]]:outline-2 has-[[data-slot][aria-invalid=true]]:-outline-offset-1 has-[[data-slot][aria-invalid=true]]:outline-solid",
+    "has-[[data-slot][aria-invalid=true]]:outline-2 has-[[data-slot][aria-invalid=true]]:-outline-offset-1 has-[[data-slot][aria-invalid=true]]:outline-destructive has-[[data-slot][aria-invalid=true]]:outline-solid",
 
     // Transition outline
     "outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 ease-out",
@@ -40,21 +42,21 @@ const inputGroupVariants = cva(
       // Input's heights (one step taller below sm); corners step with them.
       size: {
         default:
-          "[--input-group-h:--spacing(10)] sm:not-pointer-coarse:[--input-group-h:--spacing(9)] [--input-group-radius:var(--radius)]",
-        sm: "[--input-group-h:--spacing(9)] sm:not-pointer-coarse:[--input-group-h:--spacing(8)] [--input-group-radius:calc(var(--radius)-2px)]",
+          "[--input-group-h:--spacing(10)] [--input-group-radius:var(--radius)] sm:not-pointer-coarse:[--input-group-h:--spacing(9)]",
+        sm: "[--input-group-h:--spacing(9)] [--input-group-radius:calc(var(--radius)-2px)] sm:not-pointer-coarse:[--input-group-h:--spacing(8)]",
       },
       variant: {
         // Filled: a translucent tint that holds on any surface.
         default: "bg-input",
         // Outline: the outline Button's fill and edge.
-        outline: "bg-(--outline) border-(--outline-border) bg-clip-padding",
+        outline: "border-(--outline-border) bg-(--outline) bg-clip-padding",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
     },
-  },
+  }
 );
 
 export type InputGroupProps = React.ComponentProps<"div"> &
@@ -75,7 +77,7 @@ function InputGroup({ className, variant, size, ...props }: InputGroupProps) {
 
 const inputGroupAddonVariants = cva(
   [
-    "text-muted-foreground flex h-auto cursor-text items-center justify-center gap-2 text-sm font-medium select-none [&>svg:not([class*='size-'])]:size-4 [&>kbd]:rounded-[calc(var(--radius)-5px)]",
+    "flex h-auto cursor-text items-center justify-center gap-2 text-sm font-medium text-muted-foreground select-none [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
     // Dimmed while the control is disabled. Set on the addon, not the
     // group, to keep `:has()` cheap.
     "[[data-slot=input-group]:has([data-slot=input-group-control]:disabled)>&]:opacity-60",
@@ -100,7 +102,7 @@ const inputGroupAddonVariants = cva(
     defaultVariants: {
       align: "inline-start",
     },
-  },
+  }
 );
 
 type InputGroupAddonAlign = NonNullable<
@@ -129,22 +131,23 @@ function InputGroupAddon({
         data-align={resolvedAlign}
         className={cn(
           inputGroupAddonVariants({ align: resolvedAlign }),
-          className,
+          className
         )}
         onClick={(event) => {
           onClick?.(event);
           // Leave focus alone for the addon's own controls. Scoped to the
           // addon, since a dialog around the group has a tabindex too.
           const control = (event.target as HTMLElement).closest(
-            "button, a, input, select, textarea, [role=button], [tabindex]",
+            "button, a, input, select, textarea, [role=button], [tabindex]"
           );
           // Portaled popups bubble here through React but sit outside the DOM.
           if (
             event.defaultPrevented ||
             !event.currentTarget.contains(event.target as Node) ||
             (control && event.currentTarget.contains(control))
-          )
+          ) {
             return;
+          }
           event.currentTarget.parentElement
             ?.querySelector<HTMLElement>(":scope > input, :scope > textarea")
             ?.focus();
@@ -160,7 +163,7 @@ const inputGroupButtonVariants = cva(
     "border-2 border-transparent shadow-none",
     // Quiet button hover and press: 8% / 10% black overlays (white in dark),
     // not a label tint, which shows a cool cast.
-    "data-[variant=ghost]:[--btn-bg-hover:var(--surface-active)] data-[variant=ghost]:[--btn-bg-active:var(--surface-selected)]",
+    "data-[variant=ghost]:[--btn-bg-active:var(--surface-selected)] data-[variant=ghost]:[--btn-bg-hover:var(--surface-active)]",
   ],
   {
     variants: {
@@ -186,7 +189,7 @@ const inputGroupButtonVariants = cva(
       {
         size: "icon",
         placement: "inline",
-        className: "size-auto aspect-square sm:not-pointer-coarse:size-auto",
+        className: "aspect-square size-auto sm:not-pointer-coarse:size-auto",
       },
       {
         size: "default",
@@ -203,15 +206,17 @@ const inputGroupButtonVariants = cva(
       size: "default",
       placement: "inline",
     },
-  },
+  }
 );
 
 export type InputGroupButtonProps = Omit<
   React.ComponentProps<typeof Button>,
   "size"
 > & {
-  /** `icon` keeps an icon-only button square. */
-  size?: "default" | "icon";
+  /**
+  `icon` keeps an icon-only button square.
+  */
+  readonly size?: "default" | "icon";
 };
 
 function InputGroupButton({
@@ -239,8 +244,8 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
     <span
       data-slot="input-group-text"
       className={cn(
-        "text-muted-foreground flex items-center gap-2 text-sm [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
-        className,
+        "flex items-center gap-2 text-sm text-muted-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+        className
       )}
       {...props}
     />
@@ -259,7 +264,7 @@ function InputGroupInput({ className, size, ...props }: InputGroupInputProps) {
         // Small padding in a small group, weak enough that addon-side
         // padding still wins
         "in-[[data-slot=input-group][data-size=sm]]:px-2.5 in-[[data-slot=input-group][data-size=sm]]:py-1.5",
-        className,
+        className
       )}
       {...props}
     />
@@ -275,7 +280,7 @@ function InputGroupTextarea({
       data-slot="input-group-control"
       className={cn(
         "flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:outline-0 aria-invalid:outline-0 dark:bg-transparent",
-        className,
+        className
       )}
       {...props}
     />

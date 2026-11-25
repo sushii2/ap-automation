@@ -1,31 +1,35 @@
-"use client"
+"use client";
 
-import { Badge } from "@workspace/ui/components/ui/cubby-ui/badge"
-import type { ColumnDef } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table"
-import type { FilterField } from "@workspace/ui/components/ui/cubby-ui/filters/filters"
+import { Badge } from "@workspace/ui/components/ui/cubby-ui/badge";
+import type { ColumnDef } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table";
+import type { FilterField } from "@workspace/ui/components/ui/cubby-ui/filters/filters";
 
-import { FilterableTable } from "@/components/filterable-table"
-import type { FilterAccessors } from "@/lib/apply-filters"
-import { formatCurrency, formatDate } from "@/lib/format"
-import type { Invoice, InvoiceStatus, PoMatch } from "@/lib/placeholder-data"
+import type { FilterAccessors } from "@/lib/apply-filters";
+import type { Invoice, InvoiceStatus, PoMatch } from "@/lib/placeholder-data";
+import { FilterableTable } from "@/components/filterable-table";
+import { formatCurrency, formatDate } from "@/lib/format";
 
-type BadgeVariant = React.ComponentProps<typeof Badge>["variant"]
+type BadgeVariant = React.ComponentProps<typeof Badge>["variant"];
 
-const STATUS: Record<InvoiceStatus, { label: string; variant: BadgeVariant }> = {
-  processing: { label: "Processing", variant: "info" },
-  extracted: { label: "Extracted", variant: "success" },
-  needs_review: { label: "Needs review", variant: "warning" },
-  failed: { label: "Failed", variant: "danger" },
-}
+const STATUS: Record<InvoiceStatus, { label: string; variant: BadgeVariant }> =
+  {
+    processing: { label: "Processing", variant: "info" },
+    extracted: { label: "Extracted", variant: "success" },
+    needs_review: { label: "Needs review", variant: "warning" },
+    failed: { label: "Failed", variant: "danger" },
+  };
 
 const PO_MATCH: Record<PoMatch, { label: string; variant: BadgeVariant }> = {
   matched: { label: "Matched", variant: "success" },
   partial: { label: "Partial", variant: "warning" },
   unmatched: { label: "No match", variant: "neutral" },
-}
+};
 
 const options = <T extends string>(map: Record<T, { label: string }>) =>
-  (Object.keys(map) as T[]).map((value) => ({ value, label: map[value].label }))
+  (Object.keys(map) as T[]).map((value) => ({
+    value,
+    label: map[value].label,
+  }));
 
 const columns: ColumnDef<Invoice>[] = [
   {
@@ -55,8 +59,8 @@ const columns: ColumnDef<Invoice>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = STATUS[row.original.status]
-      return <Badge variant={status.variant}>{status.label}</Badge>
+      const status = STATUS[row.original.status];
+      return <Badge variant={status.variant}>{status.label}</Badge>;
     },
   },
   {
@@ -65,7 +69,7 @@ const columns: ColumnDef<Invoice>[] = [
     meta: { align: "right" as const },
     sortUndefined: "last",
     cell: ({ row }) => {
-      const accuracy = row.original.extractionAccuracy
+      const accuracy = row.original.extractionAccuracy;
       return (
         <div className="text-right tabular-nums">
           {accuracy === null ? (
@@ -74,7 +78,7 @@ const columns: ColumnDef<Invoice>[] = [
             `${accuracy.toFixed(1)}%`
           )}
         </div>
-      )
+      );
     },
   },
   {
@@ -91,24 +95,34 @@ const columns: ColumnDef<Invoice>[] = [
     accessorKey: "poMatch",
     header: "PO match",
     cell: ({ row }) => {
-      const match = PO_MATCH[row.original.poMatch]
+      const match = PO_MATCH[row.original.poMatch];
       return (
         <div className="flex items-center gap-2">
           <Badge variant={match.variant}>{match.label}</Badge>
-          {row.original.poNumber && (
+          {!!row.original.poNumber && (
             <span className="text-muted-foreground">
               {row.original.poNumber}
             </span>
           )}
         </div>
-      )
+      );
     },
   },
-]
+];
 
 const fields: FilterField[] = [
-  { id: "status", label: "Status", type: "multiselect", options: options(STATUS) },
-  { id: "poMatch", label: "PO match", type: "multiselect", options: options(PO_MATCH) },
+  {
+    id: "status",
+    label: "Status",
+    type: "multiselect",
+    options: options(STATUS),
+  },
+  {
+    id: "poMatch",
+    label: "PO match",
+    type: "multiselect",
+    options: options(PO_MATCH),
+  },
   {
     id: "indexed",
     label: "Indexed",
@@ -121,7 +135,7 @@ const fields: FilterField[] = [
   { id: "vendor", label: "Vendor", type: "text" },
   { id: "extractionAccuracy", label: "Accuracy", type: "number", suffix: "%" },
   { id: "amount", label: "Amount", type: "number", prefix: "$" },
-]
+];
 
 const accessors: FilterAccessors<Invoice> = {
   status: (invoice) => invoice.status,
@@ -130,9 +144,9 @@ const accessors: FilterAccessors<Invoice> = {
   vendor: (invoice) => invoice.vendor,
   extractionAccuracy: (invoice) => invoice.extractionAccuracy,
   amount: (invoice) => invoice.amount,
-}
+};
 
-export function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
+export function InvoiceTable({ invoices }: { readonly invoices: Invoice[] }) {
   return (
     <FilterableTable
       columns={columns}
@@ -142,5 +156,5 @@ export function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       searchPlaceholder="Search invoices"
       emptyState="No invoices match these filters."
     />
-  )
+  );
 }

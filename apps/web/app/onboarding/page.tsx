@@ -1,5 +1,5 @@
-import { getWorkOS, signOut, withAuth } from "@workos-inc/authkit-nextjs"
-import { redirect } from "next/navigation"
+import { getWorkOS, signOut, withAuth } from "@workos-inc/authkit-nextjs";
+import { redirect } from "next/navigation";
 
 import {
   Card,
@@ -7,24 +7,26 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/cubby-ui/card"
+} from "@workspace/ui/components/ui/cubby-ui/card";
 
-import { OnboardingForm } from "./onboarding-form"
+import { OnboardingForm } from "./onboarding-form";
 
-export const metadata = { title: "Select your organization · AP Automation" }
+export const metadata = { title: "Select your organization · AP Automation" };
 
 async function signOutAction() {
-  "use server"
-  await signOut()
+  "use server";
+  await signOut();
 }
 
 export default async function OnboardingPage() {
-  const { user, organizationId } = await withAuth({ ensureSignedIn: true })
-  if (organizationId) redirect("/dashboard")
+  const { user, organizationId } = await withAuth({ ensureSignedIn: true });
+  if (organizationId) {
+    redirect("/dashboard");
+  }
 
   const organizations = await getWorkOS()
     .organizations.listOrganizations({ limit: 100 })
-    .then((list) => list.autoPagination())
+    .then((list) => list.autoPagination());
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
@@ -59,5 +61,5 @@ export default async function OnboardingPage() {
         </form>
       </div>
     </main>
-  )
+  );
 }

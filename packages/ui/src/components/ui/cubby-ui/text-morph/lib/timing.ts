@@ -14,7 +14,7 @@ import type { ResolvedOptions } from "@workspace/ui/components/ui/cubby-ui/text-
 export function staggerDelays(
   o: ResolvedOptions,
   entering: number[],
-  leaving: number[],
+  leaving: number[]
 ): { entering: number[]; leaving: number[] } {
   if (o.stagger.mode === "each") {
     return {
@@ -36,7 +36,9 @@ export function staggerDelays(
   };
 }
 
-/** A glyph at home: where every arriving glyph ends and kept glyph lands. */
+/**
+A glyph at home: where every arriving glyph ends and kept glyph lands.
+*/
 export const HOME: Keyframe = { translate: "0 0", scale: "1", rotate: "0deg" };
 
 /**
@@ -50,7 +52,7 @@ export function awayState(
   o: ResolvedOptions,
   kind: GlyphKind,
   offset: 1 | -1,
-  line: number,
+  line: number
 ): Keyframe {
   if (o.mode === "blend") {
     const drift = kind === "number" ? offset * o.blend.distance : 0;
@@ -77,10 +79,12 @@ export function awayState(
   return { translate: "0 0", scale: String(o.morph.scale), rotate: "0deg" };
 }
 
-/** Fade timings for a glyph of this kind: morph's digits have their own. */
+/**
+Fade timings for a glyph of this kind: morph's digits have their own.
+*/
 export function fadesFor(
   o: ResolvedOptions,
-  kind: GlyphKind,
+  kind: GlyphKind
 ): {
   fadeIn: ResolvedOptions["fadeIn"];
   fadeOut: ResolvedOptions["fadeOut"];
@@ -95,10 +99,7 @@ export function fadesFor(
 }
 
 /**
- * The options with nothing that moves, scales, tilts or blurs, for reduced
- * motion. New glyphs fade in straight away: morph's delay leaves a gap after
- * the old ones have gone that its travel covers, and standing still in place
- * it read as a blink rather than a crossfade.
+ * The options with nothing that moves, scales, tilts or blurs, for reduced motion. New glyphs fade in straight away: morph's delay leaves a gap after the old ones have gone that its travel covers, and standing still in place it read as a blink rather than a crossfade.
  */
 export function stillOptions(o: ResolvedOptions): ResolvedOptions {
   return {

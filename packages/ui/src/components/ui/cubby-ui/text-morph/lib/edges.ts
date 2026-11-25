@@ -1,4 +1,7 @@
-export type Span = { left: number; right: number };
+export interface Span {
+  left: number;
+  right: number;
+}
 
 /**
  * The clip for arriving text carried in from past the edge a reader sees
@@ -11,15 +14,17 @@ export function arrivalClip(
   arriving: Span[],
   bounds: Span,
   before: Span,
-  after: Span,
+  after: Span
 ): string | null {
-  const pastStart = arriving.some((span) => span.left < bounds.left - 0.5);
-  const pastEnd = arriving.some((span) => span.right > bounds.right + 0.5);
-  const clipLeft = pastStart && Math.abs(before.left - after.left) < 0.5;
-  const clipRight = pastEnd && Math.abs(before.right - after.right) < 0.5;
-  if (!clipLeft && !clipRight) return null;
-  const right = clipRight ? `${after.right - bounds.right}px` : "-100vw";
-  const left = clipLeft ? `${bounds.left - after.left}px` : "-100vw";
+  const isPastStart = arriving.some((span) => span.left < bounds.left - 0.5);
+  const isPastEnd = arriving.some((span) => span.right > bounds.right + 0.5);
+  const isClipLeft = isPastStart && Math.abs(before.left - after.left) < 0.5;
+  const isClipRight = isPastEnd && Math.abs(before.right - after.right) < 0.5;
+  if (!isClipLeft && !isClipRight) {
+    return null;
+  }
+  const right = isClipRight ? `${after.right - bounds.right}px` : "-100vw";
+  const left = isClipLeft ? `${bounds.left - after.left}px` : "-100vw";
   return `inset(-100vh ${right} -100vh ${left})`;
 }
 
@@ -40,20 +45,17 @@ export function edgeBand(
   end: number,
   arms: { start: Arm; end: Arm },
   layer: { left: number; width: number },
-  slack: number,
+  slack: number
 ): Span {
   const left =
     arms.start === false
       ? 0
-      : typeof arms.start === "number"
-        ? arms.start - layer.left
-        : start - slack - layer.left;
+      : (typeof arms.start === "number" ? arms.start : start - slack) -
+        layer.left;
   const right =
     arms.end === false
       ? layer.width
-      : typeof arms.end === "number"
-        ? arms.end - layer.left
-        : end + slack - layer.left;
+      : (typeof arms.end === "number" ? arms.end : end + slack) - layer.left;
   return { left, right };
 }
 
@@ -63,12 +65,18 @@ export function edgeBand(
  * between changes. Undefined for an edge that doesn't fade.
  */
 export function armMark(arm: Arm, originX: number): string | undefined {
-  if (arm === false) return undefined;
+  if (arm === false) {
+    return undefined;
+  }
   return arm === "box" ? "box" : String(arm + originX);
 }
 
-/** An arm read back from its mark, in the layer's coordinates now. */
+/**
+An arm read back from its mark, in the layer's coordinates now.
+*/
 export function readArm(mark: string | undefined, originX: number): Arm {
-  if (mark === undefined) return false;
-  return mark === "box" ? "box" : parseFloat(mark) - originX;
+  if (mark === undefined) {
+    return false;
+  }
+  return mark === "box" ? "box" : Number.parseFloat(mark) - originX;
 }

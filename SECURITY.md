@@ -29,11 +29,16 @@ Two layers:
 Encrypt at the application layer: vendor bank details (account/routing/IBAN/SWIFT), tax IDs (EIN/SSN/VAT), any PHI that appears on invoices (e.g. healthcare vendor line items), API tokens, and integration credentials.
 
 ```ts
-import { encryptor, blindIndex } from "@/lib/encryption"
+import { encryptor, blindIndex } from "@/lib/encryption";
 
-const ctx = { tenantId, table: "vendors", column: "bank_account", id: vendorId }
-const stored = await encryptor.encrypt(iban, ctx)
-const lookup = blindIndex(taxId, tenantId)
+const ctx = {
+  tenantId,
+  table: "vendors",
+  column: "bank_account",
+  id: vendorId,
+};
+const stored = await encryptor.encrypt(iban, ctx);
+const lookup = blindIndex(taxId, tenantId);
 ```
 
 ### Key management

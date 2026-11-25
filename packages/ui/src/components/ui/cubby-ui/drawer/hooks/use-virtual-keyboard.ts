@@ -1,14 +1,20 @@
 import * as React from "react";
 
 export interface UseVirtualKeyboardOptions {
-  /** Whether keyboard handling is enabled */
+  /**
+  Whether keyboard handling is enabled
+  */
   enabled?: boolean;
 }
 
 export interface UseVirtualKeyboardReturn {
-  /** Current keyboard height in pixels (0 when closed) */
+  /**
+  Current keyboard height in pixels (0 when closed)
+  */
   keyboardHeight: number;
-  /** Whether the virtual keyboard is currently visible */
+  /**
+  Whether the virtual keyboard is currently visible
+  */
   isKeyboardVisible: boolean;
 }
 
@@ -16,7 +22,9 @@ export interface UseVirtualKeyboardReturn {
  * Helper to check if element is an input that would trigger a virtual keyboard.
  */
 function isInput(element: HTMLElement | null): boolean {
-  if (!element) return false;
+  if (!element) {
+    return false;
+  }
   const tagName = element.tagName.toLowerCase();
   return (
     tagName === "input" ||
@@ -53,17 +61,24 @@ export function useVirtualKeyboard({
   React.useEffect(() => {
     // Firefox mobile natively handles keyboard repositioning, so we skip
     // our custom detection to avoid double-repositioning the drawer
-    if (!enabled || typeof window === "undefined" || isFirefoxMobile) return;
+    if (!enabled || typeof window === "undefined" || isFirefoxMobile) {
+      return;
+    }
 
     // Enable Virtual Keyboard API to get env(keyboard-inset-*) CSS variables
     // This tells the browser that we'll handle the virtual keyboard geometry ourselves
     if ("virtualKeyboard" in navigator) {
-      (navigator as Navigator & { virtualKeyboard: { overlaysContent: boolean } })
-        .virtualKeyboard.overlaysContent = true;
+      (
+        navigator as Navigator & {
+          virtualKeyboard: { overlaysContent: boolean };
+        }
+      ).virtualKeyboard.overlaysContent = true;
     }
 
-    const visualViewport = window.visualViewport;
-    if (!visualViewport) return;
+    const { visualViewport } = window;
+    if (!visualViewport) {
+      return;
+    }
 
     const handleResize = () => {
       const focusedElement = document.activeElement as HTMLElement;

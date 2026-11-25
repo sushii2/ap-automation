@@ -1,17 +1,32 @@
 export type TextMorphMode = "blend" | "roll" | "morph";
 
-/** One CSS timing: a duration in ms and any CSS easing, `linear()` included. */
-export type TextMorphTiming = { duration: number; easing: string };
+/**
+One CSS timing: a duration in ms and any CSS easing, `linear()` included.
+*/
+export interface TextMorphTiming {
+  duration: number;
+  easing: string;
+}
 
-/** Everything a mode tunes. Each mode sets all of it (`MODE_DEFAULTS`). */
-export type TextMorphOptions = {
-  /** Glyph movement: roll travel, enter/exit scale, shared glyphs sliding. */
+/**
+Everything a mode tunes. Each mode sets all of it (`MODE_DEFAULTS`).
+*/
+export interface TextMorphOptions {
+  /**
+  Glyph movement: roll travel, enter/exit scale, shared glyphs sliding.
+  */
   motion: TextMorphTiming;
-  /** Opacity and blur of arriving glyphs, optionally starting late. */
+  /**
+  Opacity and blur of arriving glyphs, optionally starting late.
+  */
   fadeIn: TextMorphTiming & { delay: number };
-  /** Opacity and blur of leaving glyphs. */
+  /**
+  Opacity and blur of leaving glyphs.
+  */
   fadeOut: TextMorphTiming;
-  /** The box's width. */
+  /**
+  The box's width.
+  */
   width: TextMorphTiming;
   /**
    * `each`: every successive entering or leaving glyph starts `ms` later.
@@ -19,7 +34,9 @@ export type TextMorphOptions = {
    * each glyph sits along the changed stretch.
    */
   stagger: { mode: "each" | "spread"; ms: number };
-  /** Roll: travel (em), and the scale and tilt glyphs arrive and leave with. */
+  /**
+  Roll: travel (em), and the scale and tilt glyphs arrive and leave with.
+  */
   roll: { distance: number; scale: number; rotate: number };
   /**
    * Morph: the scale letters grow from and shrink to. Digits of a number
@@ -39,7 +56,9 @@ export type TextMorphOptions = {
    * `distance` (em) the way the value went.
    */
   blend: { distance: number; scale: number };
-  /** Blur on arriving and leaving glyphs, in em. */
+  /**
+  Blur on arriving and leaving glyphs, in em.
+  */
   blur: number;
   /**
    * Which way glyphs roll. `auto` reads it off the value:
@@ -56,19 +75,24 @@ export type TextMorphOptions = {
    * of the pill or card holding the value.
    */
   edgeFade: "auto" | "always" | "never";
-};
+}
 
-/** Morph's digits: a full line of travel, fading out over 45% of the
- * duration and in over the first 25%. */
+/**
+Morph's digits: a full line of travel, fading out over 45% of the duration and in over the first 25%.
+*/
 const MORPH_DIGITS: TextMorphOptions["morph"]["digits"] = {
   distance: 1,
   fadeIn: { duration: 100, easing: "linear" },
   fadeOut: { duration: 180, easing: "linear" },
 };
 
-/** The curve the box width eases on: fast out, no overshoot. */
+/**
+The curve the box width eases on: fast out, no overshoot.
+*/
 const WIDTH_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
-/** Ease-out expo: morph's movement, width and everything. */
+/**
+Ease-out expo: morph's movement, width and everything.
+*/
 const EXPO_EASING = "cubic-bezier(0.19, 1, 0.22, 1)";
 
 /**
@@ -94,10 +118,7 @@ const ROLL_OPTIONS: TextMorphOptions = {
 };
 
 /**
- * Morph's defaults: 400ms ease-out expo for movement
- * and width; arriving and leaving glyphs scale by 0.95; opacity is linear,
- * leaving over the first quarter of the duration and arriving over half of it
- * from a quarter in; no blur, no stagger.
+ * Morph's defaults: 400ms ease-out expo for movement and width; arriving and leaving glyphs scale by 0.95; opacity is linear, leaving over the first quarter of the duration and arriving over half of it from a quarter in; no blur, no stagger.
  */
 const MORPH_OPTIONS: TextMorphOptions = {
   motion: { duration: 400, easing: EXPO_EASING },
@@ -144,15 +165,19 @@ type DeepReadonly<T> = {
 
 function deepFreeze<T extends object>(value: T): DeepReadonly<T> {
   for (const field of Object.values(value)) {
-    if (typeof field === "object" && field !== null) deepFreeze(field);
+    if (typeof field === "object" && field !== null) {
+      deepFreeze(field);
+    }
   }
   return Object.freeze(value) as DeepReadonly<T>;
 }
 
-/** Each mode's defaults for every option. Read-only: shared by every label. */
-export const MODE_DEFAULTS: {
-  readonly [M in TextMorphMode]: DeepReadonly<TextMorphOptions>;
-} = deepFreeze({
+/**
+Each mode's defaults for every option. Read-only: shared by every label.
+*/
+export const MODE_DEFAULTS: Readonly<
+  Record<TextMorphMode, DeepReadonly<TextMorphOptions>>
+> = deepFreeze({
   blend: BLEND_OPTIONS,
   roll: ROLL_OPTIONS,
   morph: MORPH_OPTIONS,
@@ -169,7 +194,9 @@ type Overrides<T> = {
  */
 export type TextMorphOverrides = Overrides<TextMorphOptions>;
 
-/** A mode with every option filled in: what a change runs on. */
+/**
+A mode with every option filled in: what a change runs on.
+*/
 export type ResolvedOptions = TextMorphOptions & { mode: TextMorphMode };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -177,10 +204,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function merge<T>(base: T, overrides: Overrides<T> | undefined): T {
-  if (!overrides) return base;
+  if (!overrides) {
+    return base;
+  }
   const out: Record<string, unknown> = { ...(base as Record<string, unknown>) };
   for (const [key, value] of Object.entries(overrides)) {
-    if (value === undefined) continue;
+    if (value === undefined) {
+      continue;
+    }
     out[key] =
       isRecord(value) && isRecord(out[key])
         ? merge(out[key], value as Overrides<unknown>)
@@ -198,7 +229,7 @@ function merge<T>(base: T, overrides: Overrides<T> | undefined): T {
 export function resolveOptions(
   mode: TextMorphMode = "blend",
   overrides?: TextMorphOverrides,
-  duration?: number,
+  duration?: number
 ): ResolvedOptions {
   const merged = merge(MODE_DEFAULTS[mode] as TextMorphOptions, overrides);
   const timed =
@@ -208,10 +239,12 @@ export function resolveOptions(
   return { ...timed, mode };
 }
 
-/** Every duration, delay and stagger scaled by `factor`. */
+/**
+Every duration, delay and stagger scaled by `factor`.
+*/
 export function scaleTiming(
   o: TextMorphOptions,
-  factor: number,
+  factor: number
 ): TextMorphOptions {
   const t = (timing: TextMorphTiming): TextMorphTiming => ({
     ...timing,

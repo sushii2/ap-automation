@@ -2,6 +2,27 @@
 
 import * as React from "react";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, FilterRemoveIcon } from "@hugeicons/core-free-icons";
+import {
+  CLICK_MORPH_MS,
+  describeFilter,
+  isFilterComplete,
+  operatorLabel,
+  FILTER_ENDS,
+  FILTER_SEGMENT,
+  FILTER_SEGMENT_INTERACTIVE,
+  FILTER_SEGMENT_SQUARE,
+  FILTER_SIZES,
+  FILTER_TINTS,
+  FILTER_VARIANTS,
+  patchFilter,
+  resolveOperators,
+} from "@workspace/ui/components/ui/cubby-ui/filters/lib/filters-utils";
+import {
+  useFlowPresence,
+  useFlowRow,
+} from "@workspace/ui/components/ui/cubby-ui/filters/lib/flow-presence";
 import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
 import {
@@ -21,13 +42,9 @@ import {
 } from "@workspace/ui/components/ui/cubby-ui/tooltip";
 import { useControllableState } from "@workspace/ui/hooks/cubby-ui/use-controllable-state";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Cancel01Icon, FilterRemoveIcon } from "@hugeicons/core-free-icons";
-
 import {
   FieldIcon,
   FilterActionsAdd,
-  FilterAddButton,
 } from "@workspace/ui/components/ui/cubby-ui/filters/filters-add-menu";
 import {
   FilterChipContext,
@@ -39,22 +56,6 @@ import {
   useFiltersState,
 } from "@workspace/ui/components/ui/cubby-ui/filters/filters-context";
 import { FilterChipValue } from "@workspace/ui/components/ui/cubby-ui/filters/filters-value-controls";
-import {
-  CLICK_MORPH_MS,
-  describeFilter,
-  isFilterComplete,
-  operatorLabel,
-  FILTER_ENDS,
-  FILTER_SEGMENT,
-  FILTER_SEGMENT_INTERACTIVE,
-  FILTER_SEGMENT_SQUARE,
-  FILTER_SIZES,
-  FILTER_TINTS,
-  FILTER_VARIANTS,
-  patchFilter,
-  resolveOperators,
-} from "@workspace/ui/components/ui/cubby-ui/filters/lib/filters-utils";
-import { useFlowPresence, useFlowRow } from "@workspace/ui/components/ui/cubby-ui/filters/lib/flow-presence";
 import type {
   FilterChipProps,
   FiltersBarProps,
@@ -96,7 +97,9 @@ const DEFAULT_LABELS: FiltersLabels = {
 
 const LABEL_KEYS = Object.keys(DEFAULT_LABELS) as (keyof FiltersLabels)[];
 
-/** Moves focus to the add button first: the chips and clear control are about to unmount. */
+/**
+Moves focus to the add button first: the chips and clear control are about to unmount.
+*/
 function clearFromBar(from: HTMLElement, clearAll: () => void) {
   from
     .closest('[data-slot="filters"]')
@@ -105,12 +108,16 @@ function clearFromBar(from: HTMLElement, clearAll: () => void) {
   clearAll();
 }
 
-/** Refocuses a neighbouring chip (or the add button) before removal so focus never falls to `<body>`. */
+/**
+Refocuses a neighbouring chip (or the add button) before removal so focus never falls to `<body>`.
+*/
 function focusAdjacentChip(chip: HTMLElement | null) {
   const bar = chip?.closest<HTMLElement>('[data-slot="filters"]');
-  if (!chip || !bar) return;
+  if (!chip || !bar) {
+    return;
+  }
   const chips = Array.from(
-    bar.querySelectorAll<HTMLElement>('[data-slot="filter-chip"]'),
+    bar.querySelectorAll<HTMLElement>('[data-slot="filter-chip"]')
   );
   const index = chips.indexOf(chip);
   const neighbor = chips[index + 1] ?? chips[index - 1];
@@ -120,7 +127,9 @@ function focusAdjacentChip(chip: HTMLElement | null) {
   target?.focus();
 }
 
-/** Owns filter state with no layout; wrap a `FiltersBar` plus any external UI that reads `useFilters`. */
+/**
+Owns filter state with no layout; wrap a `FiltersBar` plus any external UI that reads `useFilters`.
+*/
 function FiltersProvider({
   fields,
   value,
@@ -143,21 +152,21 @@ function FiltersProvider({
     // Value-level deps so an inline `labels` object doesn't churn the actions
     // context. Inline function labels still churn; hoist those.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    LABEL_KEYS.map((key) => labelsProp?.[key]),
+    LABEL_KEYS.map((key) => labelsProp?.[key])
   );
   const fieldsById = React.useMemo(
     () => new Map(fields.map((field) => [field.id, field])),
-    [fields],
+    [fields]
   );
   // Keyed by content (not the filters array identity) so the Set stays
   // referentially stable while a filter's value is being typed.
   const usedFieldsKey = filters
     .map((filter) => filter.field)
     .sort()
-    .join("\u0000");
+    .join("\0");
   const usedFieldIds = React.useMemo(
-    () => new Set(usedFieldsKey ? usedFieldsKey.split("\u0000") : []),
-    [usedFieldsKey],
+    () => new Set(usedFieldsKey ? usedFieldsKey.split("\0") : []),
+    [usedFieldsKey]
   );
 
   // Adds/removes/clears are announced because focus lands elsewhere; edits
@@ -169,7 +178,7 @@ function FiltersProvider({
   const announce = React.useCallback(
     (text: string) =>
       setAnnouncement((previous) => ({ text, count: previous.count + 1 })),
-    [],
+    []
   );
   // The filters as of the last commit, for describing the one removed.
   const filtersRef = React.useRef(filters);
@@ -183,7 +192,7 @@ function FiltersProvider({
         ? describeFilter(field, filter, labels.operators)
         : "";
     },
-    [fieldsById, labels],
+    [fieldsById, labels]
   );
 
   const addFilter = React.useCallback(
@@ -191,15 +200,17 @@ function FiltersProvider({
       setFilters((prev) => [...prev, filter]);
       announce(labels.filterAdded(describe(filter)));
     },
-    [setFilters, announce, labels, describe],
+    [setFilters, announce, labels, describe]
   );
   const removeFilter = React.useCallback(
     (id: string) => {
       const removed = filtersRef.current.find((filter) => filter.id === id);
       setFilters((prev) => prev.filter((f) => f.id !== id));
-      if (removed) announce(labels.filterRemoved(describe(removed)));
+      if (removed) {
+        announce(labels.filterRemoved(describe(removed)));
+      }
     },
-    [setFilters, announce, labels, describe],
+    [setFilters, announce, labels, describe]
   );
   const getFilters = React.useCallback(() => filtersRef.current, []);
   const clearAll = React.useCallback(() => {
@@ -212,11 +223,11 @@ function FiltersProvider({
         prev.map((filter) =>
           filter.id === id
             ? patchFilter(fieldsById.get(filter.field), filter, patch)
-            : filter,
-        ),
+            : filter
+        )
       );
     },
-    [setFilters, fieldsById],
+    [setFilters, fieldsById]
   );
 
   // Split so useFiltersActions leaves don't re-render per keystroke.
@@ -249,7 +260,7 @@ function FiltersProvider({
       removeFilter,
       clearAll,
       getFilters,
-    ],
+    ]
   );
 
   return (
@@ -263,7 +274,9 @@ function FiltersProvider({
   );
 }
 
-/** The flex row; renders the default chips + actions unless `children` is passed. */
+/**
+The flex row; renders the default chips + actions unless `children` is passed.
+*/
 function FiltersBar({
   shortcut,
   overflow = "scroll",
@@ -284,7 +297,7 @@ function FiltersBar({
           className={cn(
             "flex max-w-full items-center gap-2",
             overflow === "wrap" && "flex-wrap",
-            className,
+            className
           )}
           {...props}
         >
@@ -308,12 +321,14 @@ function FiltersAnnouncer() {
   return (
     <span role="status" className="sr-only">
       {text}
-      {count % 2 === 1 ? "\u00a0" : ""}
+      {count % 2 === 1 ? "\u{A0}" : ""}
     </span>
   );
 }
 
-/** `FiltersProvider` + `FiltersBar` in one component, for the common case. */
+/**
+`FiltersProvider` + `FiltersBar` in one component, for the common case.
+*/
 function Filters({
   fields,
   value,
@@ -341,19 +356,25 @@ function Filters({
   );
 }
 
-/** The enclosing bar's overflow mode; chips outside a bar just lay out flat. */
+/**
+The enclosing bar's overflow mode; chips outside a bar just lay out flat.
+*/
 const FiltersOverflowContext = React.createContext<FiltersOverflow>("wrap");
 
 // Vertical wheel scrolls the strip sideways, but only while it can move that
 // way, so at either end the page scrolls as usual.
 function scrollSidewaysOnWheel(node: HTMLDivElement | null) {
-  if (!node) return;
+  if (!node) {
+    return;
+  }
   const handleWheel = (event: WheelEvent) => {
     if (event.ctrlKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) {
       return;
     }
     const range = node.scrollWidth - node.clientWidth;
-    if (range <= 1) return;
+    if (range <= 1) {
+      return;
+    }
     // RTL scrolls from 0 towards negative values.
     const direction = getComputedStyle(node).direction === "rtl" ? -1 : 1;
     const position = node.scrollLeft * direction;
@@ -368,23 +389,30 @@ function scrollSidewaysOnWheel(node: HTMLDivElement | null) {
   return () => node.removeEventListener("wheel", handleWheel);
 }
 
-/** A `FilterChip` per active filter; in a scrolling bar, inside a sideways-scrolling strip. */
+/**
+A `FilterChip` per active filter; in a scrolling bar, inside a sideways-scrolling strip.
+*/
 function FilterChips({
   className,
 }: {
-  /** Merged into the scroll strip (a scrolling bar only). */
-  className?: string;
+  /**
+  Merged into the scroll strip (a scrolling bar only).
+  */
+  readonly className?: string;
 }) {
   const { filters } = useFiltersState();
   const { fieldsById } = useFiltersActions();
   const overflow = React.use(FiltersOverflowContext);
   const chips = filters.map((filter) => {
     const field = fieldsById.get(filter.field);
-    if (!field) return null;
-    return <FilterChip key={filter.id} filter={filter} field={field} />;
+    return field ? (
+      <FilterChip key={filter.id} filter={filter} field={field} />
+    ) : null;
   });
 
-  if (overflow === "wrap") return <>{chips}</>;
+  if (overflow === "wrap") {
+    return <>{chips}</>;
+  }
 
   return (
     <ScrollArea
@@ -398,7 +426,7 @@ function FilterChips({
       // them); the negative margin cancels it. `empty:` hides the strip's gap.
       className={cn(
         "-m-0.5 flex size-auto min-w-0 items-center gap-2 overflow-y-hidden rounded-none p-0.5 *:max-w-none empty:not-data-flow-busy:hidden",
-        className,
+        className
       )}
     >
       {chips}
@@ -408,79 +436,87 @@ function FilterChips({
 
 // Memoized so typing in one chip doesn't re-render the others (untouched
 // `filter` objects keep their identity; only the stable actions context is read).
-const FilterChip = React.memo(function FilterChip({
-  filter,
-  field: fieldProp,
-  className,
-  children,
-  ref,
-  onKeyDown,
-  ...props
-}: FilterChipProps) {
-  const { size, variant, removeFilter, fieldsById, labels } =
-    useFiltersActions();
-  const presenceRef = useFlowPresence(ref);
-  const field = fieldProp ?? fieldsById.get(filter.field);
+const FilterChip = React.memo(
+  ({
+    filter,
+    field: fieldProp,
+    className,
+    children,
+    ref,
+    onKeyDown,
+    ...props
+  }: FilterChipProps) => {
+    const { size, variant, removeFilter, fieldsById, labels } =
+      useFiltersActions();
+    const presenceRef = useFlowPresence(ref);
+    const field = fieldProp ?? fieldsById.get(filter.field);
 
-  const chipContext = React.useMemo(
-    () => (field ? { filter, field, size } : null),
-    [filter, field, size],
-  );
+    const chipContext = React.useMemo(
+      () => (field ? { filter, field, size } : null),
+      [filter, field, size]
+    );
 
-  if (!field || !chipContext) return null;
+    if (!field || !chipContext) {
+      return null;
+    }
 
-  const incomplete = !isFilterComplete(field, filter);
+    const isIncomplete = !isFilterComplete(field, filter);
 
-  return (
-    <FilterChipContext.Provider value={chipContext}>
-      <div
-        ref={presenceRef}
-        role="group"
-        data-slot="filter-chip"
-        data-size={size}
-        data-variant={variant}
-        data-filter-id={filter.id}
-        data-incomplete={incomplete ? "" : undefined}
-        aria-label={describeFilter(field, filter, labels.operators)}
-        className={cn(
-          "text-foreground inline-flex max-w-full shrink-0 items-center rounded-lg",
-          FILTER_VARIANTS[variant],
-          FILTER_ENDS,
-          FILTER_TINTS,
-          "transition-[outline-color,border-color] duration-150",
-          FILTER_SIZES[size],
-          className,
-        )}
-        onKeyDown={(event) => {
-          onKeyDown?.(event);
-          if (event.defaultPrevented) return;
-          if (event.key !== "Backspace" && event.key !== "Delete") return;
-          const target = event.target;
-          // Remove button only: elsewhere the key means editing that part.
-          if (
-            !(target instanceof HTMLButtonElement) ||
-            target.dataset.slot !== "filter-chip-remove"
-          ) {
-            return;
-          }
-          event.preventDefault();
-          focusAdjacentChip(event.currentTarget);
-          removeFilter(filter.id);
-        }}
-        {...props}
-      >
-        {children ?? (
-          <>
-            <FilterChipField />
-            <FilterChipOperator />
-            <FilterChipValue />
-            <FilterChipRemove />
-          </>
-        )}
-      </div>
-    </FilterChipContext.Provider>
-  );
-});
+    return (
+      <FilterChipContext.Provider value={chipContext}>
+        <div
+          ref={presenceRef}
+          role="group"
+          data-slot="filter-chip"
+          data-size={size}
+          data-variant={variant}
+          data-filter-id={filter.id}
+          data-incomplete={isIncomplete ? "" : undefined}
+          aria-label={describeFilter(field, filter, labels.operators)}
+          className={cn(
+            "inline-flex max-w-full shrink-0 items-center rounded-lg text-foreground",
+            FILTER_VARIANTS[variant],
+            FILTER_ENDS,
+            FILTER_TINTS,
+            "transition-[outline-color,border-color] duration-150",
+            FILTER_SIZES[size],
+            className
+          )}
+          onKeyDown={(event) => {
+            onKeyDown?.(event);
+            if (event.defaultPrevented) {
+              return;
+            }
+            if (event.key !== "Backspace" && event.key !== "Delete") {
+              return;
+            }
+            const { target } = event;
+            // Remove button only: elsewhere the key means editing that part.
+            if (
+              !(target instanceof HTMLButtonElement) ||
+              target.dataset.slot !== "filter-chip-remove"
+            ) {
+              return;
+            }
+            event.preventDefault();
+            focusAdjacentChip(event.currentTarget);
+            removeFilter(filter.id);
+          }}
+          {...props}
+        >
+          {children ?? (
+            <>
+              <FilterChipField />
+              <FilterChipOperator />
+              <FilterChipValue />
+              <FilterChipRemove />
+            </>
+          )}
+        </div>
+      </FilterChipContext.Provider>
+    );
+  }
+);
 
 function FilterChipField({
   className,
@@ -492,8 +528,8 @@ function FilterChipField({
     <span
       data-slot="filter-chip-field"
       className={cn(
-        "text-muted-foreground inline-flex h-full shrink-0 items-center gap-1.5 border border-y-2 border-transparent ps-(--seg-x) pe-1 whitespace-nowrap",
-        className,
+        "inline-flex h-full shrink-0 items-center gap-1.5 border border-y-2 border-transparent ps-(--seg-x) pe-1 whitespace-nowrap text-muted-foreground",
+        className
       )}
       {...props}
     >
@@ -530,8 +566,8 @@ function FilterChipOperator({
             className={cn(
               FILTER_SEGMENT,
               FILTER_SEGMENT_INTERACTIVE,
-              "text-muted-foreground hover:text-foreground data-popup-open:text-foreground px-[calc(var(--seg-x)*0.6)]",
-              className,
+              "px-[calc(var(--seg-x)*0.6)] text-muted-foreground hover:text-foreground data-popup-open:text-foreground",
+              className
             )}
             {...props}
           />
@@ -572,13 +608,15 @@ function FilterChipRemove({
         FILTER_SEGMENT_INTERACTIVE,
         "text-muted-foreground hover:text-foreground [&_svg]:size-3.5",
         FILTER_SEGMENT_SQUARE,
-        className,
+        className
       )}
       onClick={(event) => {
         onClick?.(event);
-        if (event.defaultPrevented) return;
+        if (event.defaultPrevented) {
+          return;
+        }
         focusAdjacentChip(
-          event.currentTarget.closest<HTMLElement>('[data-slot="filter-chip"]'),
+          event.currentTarget.closest<HTMLElement>('[data-slot="filter-chip"]')
         );
         removeFilter(filter.id);
       }}
@@ -589,7 +627,9 @@ function FilterChipRemove({
   );
 }
 
-/** Clears every filter. Renders nothing while no filters are active. */
+/**
+Clears every filter. Renders nothing while no filters are active.
+*/
 function FilterClearButton({
   className,
   children,
@@ -600,7 +640,9 @@ function FilterClearButton({
   const { clearAll, labels, size } = useFiltersActions();
   const { filters } = useFiltersState();
   const presenceRef = useFlowPresence(ref);
-  if (filters.length === 0) return null;
+  if (filters.length === 0) {
+    return null;
+  }
   return (
     <Button
       ref={presenceRef}
@@ -610,7 +652,9 @@ function FilterClearButton({
       className={cn("text-muted-foreground", className)}
       onClick={(event) => {
         onClick?.(event);
-        if (event.defaultPrevented) return;
+        if (event.defaultPrevented) {
+          return;
+        }
         clearFromBar(event.currentTarget, clearAll);
       }}
       {...props}
@@ -620,15 +664,19 @@ function FilterClearButton({
   );
 }
 
-/** The add and clear actions as one chip-like capsule. */
+/**
+The add and clear actions as one chip-like capsule.
+*/
 function FilterActions({
   shortcut,
   className,
   children,
   ...props
 }: React.ComponentProps<"div"> & {
-  /** Key that opens the add menu from the keyboard (e.g. `"f"`). */
-  shortcut?: string;
+  /**
+  Key that opens the add menu from the keyboard (e.g. `"f"`).
+  */
+  readonly shortcut?: string;
 }) {
   const { size, variant } = useFiltersActions();
   return (
@@ -639,12 +687,12 @@ function FilterActions({
       data-variant={variant}
       className={cn(
         // No gap: a folded clear segment would still get one; it brings its own.
-        "text-foreground inline-flex shrink-0 items-center rounded-lg",
+        "inline-flex shrink-0 items-center rounded-lg text-foreground",
         FILTER_VARIANTS[variant],
         FILTER_ENDS,
         FILTER_TINTS,
         FILTER_SIZES[size],
-        className,
+        className
       )}
       {...props}
     >
@@ -658,7 +706,9 @@ function FilterActions({
   );
 }
 
-/** The capsule's clear segment; stays mounted, folded and inert while no filters exist. */
+/**
+The capsule's clear segment; stays mounted, folded and inert while no filters exist.
+*/
 function FilterActionsClear({
   className,
   children,
@@ -666,19 +716,19 @@ function FilterActionsClear({
   ...props
 }: React.ComponentProps<"button">) {
   const { clearAll, labels, usedFieldIds } = useFiltersActions();
-  const active = usedFieldIds.size > 0;
+  const isActive = usedFieldIds.size > 0;
   return (
     <div
       data-slot="filter-clear-segment"
-      data-active={active ? "" : undefined}
-      inert={!active}
+      data-active={isActive ? "" : undefined}
+      inert={!isActive}
       className="grid h-full grid-cols-[minmax(0,0fr)] overflow-hidden opacity-0 transition-[grid-template-columns,opacity] duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] data-active:grid-cols-[minmax(0,1fr)] data-active:opacity-100 motion-reduce:transition-none"
     >
       <div className="flex h-full min-w-0 items-center">
         {/* Air and line are all borders, so both sides snap alike. */}
         <span
           aria-hidden
-          className="after:border-s-border pointer-events-none flex shrink-0 self-stretch border-e-[3px] border-transparent before:border-s-[3px] before:border-transparent before:content-[''] after:h-5 after:self-center after:rounded-full after:border-s-[1.5px] after:border-transparent after:content-['']"
+          className="pointer-events-none flex shrink-0 self-stretch border-e-[3px] border-transparent before:border-s-[3px] before:border-transparent before:content-[''] after:h-5 after:self-center after:rounded-full after:border-s-[1.5px] after:border-transparent after:border-s-border after:content-['']"
         />
         <Tooltip>
           <TooltipTrigger
@@ -692,12 +742,14 @@ function FilterActionsClear({
                   FILTER_SEGMENT_INTERACTIVE,
                   "text-muted-foreground hover:text-foreground [&_svg]:size-4",
                   FILTER_SEGMENT_SQUARE,
-                  className,
+                  className
                 )}
                 {...props}
                 onClick={(event) => {
                   onClick?.(event);
-                  if (event.defaultPrevented) return;
+                  if (event.defaultPrevented) {
+                    return;
+                  }
                   clearFromBar(event.currentTarget, clearAll);
                 }}
               />
@@ -714,7 +766,9 @@ function FilterActionsClear({
   );
 }
 
-/** Muted "3 active" text counting complete filters only; renders nothing at zero. */
+/**
+Muted "3 active" text counting complete filters only; renders nothing at zero.
+*/
 function FilterActiveCount({
   className,
   ref,
@@ -728,14 +782,16 @@ function FilterActiveCount({
     const field = fieldsById.get(filter.field);
     return field !== undefined && isFilterComplete(field, filter);
   }).length;
-  if (count === 0) return null;
+  if (count === 0) {
+    return null;
+  }
   return (
     <span
       ref={presenceRef}
       data-slot="filter-active-count"
       className={cn(
-        "text-muted-foreground shrink-0 text-sm whitespace-nowrap tabular-nums",
-        className,
+        "shrink-0 text-sm whitespace-nowrap text-muted-foreground tabular-nums",
+        className
       )}
       {...props}
     >
@@ -752,11 +808,8 @@ export {
   FilterChip,
   FilterChipField,
   FilterChipOperator,
-  FilterChipValue,
   FilterChipRemove,
-  FilterAddButton,
   FilterActions,
-  FilterActionsAdd,
   FilterActionsClear,
   FilterClearButton,
   FilterActiveCount,
@@ -811,3 +864,9 @@ export type {
   NumberFilterField,
   CustomFilterField,
 } from "@workspace/ui/components/ui/cubby-ui/filters/lib/filters-types";
+
+export { FilterChipValue } from "@workspace/ui/components/ui/cubby-ui/filters/filters-value-controls";
+export {
+  FilterAddButton,
+  FilterActionsAdd,
+} from "@workspace/ui/components/ui/cubby-ui/filters/filters-add-menu";

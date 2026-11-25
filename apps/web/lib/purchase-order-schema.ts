@@ -1,6 +1,6 @@
-import { z } from "zod"
+import { z } from "zod";
 
-import { differs, partySchema } from "./invoice-schema.ts"
+import { differs, partySchema } from "./invoice-schema.ts";
 
 // Shared by the ingestion task and the UI. Keep this free of server-only imports.
 
@@ -43,13 +43,15 @@ export const purchaseOrderSchema = z.object({
     .describe(
       "Anything a reviewer should know: ambiguous values, illegible areas, assumptions made. Empty if none."
     ),
-})
+});
 
-export type ExtractedPurchaseOrder = z.infer<typeof purchaseOrderSchema>
+export type ExtractedPurchaseOrder = z.infer<typeof purchaseOrderSchema>;
 
-/** Cross-checks the model's numbers; mismatches are flagged, not corrected. */
+/**
+Cross-checks the model's numbers; mismatches are flagged, not corrected.
+*/
 export function reconcilePurchaseOrder(order: ExtractedPurchaseOrder) {
-  const warnings: string[] = []
+  const warnings: string[] = [];
 
   // Invoices are matched to orders line by line, so each line must add up.
   order.lineItems.forEach((item, index) => {
@@ -61,21 +63,21 @@ export function reconcilePurchaseOrder(order: ExtractedPurchaseOrder) {
     ) {
       warnings.push(
         `Line ${index + 1}: quantity times unit price does not equal the amount.`
-      )
+      );
     }
-  })
+  });
 
-  const lineAmounts = order.lineItems.map((item) => item.amount)
+  const lineAmounts = order.lineItems.map((item) => item.amount);
   if (
     order.subtotal !== null &&
     lineAmounts.length > 0 &&
     lineAmounts.every((amount) => amount !== null)
   ) {
-    const sum = lineAmounts.reduce((total, amount) => total + amount, 0)
+    const sum = lineAmounts.reduce((total, amount) => total + amount, 0);
     if (differs(sum, order.subtotal)) {
       warnings.push(
         `Line items sum to ${sum.toFixed(2)} but subtotal is ${order.subtotal.toFixed(2)}.`
-      )
+      );
     }
   }
 
@@ -90,11 +92,15 @@ export function reconcilePurchaseOrder(order: ExtractedPurchaseOrder) {
   ) {
     warnings.push(
       "Subtotal plus tax and shipping does not equal the total amount."
-    )
+    );
   }
 
-  if (!order.poNumber) warnings.push("PO number is missing.")
-  if (order.totalAmount === null) warnings.push("Total amount is missing.")
+  if (!order.poNumber) {
+    warnings.push("PO number is missing.");
+  }
+  if (order.totalAmount === null) {
+    warnings.push("Total amount is missing.");
+  }
 
-  return warnings
+  return warnings;
 }

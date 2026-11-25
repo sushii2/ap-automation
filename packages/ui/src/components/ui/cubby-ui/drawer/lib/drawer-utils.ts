@@ -24,13 +24,21 @@ export type DirectionConfig = (typeof DIRECTION_CONFIG)[DrawerDirection];
  * Scroll geometry for drawer positioning calculations.
  */
 export interface ScrollGeometry {
-  /** Total track size (viewport + content + dismiss buffer) */
+  /**
+  Total track size (viewport + content + dismiss buffer)
+  */
   trackSize: number;
-  /** Buffer space for dismiss gesture */
+  /**
+  Buffer space for dismiss gesture
+  */
   dismissBuffer: number;
-  /** Maximum scroll position */
+  /**
+  Maximum scroll position
+  */
   maxScroll: number;
-  /** Whether scroll direction is inverted (top/left) */
+  /**
+  Whether scroll direction is inverted (top/left)
+  */
   isInverted: boolean;
 }
 
@@ -72,8 +80,8 @@ export const supportsScrollState =
  * Parse a pixel value string (e.g., "200px") and return the number
  */
 export function parsePixelValue(value: string): number | null {
-  const match = value.match(/^(\d+(?:\.\d+)?)px$/);
-  return match ? parseFloat(match[1]!) : null;
+  const match = /^(\d+(?:\.\d+)?)px$/.exec(value);
+  return match ? Number.parseFloat(match[1]!) : null;
 }
 
 /**
@@ -83,25 +91,26 @@ export function parsePixelValue(value: string): number | null {
  */
 export function snapPointToRatio(
   snapPoint: SnapPoint,
-  contentSize: number,
+  contentSize: number
 ): number {
   if (typeof snapPoint === "number") {
     return snapPoint;
   }
   const pixels = parsePixelValue(snapPoint);
-  return pixels != null ? pixels / contentSize : 1;
+  return pixels == null ? 1 : pixels / contentSize;
 }
 
 /**
- * Find the index of a snap point value in the array
- * Returns the last index if value is null or not found
+ * Find the index of a snap point value in the array Returns the last index if value is null or not found
  */
 export function findSnapPointIndex(
   snapPoints: SnapPoint[],
-  value: SnapPoint | null,
+  value: SnapPoint | null
 ): number {
-  if (value === null) return snapPoints.length - 1;
-  const index = snapPoints.findIndex((sp) => sp === value);
+  if (value === null) {
+    return snapPoints.length - 1;
+  }
+  const index = snapPoints.indexOf(value);
   return index === -1 ? snapPoints.length - 1 : index;
 }
 
@@ -110,7 +119,7 @@ export function findSnapPointIndex(
  */
 export function getSnapPointValue(
   snapPoints: SnapPoint[],
-  index: number,
+  index: number
 ): SnapPoint {
   return snapPoints[Math.max(0, Math.min(index, snapPoints.length - 1))]!;
 }
@@ -132,7 +141,7 @@ export function waitForScrollEnd(element: HTMLElement): Promise<void> {
           resolve();
         }, 0);
       };
-      element.addEventListener("scroll", handler, { passive: true });
+      element.addEventListener("scroll", handler);
     }
   });
 }
@@ -141,8 +150,9 @@ export function waitForScrollEnd(element: HTMLElement): Promise<void> {
  * Check if user prefers reduced motion
  */
 export function prefersReducedMotion(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return typeof window === "undefined"
+    ? false
+    : window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /* -------------------------------------------------------------------------------------------------
@@ -157,7 +167,7 @@ export function calculateScrollGeometry(
   viewportSize: number,
   contentSize: number,
   dismissible: boolean,
-  isInverted: boolean,
+  isInverted: boolean
 ): ScrollGeometry {
   // Caller is responsible for ensuring contentSize is valid (> 0)
   const dismissBuffer = dismissible ? contentSize * 0.3 : 0;
@@ -181,7 +191,7 @@ export function calculateSnapScrollPositions(
   snapPoints: SnapPoint[],
   geometry: ScrollGeometry,
   dismissible: boolean,
-  contentSize: number,
+  contentSize: number
 ): number[] {
   const { maxScroll, dismissBuffer, isInverted } = geometry;
   const positions: number[] = [];
@@ -219,7 +229,7 @@ export function calculateSnapScrollPositions(
 export function calculateScrollProgress(
   scrollPos: number,
   geometry: ScrollGeometry,
-  contentSize: number,
+  contentSize: number
 ): number {
   const { dismissBuffer, isInverted } = geometry;
 
@@ -243,20 +253,23 @@ export function calculateScrollProgress(
 export function calculateSnapProgress(
   scrollPos: number,
   snapScrollPositions: number[],
-  dismissible: boolean,
+  dismissible: boolean
 ): number {
   const firstSnapIndex = dismissible ? 1 : 0;
   const lastSnapIndex = snapScrollPositions.length - 1;
 
   // Handle edge cases
-  if (firstSnapIndex >= lastSnapIndex) return 0;
+  if (firstSnapIndex >= lastSnapIndex) {
+    return 0;
+  }
 
   const firstSnapPos = snapScrollPositions[firstSnapIndex]!;
   const lastSnapPos = snapScrollPositions[lastSnapIndex]!;
 
-  if (firstSnapPos === lastSnapPos) return 0;
+  if (firstSnapPos === lastSnapPos) {
+    return 0;
+  }
 
-  const progress =
-    (scrollPos - firstSnapPos) / (lastSnapPos - firstSnapPos);
+  const progress = (scrollPos - firstSnapPos) / (lastSnapPos - firstSnapPos);
   return Math.min(1, Math.max(0, progress));
 }

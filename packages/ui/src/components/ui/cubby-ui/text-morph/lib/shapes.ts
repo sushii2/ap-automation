@@ -1,26 +1,36 @@
 import type { GlyphKind } from "@workspace/ui/components/ui/cubby-ui/text-morph/lib/match";
 
 /**
- * Morph mode, one-word values: a run of this many replaced glyphs,
- * with no survivor inside, is swapped as one shape rather than glyph by
- * glyph. It recedes further, to GROUP_SCALE about its own centre, and its
- * fades take these shares of the movement's duration.
+ * Morph mode, one-word values: a run of this many replaced glyphs, with no survivor inside, is swapped as one shape rather than glyph by glyph. It recedes further, to GROUP_SCALE about its own centre, and its fades take these shares of the movement's duration.
  */
 export const GROUP_MIN = 6;
 export const GROUP_SCALE = 0.8;
 export const GROUP_FADE_IN = 0.35;
 export const GROUP_FADE_OUT = 0.45;
 
-/** How a glyph arriving or leaving as part of a shape scales. */
-export type Shape = {
-  /** Its scale's pivot, the shape's centre from its own box (CSS). */
+/**
+How a glyph arriving or leaving as part of a shape scales.
+*/
+export interface Shape {
+  /**
+  Its scale's pivot, the shape's centre from its own box (CSS).
+  */
   origin: string;
-  /** A run swapped as one shape (further, faster), not a word. */
+  /**
+  A run swapped as one shape (further, faster), not a word.
+  */
   group: boolean;
-};
+}
 
-/** Where a glyph sits: any rect (a DOMRect will do). */
-export type Box = { left: number; right: number; top: number; bottom: number };
+/**
+Where a glyph sits: any rect (a DOMRect will do).
+*/
+export interface Box {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
 
 /**
  * The runs of changed glyphs (arriving, or leaving) to shape: whole words,
@@ -32,23 +42,28 @@ export function shapeRuns(
   isSpace: (i: number) => boolean,
   changed: (i: number) => boolean,
   byWords: boolean,
-  min = GROUP_MIN,
+  min = GROUP_MIN
 ): number[][] {
   const runs: number[][] = [];
   let run: number[] = [];
-  let whole = true;
+  let isWhole = true;
   const flush = (): void => {
-    if (byWords ? whole && run.length > 0 : run.length >= min) {
+    if (byWords ? isWhole && run.length > 0 : run.length >= min) {
       runs.push(run);
     }
     run = [];
-    whole = true;
+    isWhole = true;
   };
   for (let i = 0; i < count; i++) {
-    if (isSpace(i)) flush();
-    else if (changed(i)) run.push(i);
-    else if (byWords) whole = false;
-    else flush();
+    if (isSpace(i)) {
+      flush();
+    } else if (changed(i)) {
+      run.push(i);
+    } else if (byWords) {
+      isWhole = false;
+    } else {
+      flush();
+    }
   }
   flush();
   return runs;
@@ -62,22 +77,26 @@ function addRuns(
   runs: number[][],
   boxOf: (i: number) => Box | undefined,
   group: boolean,
-  shapes: Map<number, Shape>,
+  shapes: Map<number, Shape>
 ): void {
   for (const run of runs) {
     const members = run.flatMap((index) => {
       const box = boxOf(index);
       return box ? [{ index, box }] : [];
     });
-    if (members.length > 0) origins(members, group, shapes);
+    if (members.length > 0) {
+      origins(members, group, shapes);
+    }
   }
 }
 
-/** Each member's pivot: the centre of the whole run, from its own box. */
+/**
+Each member's pivot: the centre of the whole run, from its own box.
+*/
 function origins(
   members: { index: number; box: Box }[],
   group: boolean,
-  into: Map<number, Shape>,
+  into: Map<number, Shape>
 ): void {
   const left = Math.min(...members.map((m) => m.box.left));
   const right = Math.max(...members.map((m) => m.box.right));

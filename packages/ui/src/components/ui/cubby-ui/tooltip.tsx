@@ -1,12 +1,12 @@
 import * as React from "react";
 import { Tooltip as BaseTooltip } from "@base-ui/react/tooltip";
 
-import { cn } from "@workspace/ui/lib/utils";
 import {
   INVERSE_SURFACE,
   solidSurface,
-  type SurfaceLevel,
 } from "@workspace/ui/lib/cubby-ui/elevated";
+import { cn } from "@workspace/ui/lib/utils";
+import type { SurfaceLevel } from "@workspace/ui/lib/cubby-ui/elevated";
 
 function TooltipProvider({
   // Base UI's own default is 600ms, which reads as sluggish for a label that
@@ -64,9 +64,13 @@ function TooltipArrow({
 type TooltipSurfaceProps =
   | {
       variant?: "default";
-      /** Surface elevation level for the tooltip bg (1-8). Defaults to 2, the lightest "lifted off the page" tier. */
+      /**
+      Surface elevation level for the tooltip bg (1-8). Defaults to 2, the lightest "lifted off the page" tier.
+      */
       level?: SurfaceLevel;
-      /** Shadow weight (1-8). Pinned to 2 by default so tooltips read as quiet/subtle. */
+      /**
+      Shadow weight (1-8). Pinned to 2 by default so tooltips read as quiet/subtle.
+      */
       shadowLevel?: SurfaceLevel;
     }
   | { variant: "inverse"; level?: never; shadowLevel?: never };
@@ -90,17 +94,17 @@ function TooltipContent({
   shadowLevel = 2,
   ...props
 }: React.ComponentProps<typeof BaseTooltip.Popup> & {
-  side?: BaseTooltip.Positioner.Props["side"];
-  align?: BaseTooltip.Positioner.Props["align"];
-  sideOffset?: BaseTooltip.Positioner.Props["sideOffset"];
-  alignOffset?: BaseTooltip.Positioner.Props["alignOffset"];
-  collisionBoundary?: BaseTooltip.Positioner.Props["collisionBoundary"];
-  collisionPadding?: BaseTooltip.Positioner.Props["collisionPadding"];
-  sticky?: BaseTooltip.Positioner.Props["sticky"];
-  positionMethod?: BaseTooltip.Positioner.Props["positionMethod"];
-  arrow?: boolean;
-  arrowPadding?: number;
-  container?: HTMLElement | undefined;
+  readonly side?: BaseTooltip.Positioner.Props["side"];
+  readonly align?: BaseTooltip.Positioner.Props["align"];
+  readonly sideOffset?: BaseTooltip.Positioner.Props["sideOffset"];
+  readonly alignOffset?: BaseTooltip.Positioner.Props["alignOffset"];
+  readonly collisionBoundary?: BaseTooltip.Positioner.Props["collisionBoundary"];
+  readonly collisionPadding?: BaseTooltip.Positioner.Props["collisionPadding"];
+  readonly sticky?: BaseTooltip.Positioner.Props["sticky"];
+  readonly positionMethod?: BaseTooltip.Positioner.Props["positionMethod"];
+  readonly arrow?: boolean;
+  readonly arrowPadding?: number;
+  readonly container?: HTMLElement | undefined;
 } & TooltipSurfaceProps) {
   const isInverse = variant === "inverse";
   return (
@@ -154,7 +158,7 @@ function TooltipContent({
             // suppressing them means no exit at all.
             "data-[instant=delay]:transition-none",
             "motion-reduce:transition-none motion-reduce:will-change-auto",
-            className,
+            className
           )}
           {...props}
         >
@@ -193,12 +197,12 @@ function TooltipContent({
               // subtree. Targets the content: the viewport has no transitions of
               // its own and transition-property does not inherit.
               "[[data-instant=delay]_&_[data-current]]:transition-none [[data-instant=delay]_&_[data-previous]]:transition-none",
-              "motion-reduce:**:data-current:transition-none motion-reduce:**:data-previous:transition-none",
+              "motion-reduce:**:data-current:transition-none motion-reduce:**:data-previous:transition-none"
             )}
           >
             {children}
           </BaseTooltip.Viewport>
-          {arrow && (
+          {!!arrow && (
             <TooltipArrow className="outline-0 transition-[left,right,top,bottom] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] data-instant:transition-none data-[side=bottom]:top-[-9px] data-[side=left]:right-[-13.5px] data-[side=left]:rotate-90 data-[side=right]:left-[-13.5px] data-[side=right]:-rotate-90 data-[side=top]:bottom-[-9px] data-[side=top]:rotate-180 motion-reduce:transition-none">
               <svg width="20" height="10" viewBox="0 0 20 10" fill="none">
                 <path

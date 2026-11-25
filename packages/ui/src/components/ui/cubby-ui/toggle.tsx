@@ -1,14 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import { Toggle as BaseToggle } from "@base-ui/react/toggle";
 
 import { cn } from "@workspace/ui/lib/utils";
+import type { VariantProps } from "class-variance-authority";
 
-// Same paint model as Button: the fill and border render on a ::before
-// pseudo-element that scales down on press, so the plate shrinks while the
-// label and icon stay put.
+// Same paint model as Button: the fill and border render on a ::before pseudo-element that scales down on press, so the plate shrinks while the label and icon stay put.
 //
 // Paint: variants set per-state tokens (--tgl-bg, --tgl-bg-hover,
 // --tgl-bg-active, --tgl-bg-selected, --tgl-border), the state machine below
@@ -20,13 +19,13 @@ const toggleBase = cn(
   // Label + icon stay full-contrast (text-foreground) in every state; the
   // background carries the state, not the text — so resting toggles read as
   // legible options, not dimmed ones.
-  "relative isolate inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-medium whitespace-nowrap text-foreground select-none data-disabled:pointer-events-none data-disabled:opacity-60 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 transition-[outline-width,outline-color,opacity,color] duration-100 ease-out focus-visible:outline-ring outline-0 -outline-offset-1 outline-transparent outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 aria-invalid:outline-destructive aria-invalid:outline-2 aria-invalid:-outline-offset-1 aria-invalid:outline-solid",
+  "relative isolate inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-medium whitespace-nowrap text-foreground outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color,opacity,color] duration-100 ease-out outline-solid select-none focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-ring aria-invalid:outline-2 aria-invalid:-outline-offset-1 aria-invalid:outline-destructive aria-invalid:outline-solid data-disabled:pointer-events-none data-disabled:opacity-60 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   // State machine: unset tokens fall through to transparent. Selection is
   // terminal, so neither hover nor press alters a selected toggle; both are
   // scoped to the off state. The pressed-down step exists because the scale
   // alone is invisible on a variant that paints nothing at rest (ghost), and
   // on touch `hover:` never matches.
-  "[--tgl-paint:var(--tgl-bg,transparent)] hover:not-data-pressed:[--tgl-paint:var(--tgl-bg-hover,var(--tgl-bg,transparent))] active:not-data-pressed:[--tgl-paint:var(--tgl-bg-active,var(--tgl-bg-hover,var(--tgl-bg,transparent)))] data-pressed:[--tgl-paint:var(--tgl-bg-selected,var(--tgl-bg,transparent))]",
+  "[--tgl-paint:var(--tgl-bg,transparent)] hover:not-data-pressed:[--tgl-paint:var(--tgl-bg-hover,var(--tgl-bg,transparent))] active:not-data-pressed:[--tgl-paint:var(--tgl-bg-active,var(--tgl-bg-hover,var(--tgl-bg,transparent)))] data-pressed:[--tgl-paint:var(--tgl-bg-selected,var(--tgl-bg,transparent))]"
 );
 
 // The paint pseudo-element: 1px border + fill from the resolved vars,
@@ -41,15 +40,15 @@ const toggleVariants = cva(cn(toggleBase, togglePaint), {
     variant: {
       // Borderless: transparent when off, a neutral selected overlay when on.
       ghost:
-        "[--tgl-bg-hover:var(--surface-hover)] [--tgl-bg-active:var(--surface-active)] [--tgl-bg-selected:var(--surface-selected)]",
+        "[--tgl-bg-active:var(--surface-active)] [--tgl-bg-hover:var(--surface-hover)] [--tgl-bg-selected:var(--surface-selected)]",
       // Secondary Button's fill. On mixes in 12% black (white in dark), so the
       // plate stays opaque. A pure ink, since the label color shows a cool cast.
-      soft: "[--tgl-ink:black] dark:[--tgl-ink:white] [--tgl-bg:var(--secondary)] [--tgl-bg-hover:var(--secondary-hover)] [--tgl-bg-active:var(--secondary-active)] [--tgl-bg-selected:color-mix(in_oklch,var(--secondary),var(--tgl-ink)_12%)]",
+      soft: "[--tgl-bg-active:var(--secondary-active)] [--tgl-bg-hover:var(--secondary-hover)] [--tgl-bg-selected:color-mix(in_oklch,var(--secondary),var(--tgl-ink)_12%)] [--tgl-bg:var(--secondary)] [--tgl-ink:black] dark:[--tgl-ink:white]",
       // Framed card. The border color is a token like every other, so it stays
       // through press; only the fill changes. bg-clip-padding keeps the card
       // fill out from under the translucent border.
       outline:
-        "[--tgl-border:var(--outline-border)] [--tgl-bg:var(--outline)] [--tgl-bg-hover:var(--outline-hover)] [--tgl-bg-active:var(--outline-active)] [--tgl-bg-selected:var(--secondary)] before:bg-clip-padding",
+        "[--tgl-bg-active:var(--outline-active)] [--tgl-bg-hover:var(--outline-hover)] [--tgl-bg-selected:var(--secondary)] [--tgl-bg:var(--outline)] [--tgl-border:var(--outline-border)] before:bg-clip-padding",
     },
     // Subtle (default) keeps each variant's quiet on state; solid is the
     // emphasis grey with a white label, as in Toggle Group and Tabs.
@@ -100,7 +99,7 @@ function Toggle({
 // counting as an icon.
 function isIconOnly(
   children: React.ReactNode,
-  label: string | undefined,
+  label: string | undefined
 ): boolean {
   return (
     React.isValidElement(children) &&

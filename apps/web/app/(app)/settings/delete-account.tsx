@@ -1,29 +1,30 @@
-"use client"
+"use client";
 
-import { useActionState, useState } from "react"
+import { useActionState, useState } from "react";
 
-import { Button } from "@workspace/ui/components/ui/cubby-ui/button"
-import { Input } from "@workspace/ui/components/ui/cubby-ui/input"
+import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
+import { Input } from "@workspace/ui/components/ui/cubby-ui/input";
 
-import { deleteAccount, type DeleteAccountState } from "./actions"
+import { deleteAccount } from "./actions";
+import type { DeleteAccountState } from "./actions";
 
-export function DeleteAccount({ email }: { email: string }) {
-  const [open, setOpen] = useState(false)
-  const [confirmation, setConfirmation] = useState("")
+export function DeleteAccount({ email }: { readonly email: string }) {
+  const [open, setOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState("");
   const [state, formAction, pending] = useActionState<
     DeleteAccountState,
     FormData
-  >(deleteAccount, {})
+  >(deleteAccount, {});
 
   if (!open) {
     return (
       <Button variant="destructive-soft" onClick={() => setOpen(true)}>
         Delete account
       </Button>
-    )
+    );
   }
 
-  const matches = confirmation.trim().toLowerCase() === email.toLowerCase()
+  const isMatches = confirmation.trim().toLowerCase() === email.toLowerCase();
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -39,7 +40,7 @@ export function DeleteAccount({ email }: { email: string }) {
         autoFocus
         aria-invalid={state.error ? true : undefined}
       />
-      {state.error && (
+      {!!state.error && (
         <p role="alert" className="text-sm text-destructive">
           {state.error}
         </p>
@@ -48,7 +49,7 @@ export function DeleteAccount({ email }: { email: string }) {
         <Button
           type="submit"
           variant="destructive"
-          disabled={!matches}
+          disabled={!isMatches}
           loading={pending}
         >
           Permanently delete account
@@ -58,13 +59,13 @@ export function DeleteAccount({ email }: { email: string }) {
           variant="outline"
           disabled={pending}
           onClick={() => {
-            setOpen(false)
-            setConfirmation("")
+            setOpen(false);
+            setConfirmation("");
           }}
         >
           Cancel
         </Button>
       </div>
     </form>
-  )
+  );
 }
