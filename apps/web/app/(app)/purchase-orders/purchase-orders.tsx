@@ -322,7 +322,10 @@ export function PurchaseOrders({ initial }: { initial: PurchaseOrder[] }) {
             </DrawerDescription>
           </DrawerHeader>
           <DrawerBody>
-            <DocumentUpload title="Drop purchase orders here or click to browse" />
+            <DocumentUpload
+              kind="purchase_order"
+              title="Drop purchase orders here or click to browse"
+            />
           </DrawerBody>
           <DrawerFooter>
             <DrawerClose render={<Button variant="outline" />}>Done</DrawerClose>

@@ -12,7 +12,8 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "workos:roles": "node --env-file=.env.local scripts/sync-workos-roles.ts"
+    "workos:roles": "node --env-file=.env.local scripts/sync-workos-roles.ts",
+    "test": "node --test 'lib/**/*.test.ts'"
   },
   "dependencies": {
     "@trigger.dev/sdk": "^4.8.10",
@@ -22,11 +23,13 @@
     "@workos-inc/node": "^12.4.0",
     "@workspace/crypto": "*",
     "@workspace/ui": "*",
+    "ai": "^7.0.181",
     "lucide-react": "^1.77.0",
     "next": "16.4.6",
     "next-themes": "^0.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "reductoai": "^0.21.0",
     "server-only": "^0.0.1",
     "zod": "^4.6.7"
   },
