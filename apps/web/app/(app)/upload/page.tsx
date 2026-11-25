@@ -15,7 +15,10 @@ export default function UploadPage() {
         title="Upload invoices"
         description="Add invoices to extract their details and match them to purchase orders."
       />
-      <DocumentUpload title="Drop invoices here or click to browse" />
+      <DocumentUpload
+        kind="invoice"
+        title="Drop invoices here or click to browse"
+      />
       <details className="mt-6">
         <summary className="cursor-pointer text-sm font-medium">
           Extraction schema

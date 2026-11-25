@@ -43,8 +43,17 @@ type RunState = {
 
 type IngestResponse = { fileName: string; runId: string; output: unknown }
 
-// Posts the file to the ingest route, which starts the Trigger.dev run.
-const adapter = httpAdapter<IngestResult>({ url: "/upload/ingest" })
+export type DocumentKind = "invoice" | "purchase_order"
+
+// Posts the file to the ingest route, which starts the Trigger.dev run for
+// that kind of document. Module-level so each adapter keeps a stable identity.
+const adapter = (kind: DocumentKind) =>
+  httpAdapter<IngestResult>({ url: "/upload/ingest", fields: { kind } })
+
+const ADAPTERS: Record<DocumentKind, ReturnType<typeof adapter>> = {
+  invoice: adapter("invoice"),
+  purchase_order: adapter("purchase_order"),
+}
 
 const POLL_INTERVAL_MS = 1500
 
@@ -113,10 +122,13 @@ function ItemProgress() {
 
 /** A PDF/DOCX dropzone with a per-file upload and processing progress bar. */
 export function DocumentUpload({
+  kind,
   title,
   maxFiles,
   className,
 }: {
+  /** Decides which ingestion task processes the uploads. */
+  kind: DocumentKind
   title: string
   maxFiles?: number
   className?: string
@@ -126,7 +138,7 @@ export function DocumentUpload({
   return (
     <>
       <Upload
-        adapter={adapter}
+        adapter={ADAPTERS[kind]}
         accept={ACCEPT}
         maxSize={MAX_SIZE}
         maxFiles={maxFiles}

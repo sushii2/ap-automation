@@ -2,6 +2,7 @@ import { runs } from "@trigger.dev/sdk"
 import { withAuth } from "@workos-inc/authkit-nextjs"
 
 import type { ingestInvoice } from "@/src/trigger/ingest-invoice"
+import type { ingestPurchaseOrder } from "@/src/trigger/ingest-purchase-order"
 
 /** Status and result of one ingestion run, polled by the upload page. */
 export async function GET(
@@ -14,7 +15,9 @@ export async function GET(
   }
 
   const { runId } = await params
-  const run = await runs.retrieve<typeof ingestInvoice>(runId).catch(() => null)
+  const run = await runs
+    .retrieve<typeof ingestInvoice | typeof ingestPurchaseOrder>(runId)
+    .catch(() => null)
   // Same response for missing and foreign runs, so run IDs can't be probed.
   if (!run || !run.tags.includes(`org:${organizationId}`)) {
     return Response.json({ error: "Not found" }, { status: 404 })

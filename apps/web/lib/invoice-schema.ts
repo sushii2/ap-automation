@@ -25,7 +25,7 @@ export const classificationSchema = z.object({
     .describe("One or two sentences citing the evidence in the document."),
 })
 
-const partySchema = z.object({
+export const partySchema = z.object({
   name: z.string().nullable(),
   address: z.string().nullable(),
   taxId: z.string().nullable().describe("VAT, GST, EIN or similar tax ID."),
@@ -82,10 +82,14 @@ export const ingestPayloadSchema = z
     { message: "Provide exactly one of fileUrl or reductoFileId" }
   )
 
+/** True when two amounts differ by more than a rounding error. */
+export function differs(a: number, b: number) {
+  return Math.abs(a - b) > 0.01
+}
+
 /** Cross-checks the model's numbers; mismatches are flagged, not corrected. */
 export function reconcile(invoice: ExtractedInvoice) {
   const warnings: string[] = []
-  const differs = (a: number, b: number) => Math.abs(a - b) > 0.01
 
   const lineAmounts = invoice.lineItems.map((item) => item.amount)
   if (
