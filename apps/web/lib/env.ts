@@ -7,6 +7,10 @@ const isProd =
   process.env.NODE_ENV === "production" &&
   process.env.NEXT_PHASE !== "phase-production-build"
 
+// Vercel preview (staging) deployments run with NODE_ENV=production but hold no
+// production data, so they may use a staging-only local keyring until KMS exists.
+const isVercelPreview = process.env.VERCEL_ENV === "preview"
+
 const schema = z
   .object({
     NODE_ENV: z
@@ -49,7 +53,7 @@ const schema = z
         message: "must be https in production",
       })
     }
-    if (isProd && env.ENCRYPTION_PROVIDER === "local") {
+    if (isProd && !isVercelPreview && env.ENCRYPTION_PROVIDER === "local") {
       ctx.addIssue({
         code: "custom",
         path: ["ENCRYPTION_PROVIDER"],

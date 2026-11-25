@@ -23,6 +23,7 @@
         "DATABASE_URL",
         "WORKOS_*",
         "TRIGGER_*",
+        "BLOB_*",
         "NEXT_PUBLIC_WORKOS_REDIRECT_URI"
       ]
     },

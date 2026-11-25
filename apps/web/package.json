@@ -19,6 +19,7 @@
     "@trigger.dev/sdk": "^4.8.10",
     "@uploadcn/core": "^0.1.5",
     "@uploadcn/react": "^0.1.5",
+    "@vercel/blob": "^2.9.0",
     "@workos-inc/authkit-nextjs": "^4.6.3",
     "@workos-inc/node": "^12.4.0",
     "@workspace/crypto": "*",

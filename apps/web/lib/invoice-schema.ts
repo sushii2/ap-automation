@@ -76,6 +76,8 @@ export const ingestPayloadSchema = z
     fileUrl: z.url().optional(),
     /** A `reducto://` ID, when the caller already uploaded the file. */
     reductoFileId: z.string().startsWith("reducto://").optional(),
+    /** Pathname of the original in the private Blob store, when it was saved. */
+    blobPathname: z.string().min(1).optional(),
   })
   .refine(
     (payload) => Boolean(payload.fileUrl) !== Boolean(payload.reductoFileId),
