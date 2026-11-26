@@ -1,10 +1,10 @@
-export type VisualState = {
+export interface VisualState {
   rect: DOMRect;
   opacity: number;
   scale: string;
   rotate: string;
   filter: string;
-};
+}
 
 export function visualState(node: HTMLElement): VisualState {
   const style = getComputedStyle(node);
@@ -17,7 +17,9 @@ export function visualState(node: HTMLElement): VisualState {
   };
 }
 
-/** How far `a`'s centre sits from `b`'s (scale and tilt pivot on centres). */
+/**
+How far `a`'s centre sits from `b`'s (scale and tilt pivot on centres).
+*/
 export function centreDelta(a: DOMRect, b: DOMRect): [number, number] {
   return [
     a.left + a.width / 2 - (b.left + b.width / 2),
@@ -27,26 +29,32 @@ export function centreDelta(a: DOMRect, b: DOMRect): [number, number] {
 
 const CLIPS = /auto|scroll|hidden|clip/;
 
-/** Whether an element cuts off what overflows it (a scroller, a clip). */
+/**
+Whether an element cuts off what overflows it (a scroller, a clip).
+*/
 const clips = (style: CSSStyleDeclaration): boolean =>
   CLIPS.test(style.overflowX) || CLIPS.test(style.overflowY);
 
 /**
- * Whether a change here would be seen: rendered, and within the viewport
- * and every ancestor that clips it, so a label scrolled out of
- * view inside a scrolling panel swaps without animating.
+ * Whether a change here would be seen: rendered, and within the viewport and every ancestor that clips it, so a label scrolled out of view inside a scrolling panel swaps without animating.
  */
 export function isOnScreen(el: HTMLElement): boolean {
   // A background tab: animations there don't finish until it's shown, so
   // every change would leave its ghosts piling up in the meantime.
-  if (document.visibilityState === "hidden") return false;
-  if (el.checkVisibility && !el.checkVisibility()) return false;
+  if (document.visibilityState === "hidden") {
+    return false;
+  }
+  if (el.checkVisibility && !el.checkVisibility()) {
+    return false;
+  }
   let top = 0;
   let left = 0;
   let bottom = window.innerHeight;
   let right = window.innerWidth;
   for (let node = el.parentElement; node; node = node.parentElement) {
-    if (!clips(getComputedStyle(node))) continue;
+    if (!clips(getComputedStyle(node))) {
+      continue;
+    }
     const box = node.getBoundingClientRect();
     top = Math.max(top, box.top);
     left = Math.max(left, box.left);
@@ -73,17 +81,19 @@ function showsEdge(style: CSSStyleDeclaration): boolean {
     style.backgroundImage !== "none" ||
     (style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
       style.backgroundColor !== "transparent") ||
-    parseFloat(style.borderLeftWidth) > 0 ||
-    parseFloat(style.borderRightWidth) > 0 ||
+    Number.parseFloat(style.borderLeftWidth) > 0 ||
+    Number.parseFloat(style.borderRightWidth) > 0 ||
     style.boxShadow !== "none" ||
     (style.backdropFilter !== "" && style.backdropFilter !== "none")
   );
 }
 
-/** Whether a pseudo-element draws a surface for its box (a button's fill). */
+/**
+Whether a pseudo-element draws a surface for its box (a button's fill).
+*/
 function pseudoShowsEdge(
   node: Element,
-  which: "::before" | "::after",
+  which: "::before" | "::after"
 ): boolean {
   const style = getComputedStyle(node, which);
   return (
@@ -96,7 +106,10 @@ function pseudoShowsEdge(
  * pseudo-element (our Button paints its fill on `::before`), or clips; else
  * the viewport. A plain block around it has no edge to see.
  */
-export type Bounds = { left: number; right: number };
+export interface Bounds {
+  left: number;
+  right: number;
+}
 
 export function visibleBounds(el: HTMLElement): Bounds {
   for (let node = el.parentElement; node; node = node.parentElement) {
@@ -109,8 +122,8 @@ export function visibleBounds(el: HTMLElement): Bounds {
     ) {
       const box = node.getBoundingClientRect();
       return {
-        left: box.left + parseFloat(style.borderLeftWidth),
-        right: box.right - parseFloat(style.borderRightWidth),
+        left: box.left + Number.parseFloat(style.borderLeftWidth),
+        right: box.right - Number.parseFloat(style.borderRightWidth),
       };
     }
   }
@@ -128,36 +141,43 @@ export function inkEscapes(
   root: HTMLElement,
   side: Side,
   inkEdge: number,
-  visible: () => Bounds,
+  visible: () => Bounds
 ): false | "neighbour" | number {
   let el: Element = root;
   for (let depth = 0; depth < 8; depth++) {
     // `side` is physical (start: left, end: right); in right-to-left text
     // the next sibling sits to the left.
-    const rtl =
+    const isRtl =
       el.parentElement !== null &&
       getComputedStyle(el.parentElement).direction === "rtl";
-    const toRight = (side === "end") !== rtl;
-    let sibling = toRight ? el.nextSibling : el.previousSibling;
+    const isToRight = (side === "end") !== isRtl;
+    let sibling = el[isToRight ? "nextSibling" : "previousSibling"];
     while (sibling) {
-      const visible =
+      const isVisible =
         sibling instanceof Element
           ? sibling.getBoundingClientRect().width >= 1
           : Boolean(sibling.textContent?.trim());
-      if (visible) return "neighbour";
-      sibling = toRight ? sibling.nextSibling : sibling.previousSibling;
+      if (isVisible) {
+        return "neighbour";
+      }
+      sibling = sibling[isToRight ? "nextSibling" : "previousSibling"];
     }
     // Neighbours share the line up to the first block around it.
     const parent = el.parentElement;
-    if (!parent) break;
+    if (!parent) {
+      break;
+    }
     const { display } = getComputedStyle(parent);
-    if (!display.startsWith("inline") && display !== "contents") break;
+    if (!display.startsWith("inline") && display !== "contents") {
+      break;
+    }
     el = parent;
   }
   // Past the container's edge: the edge itself, where the fade belongs.
   const bounds = visible();
-  if (side === "end")
+  if (side === "end") {
     return inkEdge > bounds.right + 0.5 ? bounds.right : false;
+  }
   return inkEdge < bounds.left - 0.5 ? bounds.left : false;
 }
 
@@ -169,52 +189,66 @@ export function inkEscapes(
 export function lineCount(el: HTMLElement): number {
   const tops: number[] = [];
   for (const rect of el.getClientRects()) {
-    if (!tops.some((top) => Math.abs(top - rect.top) < 1)) tops.push(rect.top);
+    if (tops.every((top) => !(Math.abs(top - rect.top) < 1))) {
+      tops.push(rect.top);
+    }
   }
   return tops.length;
 }
 
 type Axis = "width" | "height";
 
-/** A box's content width or height, from its rect: less padding and borders. */
+/**
+A box's content width or height, from its rect: less padding and borders.
+*/
 export function contentSize(
   style: CSSStyleDeclaration,
   rect: DOMRect,
-  axis: Axis,
+  axis: Axis
 ): number {
   const sides = axis === "width" ? ["left", "right"] : ["top", "bottom"];
   let size = rect[axis];
   for (const side of sides) {
-    size -= parseFloat(style.getPropertyValue(`padding-${side}`)) || 0;
-    size -= parseFloat(style.getPropertyValue(`border-${side}-width`)) || 0;
+    size -= Number.parseFloat(style.getPropertyValue(`padding-${side}`)) || 0;
+    size -=
+      Number.parseFloat(style.getPropertyValue(`border-${side}-width`)) || 0;
   }
   return size;
 }
 
-/** The width or height to set to make a box this big, by its box-sizing. */
+/**
+The width or height to set to make a box this big, by its box-sizing.
+*/
 export function sizeOf(
   style: CSSStyleDeclaration,
   rect: DOMRect,
-  axis: Axis,
+  axis: Axis
 ): number {
   return style.boxSizing === "border-box"
     ? rect[axis]
     : contentSize(style, rect, axis);
 }
 
-/** Until a label has resized, a guess from its alignment. */
+/**
+Until a label has resized, a guess from its alignment.
+*/
 export function anchorHint(style: CSSStyleDeclaration): number {
-  const rtl = style.direction === "rtl";
+  const isRtl = style.direction === "rtl";
   switch (style.textAlign) {
-    case "center":
+    case "center": {
       return 0.5;
-    case "end":
+    }
+    case "end": {
       return 1;
-    case "right":
-      return rtl ? 0 : 1;
-    case "left":
-      return rtl ? 1 : 0;
-    default:
+    }
+    case "right": {
+      return isRtl ? 0 : 1;
+    }
+    case "left": {
+      return isRtl ? 1 : 0;
+    }
+    default: {
       return 0;
+    }
   }
 }

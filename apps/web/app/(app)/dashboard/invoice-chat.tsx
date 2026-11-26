@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import { ArrowUp, MessagesSquare } from "lucide-react"
+import { useEffect, useRef, useState } from "react";
+import { ArrowUp, MessagesSquare } from "lucide-react";
 
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble"
-import { Button } from "@workspace/ui/components/button"
+import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
+import { Button } from "@workspace/ui/components/button";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@workspace/ui/components/empty"
+} from "@workspace/ui/components/empty";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
-} from "@workspace/ui/components/input-group"
-import { Message, MessageContent } from "@workspace/ui/components/message"
+} from "@workspace/ui/components/input-group";
+import { Message, MessageContent } from "@workspace/ui/components/message";
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -26,47 +26,51 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@workspace/ui/components/message-scroller"
+} from "@workspace/ui/components/message-scroller";
 
-type ChatMessage = { id: string; role: "user" | "assistant"; text: string }
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+}
 
 const SUGGESTIONS = [
   "Which invoices need review?",
   "Show invoices without a matching PO",
   "What did we spend with Northwind this month?",
   "Summarize last week's invoices",
-]
+];
 
 // TODO: replace with `useChat` from the AI SDK once the invoice index and a
 // chat route exist. Until then every question gets this fixed reply.
 const NOT_CONNECTED =
-  "Chat isn't connected to your invoices yet. Once invoices are indexed, answers will show up here."
+  "Chat isn't connected to your invoices yet. Once invoices are indexed, answers will show up here.";
 
 export function InvoiceChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [text, setText] = useState("")
-  const [busy, setBusy] = useState(false)
-  const formRef = useRef<HTMLFormElement>(null)
-  const replyTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const replyTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  useEffect(() => () => clearTimeout(replyTimer.current), [])
+  useEffect(() => () => clearTimeout(replyTimer.current), []);
 
-  const canSend = text.trim().length > 0 && !busy
+  const canSend = text.trim().length > 0 && !busy;
 
   function send(prompt: string) {
     setMessages((current) => [
       ...current,
       { id: crypto.randomUUID(), role: "user", text: prompt },
-    ])
-    setText("")
-    setBusy(true)
+    ]);
+    setText("");
+    setBusy(true);
     replyTimer.current = setTimeout(() => {
       setMessages((current) => [
         ...current,
         { id: crypto.randomUUID(), role: "assistant", text: NOT_CONNECTED },
-      ])
-      setBusy(false)
-    }, 600)
+      ]);
+      setBusy(false);
+    }, 600);
   }
 
   return (
@@ -81,8 +85,8 @@ export function InvoiceChat() {
                 </EmptyMedia>
                 <EmptyTitle>Ask about your invoices</EmptyTitle>
                 <EmptyDescription>
-                  Look up amounts, vendors, due dates and purchase-order
-                  matches in plain language.
+                  Look up amounts, vendors, due dates and purchase-order matches
+                  in plain language.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -118,7 +122,7 @@ export function InvoiceChat() {
                       </MessageScrollerItem>
                     )
                   )}
-                  {busy && (
+                  {!!busy && (
                     <p
                       role="status"
                       className="animate-pulse text-sm text-muted-foreground"
@@ -152,8 +156,10 @@ export function InvoiceChat() {
           <form
             ref={formRef}
             onSubmit={(event) => {
-              event.preventDefault()
-              if (canSend) send(text.trim())
+              event.preventDefault();
+              if (canSend) {
+                send(text.trim());
+              }
             }}
           >
             <InputGroup>
@@ -165,13 +171,15 @@ export function InvoiceChat() {
                 className="min-h-14"
                 onKeyDown={(event) => {
                   if (
-                    event.key === "Enter" &&
-                    !event.shiftKey &&
-                    !event.nativeEvent.isComposing
+                    event.key !== "Enter" ||
+                    event.shiftKey ||
+                    event.nativeEvent.isComposing
                   ) {
-                    event.preventDefault()
-                    formRef.current?.requestSubmit()
+                    return;
                   }
+
+                  event.preventDefault();
+                  formRef.current?.requestSubmit();
                 }}
               />
               <InputGroupAddon align="block-end">
@@ -191,5 +199,5 @@ export function InvoiceChat() {
         </div>
       </div>
     </MessageScrollerProvider>
-  )
+  );
 }

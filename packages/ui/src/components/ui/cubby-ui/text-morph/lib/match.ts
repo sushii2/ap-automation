@@ -4,44 +4,47 @@
 import type { TextMorphMode } from "@workspace/ui/components/ui/cubby-ui/text-morph/lib/options";
 
 /*
- * Which glyphs of the old text survive into the new one. Pure: works on
- * grapheme strings, so it can be tested without a DOM.
+ * Which glyphs of the old text survive into the new one. Pure: works on grapheme strings, so it can be tested without a DOM.
  *
- * Numbers are matched by place value: the digits line up on the
- * decimal point, so 1,204 → 1,318 keeps the thousands and the comma, and a
- * digit that changes rolls in place. Everything else is matched by the
- * mode's text rule: roll keeps the shared ends and one run between them
- * morph matches whole words first, then letters within the
- * words it pairs, and letters anywhere only in a one-word value.
+ * Numbers are matched by place value: the digits line up on the decimal point, so 1,204 → 1,318 keeps the thousands and the comma, and a digit that changes rolls in place. Everything else is matched by the mode's text rule: roll keeps the shared ends and one run between them morph matches whole words first, then letters within the words it pairs, and letters anywhere only in a one-word value.
  *
- * A field someone is typing in knows where the edit happened, so with a
- * caret the whole value is matched around it instead:
- * typing 1 in front of 20 inserts a digit rather than renumbering the
- * column.
+ * A field someone is typing in knows where the edit happened, so with a caret the whole value is matched around it instead:
+ * typing 1 in front of 20 inserts a digit rather than renumbering the column.
  */
 
-/** `number`: part of a number matched by place value. */
+/**
+`number`: part of a number matched by place value.
+*/
 export type GlyphKind = "text" | "number";
 
-export type MatchResult = {
-  /** For each new glyph, the index of the old glyph it keeps, or -1. */
+export interface MatchResult {
+  /**
+  For each new glyph, the index of the old glyph it keeps, or -1.
+  */
   kept: number[];
   nextKinds: GlyphKind[];
   oldKinds: GlyphKind[];
-  /** 1: the value went up (new glyphs arrive from below), -1: down. */
+  /**
+  1: the value went up (new glyphs arrive from below), -1: down.
+  */
   trend: 1 | -1;
-  /** Matched by words: always in blend, in morph once a value has several. */
+  /**
+  Matched by words: always in blend, in morph once a value has several.
+  */
   byWords: boolean;
-};
+}
 
-export type MatchOptions = {
-  /** The locale's decimal separator. */
+export interface MatchOptions {
+  /**
+  The locale's decimal separator.
+  */
   decimal: string;
-  /** 1 up, -1 down, 0 read it off the numbers. */
+  /**
+  1 up, -1 down, 0 read it off the numbers.
+  */
   trend: -1 | 0 | 1;
   /**
-   * Where the caret sits in the new value after an edit. Matches around it
-   * instead of by place value and the mode's text rule.
+   * Where the caret sits in the new value after an edit. Matches around it instead of by place value and the mode's text rule.
    */
   caret?: number;
   /**
@@ -50,9 +53,12 @@ export type MatchOptions = {
    * against that, not along the text.
    */
   anchor?: number;
-};
+}
 
-type NumberToken = { start: number; end: number };
+interface NumberToken {
+  start: number;
+  end: number;
+}
 
 type Granularity = "grapheme" | "word";
 
@@ -63,19 +69,22 @@ type Granularity = "grapheme" | "word";
  */
 const segmenters = new Map<Granularity, Intl.Segmenter | null>();
 
-/** Split into graphemes or words; by code point without Intl.Segmenter. */
+/**
+Split into graphemes or words; by code point without Intl.Segmenter.
+*/
 function segment(text: string, granularity: Granularity): string[] {
   if (!segmenters.has(granularity)) {
     segmenters.set(
       granularity,
       typeof Intl.Segmenter === "function"
         ? new Intl.Segmenter(undefined, { granularity })
-        : null,
+        : null
     );
   }
   const segmenter = segmenters.get(granularity);
-  if (!segmenter) return Array.from(text);
-  return Array.from(segmenter.segment(text), (s) => s.segment);
+  return segmenter
+    ? Array.from(segmenter.segment(text), (s) => s.segment)
+    : Array.from(text);
 }
 
 const graphemes = (text: string): string[] => segment(text, "grapheme");
@@ -85,9 +94,7 @@ const graphemes = (text: string): string[] => segment(text, "grapheme");
  * join (Arabic and the scripts written with it, Syriac, N'Ko, Mongolian,
  * ...) and ones that stack or fuse consonants into conjuncts (Devanagari and
  * the other Indic scripts, Sinhala, Tibetan, Thai, Lao, Khmer, Myanmar).
- * Each glyph is its own box, shaped alone, so a conjunct split across two
- * showed a loose virama or subscript. Their digits don't shape together, so
- * they're left out.
+ * Each glyph is its own box, shaped alone, so a conjunct split across two showed a loose virama or subscript. Their digits don't shape together, so they're left out.
  */
 const JOINING =
   /(?=[\p{L}\p{M}])[\p{Script=Arabic}\p{Script=Syriac}\p{Script=Nko}\p{Script=Mongolian}\p{Script=Mandaic}\p{Script=Adlam}\p{Script=Hanifi_Rohingya}\p{Script=Thaana}\p{Script=Devanagari}\p{Script=Bengali}\p{Script=Gurmukhi}\p{Script=Gujarati}\p{Script=Oriya}\p{Script=Tamil}\p{Script=Telugu}\p{Script=Kannada}\p{Script=Malayalam}\p{Script=Sinhala}\p{Script=Tibetan}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]/u;
@@ -116,53 +123,71 @@ const HAS_BREAK = /[ \t\n]/;
  */
 export function textUnits(
   text: string,
-  split: TextMorphSplit = "glyph",
+  split: TextMorphSplit = "glyph"
 ): string[] {
-  const byWord = split === "word" || (split === "auto" && HAS_BREAK.test(text));
-  if (!byWord && !JOINING.test(text)) return graphemes(text);
+  const isByWord =
+    split === "word" || (split === "auto" && HAS_BREAK.test(text));
+  if (!isByWord && !JOINING.test(text)) {
+    return graphemes(text);
+  }
   const words = segment(text, "word");
   return words.flatMap((word) => {
-    const whole = JOINING.test(word) || (byWord && LETTER.test(word));
-    return whole ? [word] : graphemes(word);
+    const isWhole = JOINING.test(word) || (isByWord && LETTER.test(word));
+    return isWhole ? [word] : graphemes(word);
   });
 }
 
 /**
  * A caret given as a string index (an input's `selectionStart`, in UTF-16
  * code units) as a count of the units before it, which matching works in:
- * an emoji, an accented letter or a whole Arabic word before the caret is
- * several code units but one unit.
+ * an emoji, an accented letter or a whole Arabic word before the caret is several code units but one unit.
  */
 export function caretUnits(units: string[], caret: number): number {
   let length = 0;
   let count = 0;
   for (const unit of units) {
     length += unit.length;
-    if (length > caret) break;
+    if (length > caret) {
+      break;
+    }
     count++;
   }
   return count;
 }
 
 const SIGN = "+-−";
-const GROUP = ".,'   \u066C\u066B";
-/** Any script's decimal digits (0-9, ٠-٩, ۰-۹, ...). */
+const GROUP = ".,'\u{A0}\u{202F}\u{2009}\u{66C}\u{66B}";
+/**
+Any script's decimal digits (0-9, ٠-٩, ۰-۹, ...).
+*/
 const DIGIT = /^\p{Nd}$/u;
-/** Percent signs a number can end with, Latin and Arabic. */
-const PERCENT = "%\u066A";
+/**
+Percent signs a number can end with, Latin and Arabic.
+*/
+const PERCENT = "%\u{66A}";
 const CURRENCY = /^\p{Sc}$/u;
-/** A punctuation mark, in any script. */
+/**
+A punctuation mark, in any script.
+*/
 const PUNCTUATION = /^\p{P}$/u;
 
-/** A decimal digit, in any script. */
+/**
+A decimal digit, in any script.
+*/
 export const isDigit = (g: string): boolean => DIGIT.test(g);
 
-/** Marks a number may open with, besides a currency symbol. */
-const PREFIX = SIGN + "(#" + PERCENT;
-/** Marks a number may close with, besides a currency symbol. */
-const SUFFIX = PERCENT + ".,!?:;)\"'\u201D\u2019";
+/**
+Marks a number may open with, besides a currency symbol.
+*/
+const PREFIX = `${SIGN}(#${PERCENT}`;
+/**
+Marks a number may close with, besides a currency symbol.
+*/
+const SUFFIX = `${PERCENT}.,!?:;)"'\u{201D}\u{2019}`;
 
-/** A space, tab or line break: where words and lines may break. */
+/**
+A space, tab or line break: where words and lines may break.
+*/
 export const isBreak = (g: string): boolean =>
   g === " " || g === "\t" || g === "\n";
 
@@ -179,33 +204,54 @@ export function findNumbers(glyphs: string[]): NumberToken[] {
     marks.includes(g) || CURRENCY.test(g);
   let wordStart = 0;
   for (let i = 0; i <= glyphs.length; i++) {
-    if (i < glyphs.length && !isBreak(glyphs[i])) continue;
+    if (i < glyphs.length && !isBreak(glyphs[i])) {
+      continue;
+    }
     const wordFrom = wordStart;
     const wordEnd = i;
     let first = wordFrom;
     let last = wordEnd;
     wordStart = i + 1;
-    while (first < last && isAffix(glyphs[first], PREFIX)) first++;
-    while (last > first && isAffix(glyphs[last - 1], SUFFIX)) last--;
-    if (first >= last || !isDigit(glyphs[first]) || !isDigit(glyphs[last - 1]))
+    while (first < last && isAffix(glyphs[first], PREFIX)) {
+      first++;
+    }
+    while (last > first && isAffix(glyphs[last - 1], SUFFIX)) {
+      last--;
+    }
+    if (
+      first >= last ||
+      !isDigit(glyphs[first]) ||
+      !isDigit(glyphs[last - 1])
+    ) {
       continue;
+    }
     const core = glyphs.slice(first, last);
-    if (!core.every((g) => isDigit(g) || GROUP.includes(g))) continue;
+    if (core.some((g) => !(isDigit(g) || GROUP.includes(g)))) {
+      continue;
+    }
     let start = first;
     // Leading currency symbol, then sign, either order.
     for (let k = 0; k < 2; k++) {
       const before = glyphs[start - 1];
-      if (start > wordFrom && (CURRENCY.test(before) || SIGN.includes(before)))
+      if (
+        start > wordFrom &&
+        (CURRENCY.test(before) || SIGN.includes(before))
+      ) {
         start--;
+      }
     }
     let end = last;
-    if (end < wordEnd && PERCENT.includes(glyphs[end])) end++;
+    if (end < wordEnd && PERCENT.includes(glyphs[end])) {
+      end++;
+    }
     tokens.push({ start, end });
   }
   return tokens;
 }
 
-/** Past this many digits gained or lost, a number is replaced, not moved. */
+/**
+Past this many digits gained or lost, a number is replaced, not moved.
+*/
 const MAGNITUDE_JUMP = 3;
 
 /**
@@ -215,7 +261,7 @@ const MAGNITUDE_JUMP = 3;
 function commonEnds(
   old: string[],
   next: string[],
-  keeps: (glyph: string) => boolean = () => true,
+  keeps: (glyph: string) => boolean = () => true
 ): [start: number, end: number] {
   let start = 0;
   while (
@@ -252,24 +298,36 @@ function commonEnds(
 export function matchPlaces(
   old: string[],
   next: string[],
-  decimal: string,
+  decimal: string
 ): [number, number][] {
   const pairs = new Map<number, number>();
   // Affixes hold (a currency symbol, a `%`); digits never count as one.
   const [start, end] = commonEnds(old, next, (g) => !isDigit(g));
-  for (let k = 0; k < start; k++) pairs.set(k, k);
-  for (let k = 1; k <= end; k++) pairs.set(next.length - k, old.length - k);
+  for (let k = 0; k < start; k++) {
+    pairs.set(k, k);
+  }
+  for (let k = 1; k <= end; k++) {
+    pairs.set(next.length - k, old.length - k);
+  }
   const oldEnd = old.length - end;
   const nextEnd = next.length - end;
 
   // The decimal point, or the end where there is none.
   const pivotOf = (glyphs: string[], end: number): number => {
-    for (let i = end - 1; i >= start; i--) if (glyphs[i] === decimal) return i;
+    for (let i = end - 1; i >= start; i--) {
+      if (glyphs[i] === decimal) {
+        return i;
+      }
+    }
     return end;
   };
   const digitsIn = (glyphs: string[], from: number, to: number): number[] => {
     const out: number[] = [];
-    for (let i = from; i < to; i++) if (isDigit(glyphs[i])) out.push(i);
+    for (let i = from; i < to; i++) {
+      if (isDigit(glyphs[i])) {
+        out.push(i);
+      }
+    }
     return out;
   };
   const oldPivot = pivotOf(old, oldEnd);
@@ -289,14 +347,16 @@ export function matchPlaces(
   const pairDigits = (a: number[], b: number[], reshapes: boolean): boolean => {
     if (a.length === b.length || !reshapes) {
       for (let k = 0; k < Math.min(a.length, b.length); k++) {
-        if (old[a[k]] === next[b[k]]) pairs.set(b[k], a[k]);
+        if (old[a[k]] === next[b[k]]) {
+          pairs.set(b[k], a[k]);
+        }
       }
       return false;
     }
     // From the units column, so ties on repeated digits resolve there.
     const carried = lcs(
       a.map((i) => old[i]).reverse(),
-      b.map((i) => next[i]).reverse(),
+      b.map((i) => next[i]).reverse()
     );
     for (const [to, from] of carried) {
       pairs.set(b[b.length - 1 - to], a[a.length - 1 - from]);
@@ -304,7 +364,9 @@ export function matchPlaces(
     return carried.length > 0;
   };
   const separator = (from: number, to: number): void => {
-    if (!isDigit(old[from]) && old[from] === next[to]) pairs.set(to, from);
+    if (!isDigit(old[from]) && old[from] === next[to]) {
+      pairs.set(to, from);
+    }
   };
 
   if (!pairDigits(oldInt, nextInt, true)) {
@@ -322,43 +384,54 @@ export function matchPlaces(
     pairDigits(
       digitsIn(old, oldPivot + 1, oldEnd),
       digitsIn(next, nextPivot + 1, nextEnd),
-      false,
+      false
     );
   }
   return [...pairs];
 }
 
 /**
- * A decimal digit's value, in any script: digits run in blocks of ten from
- * zero, so it's the distance from the start of its run.
+ * A decimal digit's value, in any script: digits run in blocks of ten from zero, so it's the distance from the start of its run.
  */
 export function digitValue(digit: string): number {
   const code = digit.codePointAt(0) ?? 0;
   let start = code;
-  while (DIGIT.test(String.fromCodePoint(start - 1))) start--;
+  while (DIGIT.test(String.fromCodePoint(start - 1))) {
+    start--;
+  }
   return (code - start) % 10;
 }
 
-/** The numeric value of a number token, or NaN. */
+/**
+The numeric value of a number token, or NaN.
+*/
 export function parseNumber(glyphs: string[], decimal: string): number {
   let text = "";
   for (const g of glyphs) {
-    if (isDigit(g)) text += digitValue(g);
-    else if (g === decimal) text += ".";
-    else if (g === "-" || g === "−") text = `-${text}`;
+    if (isDigit(g)) {
+      text += digitValue(g);
+    } else if (g === decimal) {
+      text += ".";
+    } else if (g === "-" || g === "−") {
+      text = `-${text}`;
+    }
   }
   return Number(text);
 }
 
-/** Keep the shared start and end. Returns [newIndex, oldIndex] pairs. */
+/**
+Keep the shared start and end. Returns [newIndex, oldIndex] pairs.
+*/
 function matchEnds(
   old: string[],
   next: string[],
-  anchor: number,
+  anchor: number
 ): [number, number][] {
   const pairs: [number, number][] = [];
   const [start, end] = commonEnds(old, next);
-  for (let k = 0; k < start; k++) pairs.push([k, k]);
+  for (let k = 0; k < start; k++) {
+    pairs.push([k, k]);
+  }
   for (let k = 0; k < end; k++) {
     pairs.push([next.length - 1 - k, old.length - 1 - k]);
   }
@@ -371,7 +444,7 @@ function matchEnds(
   const run = floatingRun(
     old.slice(start, old.length - end),
     next.slice(start, next.length - end),
-    anchor,
+    anchor
   );
   if (run) {
     for (let k = 0; k < run.length; k++) {
@@ -393,7 +466,7 @@ const RUN_SLACK = 2;
 function floatingRun(
   old: string[],
   next: string[],
-  anchor: number,
+  anchor: number
 ): { from: number; to: number; length: number } | null {
   const grown = next.length - old.length;
   const travelOf = (from: number, to: number): number =>
@@ -404,13 +477,17 @@ function floatingRun(
   for (let i = 1; i <= old.length; i++) {
     const lengths = new Array<number>(next.length + 1).fill(0);
     for (let j = 1; j <= next.length; j++) {
-      if (old[i - 1] !== next[j - 1]) continue;
+      if (old[i - 1] !== next[j - 1]) {
+        continue;
+      }
       const length = previous[j - 1] + 1;
       lengths[j] = length;
       const from = i - length;
       const to = j - length;
       const travel = travelOf(from, to);
-      if (length < MIN_RUN || travel > length + RUN_SLACK) continue;
+      if (length < MIN_RUN || travel > length + RUN_SLACK) {
+        continue;
+      }
       if (
         !best ||
         length > best.length ||
@@ -424,27 +501,36 @@ function floatingRun(
   return best;
 }
 
-/** Match each glyph to the first unused old copy of it, in order. */
+/**
+Match each glyph to the first unused old copy of it, in order.
+*/
 function matchAnywhere(old: string[], next: string[]): [number, number][] {
   const pool = new Map<string, number[]>();
-  old.forEach((glyph, i) => {
+  for (const [i, glyph] of old.entries()) {
     const at = pool.get(glyph);
-    if (at) at.push(i);
-    else pool.set(glyph, [i]);
-  });
+    if (at) {
+      at.push(i);
+    } else {
+      pool.set(glyph, [i]);
+    }
+  }
   const pairs: [number, number][] = [];
-  next.forEach((glyph, i) => {
+  for (const [i, glyph] of next.entries()) {
     const from = pool.get(glyph)?.shift();
-    if (from !== undefined) pairs.push([i, from]);
-  });
+    if (from !== undefined) {
+      pairs.push([i, from]);
+    }
+  }
   return pairs;
 }
 
-/** Longest common subsequence of two lists, as [bIndex, aIndex] pairs. */
+/**
+Longest common subsequence of two lists, as [bIndex, aIndex] pairs.
+*/
 function lcs(a: string[], b: string[]): [number, number][] {
   // lengths[i][j]: the LCS of a[i..] and b[j..].
   const lengths = Array.from({ length: a.length + 1 }, () =>
-    new Array<number>(b.length + 1).fill(0),
+    new Array<number>(b.length + 1).fill(0)
   );
   for (let i = a.length - 1; i >= 0; i--) {
     for (let j = b.length - 1; j >= 0; j--) {
@@ -471,55 +557,73 @@ function lcs(a: string[], b: string[]): [number, number][] {
   return pairs;
 }
 
-/** Stands in for a whole number when comparing words: numbers pair by place. */
-const NUMBER_KEY = "\u0000#";
+/**
+Stands in for a whole number when comparing words: numbers pair by place.
+*/
+const NUMBER_KEY = "\0#";
 
-type Word = {
-  /** Its glyphs' indices in the value. */
+interface Word {
+  /**
+  Its glyphs' indices in the value.
+  */
   glyphs: number[];
-  /** What it's compared by: its text, with each number as one token. */
+  /**
+  What it's compared by: its text, with each number as one token.
+  */
   key: string[];
-};
+}
 
-/** Words: runs of glyphs between spaces. */
+/**
+Words: runs of glyphs between spaces.
+*/
 function wordsOf(glyphs: string[], kinds: GlyphKind[]): Word[] {
   const words: Word[] = [];
   let word: Word | null = null;
-  glyphs.forEach((glyph, i) => {
+  for (const [i, glyph] of glyphs.entries()) {
     if (isBreak(glyph)) {
       word = null;
-      return;
+      continue;
     }
     if (!word) {
       word = { glyphs: [], key: [] };
       words.push(word);
     }
     // A number counts once, however many glyphs it has.
-    if (kinds[i] === "text") word.key.push(glyph);
-    else if (word.glyphs.length === 0 || kinds[i - 1] !== "number") {
+    if (kinds[i] === "text") {
+      word.key.push(glyph);
+    } else if (word.glyphs.length === 0 || kinds[i - 1] !== "number") {
       word.key.push(NUMBER_KEY);
     }
     word.glyphs.push(i);
-  });
+  }
   return words;
 }
 
-/** Shared letters over the longer word's length; 1 for numbers alone. */
+/**
+Shared letters over the longer word's length; 1 for numbers alone.
+*/
 function similarity(a: string[], b: string[]): number {
-  if (a.length === 0 || b.length === 0) return 0;
-  return lcs(a, b).length / Math.max(a.length, b.length);
+  return a.length === 0 || b.length === 0
+    ? 0
+    : lcs(a, b).length / Math.max(a.length, b.length);
 }
 
-/** Below this a new word enters whole rather than morphing from an old one. */
+/**
+Below this a new word enters whole rather than morphing from an old one.
+*/
 const MIN_SIMILARITY = 0.4;
 
-/** How many surviving words sit before each word: the gap it's in. */
+/**
+How many surviving words sit before each word: the gap it's in.
+*/
 function gaps(count: number, survivors: Set<number>): number[] {
   const out: number[] = [];
   let before = 0;
   for (let i = 0; i < count; i++) {
     out.push(before);
-    if (survivors.has(i)) before++;
+    if (survivors.has(i)) {
+      before++;
+    }
   }
   return out;
 }
@@ -537,13 +641,17 @@ function gaps(count: number, survivors: Set<number>): number[] {
 function sharedEnds(old: string[], next: string[]): [number, number][] {
   const [start, end] = commonEnds(old, next);
   const pairs: [number, number][] = [];
-  for (let k = 0; k < start; k++) pairs.push([k, k]);
+  for (let k = 0; k < start; k++) {
+    pairs.push([k, k]);
+  }
   for (let k = 1; k <= end; k++) {
     pairs.push([next.length - k, old.length - k]);
   }
   if (old.length === next.length) {
     for (let k = start; k < old.length - end; k++) {
-      if (old[k] === next[k]) pairs.push([k, k]);
+      if (old[k] === next[k]) {
+        pairs.push([k, k]);
+      }
     }
   }
   const taken = new Set(pairs.map(([, from]) => from));
@@ -589,7 +697,7 @@ function matchWords(
   next: string[],
   oldKinds: GlyphKind[],
   nextKinds: GlyphKind[],
-  within: "letters" | "ends",
+  within: "letters" | "ends"
 ): [number, number][] {
   const oldWords = wordsOf(old, oldKinds);
   const nextWords = wordsOf(next, nextKinds);
@@ -599,30 +707,40 @@ function matchWords(
   const core = (key: string[]): string[] => {
     let start = 0;
     let end = key.length;
-    while (start < end && PUNCTUATION.test(key[start])) start++;
-    while (end > start && PUNCTUATION.test(key[end - 1])) end--;
+    while (start < end && PUNCTUATION.test(key[start])) {
+      start++;
+    }
+    while (end > start && PUNCTUATION.test(key[end - 1])) {
+      end--;
+    }
     return start === end ? key : key.slice(start, end);
   };
   const keyOf = (word: Word): string =>
-    (within === "letters" ? word.key : core(word.key)).join("\u0001");
+    (within === "letters" ? word.key : core(word.key)).join("\u{1}");
   const pairsOf = new Map<number, number>();
 
   const inOrder = lcs(oldWords.map(keyOf), nextWords.map(keyOf));
-  for (const [to, from] of inOrder) pairsOf.set(to, from);
+  for (const [to, from] of inOrder) {
+    pairsOf.set(to, from);
+  }
   const oldGaps = gaps(oldWords.length, new Set(inOrder.map(([, f]) => f)));
   const nextGaps = gaps(nextWords.length, new Set(inOrder.map(([t]) => t)));
   const taken = new Set(inOrder.map(([, from]) => from));
 
   // Words that moved: the same word, anywhere.
-  nextWords.forEach((word, to) => {
-    if (pairsOf.has(to)) return;
+  for (const [to, word] of nextWords.entries()) {
+    if (pairsOf.has(to)) {
+      continue;
+    }
     const from = oldWords.findIndex(
-      (old, i) => !taken.has(i) && keyOf(old) === keyOf(word),
+      (old, i) => !taken.has(i) && keyOf(old) === keyOf(word)
     );
-    if (from === -1) return;
+    if (from === -1) {
+      continue;
+    }
     pairsOf.set(to, from);
     taken.add(from);
-  });
+  }
 
   // Words that changed: the most similar old word in the same gap. Keeping
   // ends (blend), a gap holding one changed word on each side pairs them
@@ -636,31 +754,39 @@ function matchWords(
       words.filter((_, i) => gapsOf[i] === gap && !used(i)).length;
   const oldFree = free(oldWords, oldGaps, (i) => taken.has(i));
   const nextFree = free(nextWords, nextGaps, (i) => pairsOf.has(i));
-  nextWords.forEach((word, to) => {
-    if (pairsOf.has(to)) return;
+  for (const [to, word] of nextWords.entries()) {
+    if (pairsOf.has(to)) {
+      continue;
+    }
     let best = -1;
     let bestSimilarity = MIN_SIMILARITY;
-    const alone =
+    const isAlone =
       within === "ends" &&
       oldFree(nextGaps[to]) === 1 &&
       nextFree(nextGaps[to]) === 1;
-    oldWords.forEach((old, from) => {
-      if (taken.has(from) || oldGaps[from] !== nextGaps[to]) return;
-      if (alone) {
+    for (const [from, old] of oldWords.entries()) {
+      if (taken.has(from) || oldGaps[from] !== nextGaps[to]) {
+        continue;
+      }
+      if (isAlone) {
         best = from;
-        return;
+        continue;
       }
       const shared = similarity(old.key, word.key);
-      if (shared > bestSimilarity) {
-        best = from;
-        bestSimilarity = shared;
+      if (!(shared > bestSimilarity)) {
+        continue;
       }
-    });
-    if (best === -1) return;
+
+      best = from;
+      bestSimilarity = shared;
+    }
+    if (best === -1) {
+      continue;
+    }
     pairsOf.set(to, best);
     taken.add(best);
     changed.add(to);
-  });
+  }
 
   // Within each pair, the letters they share: in order, or at the ends of a
   // changed word.
@@ -668,32 +794,25 @@ function matchWords(
   for (const [to, from] of pairsOf) {
     const a = oldWords[from].glyphs.filter((i) => oldKinds[i] === "text");
     const b = nextWords[to].glyphs.filter((i) => nextKinds[i] === "text");
-    const shared =
-      within === "ends" && changed.has(to)
-        ? sharedEnds(
-            a.map((k) => old[k]),
-            b.map((k) => next[k]),
-          )
-        : lcs(
-            a.map((k) => old[k]),
-            b.map((k) => next[k]),
-          );
-    for (const [j, i] of shared) pairs.push([b[j], a[i]]);
+    const shared = (within === "ends" && changed.has(to) ? sharedEnds : lcs)(
+      a.map((k) => old[k]),
+      b.map((k) => next[k])
+    );
+    for (const [j, i] of shared) {
+      pairs.push([b[j], a[i]]);
+    }
   }
   return pairs;
 }
 
 /**
- * Match around the caret of an edit. Group separators are set aside first,
- * since a field that formats as you type moves them around: the rest is
- * shared before the edit and shifted by its length after it, and the
- * separators pair up from the end.
+ * Match around the caret of an edit. Group separators are set aside first, since a field that formats as you type moves them around: the rest is shared before the edit and shifted by its length after it, and the separators pair up from the end.
  */
 function matchCaret(
   old: string[],
   next: string[],
   caret: number,
-  decimal: string,
+  decimal: string
 ): [number, number][] {
   const isSeparator = (g: string): boolean =>
     g !== decimal && GROUP.includes(g);
@@ -713,8 +832,12 @@ function matchCaret(
   // there, and typing over a selection (grew 0) keeps everything in place.
   const grew = nextRest.length - oldRest.length;
   const before = grew > 0 ? at - grew : at;
-  for (let k = 0; k < before; k++) pair(k, k);
-  for (let k = at; k < nextRest.length; k++) pair(k, k - grew);
+  for (let k = 0; k < before; k++) {
+    pair(k, k);
+  }
+  for (let k = at; k < nextRest.length; k++) {
+    pair(k, k - grew);
+  }
 
   const oldSeparators = old.flatMap((g, i) => (isSeparator(g) ? [i] : []));
   const nextSeparators = next.flatMap((g, i) => (isSeparator(g) ? [i] : []));
@@ -725,7 +848,9 @@ function matchCaret(
   ) {
     const from = oldSeparators[oldSeparators.length - k];
     const to = nextSeparators[nextSeparators.length - k];
-    if (old[from] === next[to]) pairs.push([to, from]);
+    if (old[from] === next[to]) {
+      pairs.push([to, from]);
+    }
   }
   return pairs;
 }
@@ -734,7 +859,7 @@ export function matchText(
   mode: TextMorphMode,
   old: string[],
   next: string[],
-  options: MatchOptions,
+  options: MatchOptions
 ): MatchResult {
   const kept = next.map(() => -1);
   const oldKinds: GlyphKind[] = old.map(() => "text");
@@ -743,9 +868,9 @@ export function matchText(
   const nextNumbers = findNumbers(next);
   const paired = Math.min(oldNumbers.length, nextNumbers.length);
 
-  const caret = options.caret;
+  const { caret } = options;
   // Blend always works by words; morph once a value has more than one.
-  const byWords =
+  const isByWords =
     caret === undefined &&
     (mode === "blend" ||
       (mode === "morph" &&
@@ -753,7 +878,7 @@ export function matchText(
           wordsOf(old, oldKinds).length > 1)));
 
   // Numbers, paired in order, matched by place.
-  let trend: 1 | -1 | 0 = options.trend;
+  let { trend } = options;
   // Matching treats a number without a partner as text (a `$` left behind
   // by `$4` → `$` still matches), but its glyphs animate as a number's:
   // the 4 rolls out rather than fading like a letter.
@@ -771,7 +896,7 @@ export function matchText(
       nextKinds: asNumbers(nextKinds, nextNumbers),
       oldKinds: asNumbers(oldKinds, oldNumbers),
       trend: trend === -1 ? -1 : 1,
-      byWords,
+      byWords: isByWords,
     };
   };
   for (let n = 0; n < paired; n++) {
@@ -784,8 +909,12 @@ export function matchText(
         kept[b.start + to] = a.start + from;
       }
     }
-    for (let i = a.start; i < a.end; i++) oldKinds[i] = "number";
-    for (let i = b.start; i < b.end; i++) nextKinds[i] = "number";
+    for (let i = a.start; i < a.end; i++) {
+      oldKinds[i] = "number";
+    }
+    for (let i = b.start; i < b.end; i++) {
+      nextKinds[i] = "number";
+    }
 
     if (trend === 0) {
       const before = parseNumber(aGlyphs, options.decimal);
@@ -808,14 +937,14 @@ export function matchText(
   }
 
   // Everything else, by the mode's text rule.
-  if (byWords) {
+  if (isByWords) {
     const within = mode === "morph" ? "letters" : "ends";
     for (const [to, from] of matchWords(
       old,
       next,
       oldKinds,
       nextKinds,
-      within,
+      within
     )) {
       kept[to] = from;
     }
@@ -832,9 +961,7 @@ export function matchText(
   const pairs =
     mode === "roll"
       ? matchEnds(oldTexts, nextTexts, options.anchor ?? 0)
-      : hasDigits
-        ? lcs(oldTexts, nextTexts)
-        : matchAnywhere(oldTexts, nextTexts);
+      : (hasDigits ? lcs : matchAnywhere)(oldTexts, nextTexts);
   for (const [to, from] of pairs) {
     kept[nextText[to]] = oldText[from];
   }
@@ -842,7 +969,9 @@ export function matchText(
   return result();
 }
 
-/** The decimal separator for a locale. */
+/**
+The decimal separator for a locale.
+*/
 export function decimalFor(locale: string): string {
   return (
     new Intl.NumberFormat(locale)

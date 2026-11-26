@@ -1,18 +1,20 @@
-import { withAuth } from "@workos-inc/authkit-nextjs"
-import { redirect } from "next/navigation"
+import { withAuth } from "@workos-inc/authkit-nextjs";
+import { redirect } from "next/navigation";
 
-import { Button } from "@workspace/ui/components/ui/cubby-ui/button"
+import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/cubby-ui/card"
+} from "@workspace/ui/components/ui/cubby-ui/card";
 
 export default async function Page() {
-  const { user } = await withAuth()
-  if (user) redirect("/dashboard")
+  const { user } = await withAuth();
+  if (user) {
+    redirect("/dashboard");
+  }
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
@@ -38,5 +40,5 @@ export default async function Page() {
         </CardContent>
       </Card>
     </main>
-  )
+  );
 }

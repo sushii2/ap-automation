@@ -13,7 +13,6 @@
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@workspace/eslint-config": "*",
     "@workspace/typescript-config": "*",
     "eslint": "^10",
     "typescript": "^5"

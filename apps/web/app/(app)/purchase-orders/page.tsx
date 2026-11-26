@@ -1,10 +1,9 @@
-import { Suspense } from "react"
+import { Suspense } from "react";
 
-import { PLACEHOLDER_PURCHASE_ORDERS } from "@/lib/placeholder-data"
+import { PurchaseOrders } from "./purchase-orders";
+import { PLACEHOLDER_PURCHASE_ORDERS } from "@/lib/placeholder-data";
 
-import { PurchaseOrders } from "./purchase-orders"
-
-export const metadata = { title: "Purchase orders · AP Automation" }
+export const metadata = { title: "Purchase orders · AP Automation" };
 
 export default function PurchaseOrdersPage() {
   return (
@@ -12,5 +11,5 @@ export default function PurchaseOrdersPage() {
     <Suspense>
       <PurchaseOrders initial={PLACEHOLDER_PURCHASE_ORDERS} />
     </Suspense>
-  )
+  );
 }

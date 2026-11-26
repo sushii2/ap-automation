@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import { Switch as BaseSwitch } from "@base-ui/react/switch";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 
 import { cn } from "@workspace/ui/lib/utils";
+import type { VariantProps } from "class-variance-authority";
 
 import "./switch.css";
 
@@ -65,8 +66,7 @@ const switchVariants = cva(
     // compiles to a descendant selector, so an unnamed group would let any
     // `.group` a consumer puts on a card drive every switch inside it. Menu
     // indicators are inert, so data-highlighted stands in for hover.
-    // motion-safe rather than a motion-reduce reset: a reset carries fewer
-    // selectors than the rule it undoes and loses on specificity.
+    // motion-safe rather than a motion-reduce reset: a reset carries fewer selectors than the rule it undoes and loses on specificity.
     //
     // Every one of these ends up in the thumb's WIDTH, via the negative
     // margins, so each is a reflow per frame. A mouse can afford that; a phone
@@ -108,7 +108,7 @@ const switchVariants = cva(
     // --primary-hover / --neutral-hover tokens are unused: they lighten in one
     // theme or the other.
     "[--switch-fill-hover:oklch(from_var(--switch-fill-bg)_calc(l-0.05)_c_h)]",
-    "data-unchecked:bg-(--switch-track-bg) data-checked:bg-(--switch-fill-bg)",
+    "data-checked:bg-(--switch-fill-bg) data-unchecked:bg-(--switch-track-bg)",
     // Ungated, unlike the geometry above, including the data-highlighted pair
     // that is gated up there. These are paint-only: there is no reflow to keep
     // off a phone, and a highlight that survives a frame longer than it should
@@ -126,7 +126,7 @@ const switchVariants = cva(
     // switch moves, so the lists themselves live on `motion` below.
     "ease-out-cubic",
     "motion-reduce:transition-none",
-    "focus-visible:outline-ring outline-0 -outline-offset-1 outline-transparent outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1",
+    "outline-0 -outline-offset-1 outline-transparent outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-ring",
     // The border box is the painted box, so a mouse already has an exact
     // target. Coarse pointers get 24px (WCAG 2.5.8), where reach matters and
     // there is no hover to mismatch.
@@ -182,7 +182,7 @@ const switchVariants = cva(
       // slides. At 0.5 they run back to back and it spans the track mid-toggle.
       motion: {
         default: [
-          "[--switch-split:1] [--switch-duration:160ms]",
+          "[--switch-duration:160ms] [--switch-split:1]",
           // --switch-p is the only entry a coarse pointer would ever move, and
           // the only one this motion can do without: the toggle is a translate
           // the thumb owns and times itself, and the sole thing left reading
@@ -214,7 +214,7 @@ const switchVariants = cva(
         // --switch-p is not gated the way `default` gates it: interpolating it
         // IS the stretch, on every pointer there is.
         stretch: [
-          "[--switch-split:0.5] [--switch-duration:200ms]",
+          "[--switch-duration:200ms] [--switch-split:0.5]",
           "transition-[background-color,--switch-p,--switch-ext]",
           "duration-[80ms,var(--switch-duration),160ms]",
         ].join(" "),
@@ -242,7 +242,7 @@ const switchVariants = cva(
       motion: "default",
       squash: true,
     },
-  },
+  }
 );
 
 /**
@@ -261,11 +261,7 @@ const switchVariants = cva(
  * and repainting the thumb every frame. Cheap on a desktop, visibly janky on a
  * phone, especially inside a Drawer that is already compositing hard.
  *
- * The compositor path is only clean where nothing else is moving, which means a
- * coarse pointer — the case that needed it. A desktop toggle almost always
- * fires mid-hover, so --switch-ext is retracting from the press across the same
- * frames and the width is not constant after all. Desktops could always afford
- * that; the point was never to spare them.
+ * The compositor path is only clean where nothing else is moving, which means a coarse pointer — the case that needed it. A desktop toggle almost always fires mid-hover, so --switch-ext is retracting from the press across the same frames and the width is not constant after all. Desktops could always afford that; the point was never to spare them.
  */
 const switchThumbVariants = cva(
   [
@@ -289,7 +285,7 @@ const switchThumbVariants = cva(
     // plus one offset keeps the inset a single number instead of two independent
     // roundings at fractional DPRs. The offset must be a transform: as a margin
     // it snaps separately from the height and the thumb reads as shaking.
-    "w-auto h-[calc(var(--thumb-h)-var(--switch-press-total))]",
+    "h-[calc(var(--thumb-h)-var(--switch-press-total))] w-auto",
     // Whichever is larger; only one is ever non-zero, since --switch-split
     // decides which motion is in play.
     "[--switch-press-total:max(var(--switch-press),calc(var(--switch-press-squash)*(var(--lead)-var(--trail))))]",
@@ -308,9 +304,7 @@ const switchThumbVariants = cva(
     variants: {
       motion: {
         // Box pinned at the unchecked position; the toggle is a translate.
-        // Same start, end, duration and curve as the layout path it replaces —
-        // at --switch-split:1 the edges were already moving together, so the
-        // interpolated positions are identical.
+        // Same start, end, duration and curve as the layout path it replaces — at --switch-split:1 the edges were already moving together, so the interpolated positions are identical.
         //
         // Keyed off the PARENT's state, not the thumb's: SwitchVisual renders a
         // plain span with no state of its own, and the root carries it in both
@@ -318,7 +312,7 @@ const switchThumbVariants = cva(
         // ancestor — a Switch inside a checked menu row would inherit that
         // row's state and sit at the wrong end.
         default: [
-          "left-[2px] right-[calc(2px+var(--travel))]",
+          "right-[calc(2px+var(--travel))] left-[2px]",
           "[translate:0_0] [[data-checked]>&]:[translate:var(--travel)_0]",
           // The thumb's colour is state-dependent and transition-* does not
           // inherit, so it needs its own. Matched to the track's 80ms step so
@@ -335,7 +329,7 @@ const switchThumbVariants = cva(
     defaultVariants: {
       motion: "default",
     },
-  },
+  }
 );
 
 /**
@@ -371,7 +365,7 @@ function Switch({
       data-motion={motion}
       className={cn(
         switchVariants({ color, shape, size, motion, squash }),
-        className,
+        className
       )}
       {...props}
     >
@@ -393,8 +387,7 @@ function Switch({
  * <SwitchVisual render={<Menu.CheckboxItemIndicator keepMounted />} />
  * ```
  *
- * Pass that element childless: track and thumb only work as a pair, and
- * children on it would replace the thumb and leave a dead track.
+ * Pass that element childless: track and thumb only work as a pair, and children on it would replace the thumb and leave a dead track.
  *
  * `squash` defaults to `false` here, inverting the control's default. The
  * condition that makes this component the right choice — the row owns the press
@@ -428,7 +421,7 @@ function SwitchVisual({
       "pointer-events-none cursor-default",
       // The row already dims when disabled; don't compound the fade.
       "data-disabled:opacity-100",
-      className,
+      className
     ),
     children: <span className={switchThumbVariants({ motion })} />,
   };

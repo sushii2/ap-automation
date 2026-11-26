@@ -1,5 +1,5 @@
-import { cn } from "@workspace/ui/lib/utils";
 import { solidSurface } from "@workspace/ui/lib/cubby-ui/elevated";
+import { cn } from "@workspace/ui/lib/utils";
 
 import type {
   FilterField,
@@ -14,7 +14,9 @@ import type {
   SelectFilterField,
 } from "@workspace/ui/components/ui/cubby-ui/filters/lib/filters-types";
 
-/** TextMorph duration for click-driven labels; snappier than the default 240ms. */
+/**
+TextMorph duration for click-driven labels; snappier than the default 240ms.
+*/
 export const CLICK_MORPH_MS = 209;
 
 /**
@@ -24,11 +26,11 @@ export const CLICK_MORPH_MS = 209;
  * are the chip's minus 2px. Hover is instant; the press tint still fades.
  */
 export const FILTER_SEGMENT = cn(
-  "relative isolate inline-flex h-full shrink-0 items-center gap-1.5 whitespace-nowrap border border-y-2 border-transparent bg-clip-padding rounded-lg px-(--seg-x) outline-0 outline-transparent outline-solid transition-[background-color,color,outline-color] duration-100 ease-out [transition-duration:100ms,0ms,100ms] focus-visible:before:outline-2 focus-visible:before:-outline-offset-2 focus-visible:before:outline-ring",
+  "relative isolate inline-flex h-full shrink-0 items-center gap-1.5 rounded-lg border border-y-2 border-transparent bg-clip-padding px-(--seg-x) whitespace-nowrap outline-0 outline-transparent transition-[background-color,color,outline-color] duration-100 [transition-duration:100ms,0ms,100ms] ease-out outline-solid focus-visible:before:outline-2 focus-visible:before:-outline-offset-2 focus-visible:before:outline-ring",
   // A square hit area over the whole box, so hover never drops between
   // segments.
   "after:absolute after:-inset-x-px after:-inset-y-0.5 after:content-['']",
-  "before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-lg)-2px)] before:content-[''] before:transition-[background-color,scale] before:duration-100 before:ease-out before:[transition-duration:0ms,100ms] active:before:[transition-duration:100ms]",
+  "before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-lg)-2px)] before:transition-[background-color,scale] before:duration-100 before:[transition-duration:0ms,100ms] before:ease-out before:content-[''] active:before:[transition-duration:100ms]"
 );
 
 /**
@@ -41,10 +43,12 @@ export const FILTER_ENDS = cn(
   "[&>:nth-child(1_of_[data-slot^=filter-chip-])]:border-s-2 [&>:nth-last-child(1_of_[data-slot^=filter-chip-])]:border-e-2",
   // With clear unfolded, add and clear reach to the separator's line.
   "[&_[data-slot=filter-add]:has(~[data-slot=filter-clear-segment][data-active])]:after:-end-[5px] [&_[data-slot=filter-clear]]:after:-start-[5px]",
-  "[&_[data-slot=filter-add]]:border-s-2 [&_[data-slot=filter-clear-segment][data-active]_[data-slot=filter-clear]]:border-e-2 [&_[data-slot=filter-add]:not(:has(~[data-slot=filter-clear-segment][data-active]))]:border-e-2",
+  "[&_[data-slot=filter-add]]:border-s-2 [&_[data-slot=filter-add]:not(:has(~[data-slot=filter-clear-segment][data-active]))]:border-e-2 [&_[data-slot=filter-clear-segment][data-active]_[data-slot=filter-clear]]:border-e-2"
 );
 
-/** Icon-only segments: the plate (content box) is square. */
+/**
+Icon-only segments: the plate (content box) is square.
+*/
 export const FILTER_SEGMENT_SQUARE =
   "box-content aspect-square h-auto self-stretch justify-center px-0";
 
@@ -71,7 +75,7 @@ export const FILTER_VARIANTS: Record<FilterVariant, string> = {
     solidSurface(3, 3),
     "[--filter-chip-bg:var(--surface-3)]",
     // Incomplete: the drop shadow stays; a dashed outline takes the ring's place.
-    "data-incomplete:shadow-[0_1px_1px_-0.5px_var(--surface-shadow-near),0_3px_3px_-1.5px_var(--surface-shadow-mid)] data-incomplete:outline data-incomplete:outline-border data-incomplete:outline-dashed",
+    "data-incomplete:shadow-[0_1px_1px_-0.5px_var(--surface-shadow-near),0_3px_3px_-1.5px_var(--surface-shadow-mid)] data-incomplete:outline data-incomplete:outline-border data-incomplete:outline-dashed"
   ),
 };
 
@@ -122,19 +126,23 @@ export function asNumberRange(value: unknown): NumberRange {
   return { min: null, max: null };
 }
 
-/** Coerces unknown JSON into `FilterValue[]`, dropping entries without string `id`/`field`/`operator`. */
+/**
+Coerces unknown JSON into `FilterValue[]`, dropping entries without string `id`/`field`/`operator`.
+*/
 export function asFilterValues(value: unknown): FilterValue[] {
-  if (!Array.isArray(value)) return [];
+  if (!Array.isArray(value)) {
+    return [];
+  }
   return value
     .filter(
       (item): item is Record<string, unknown> =>
-        typeof item === "object" && item !== null,
+        typeof item === "object" && item !== null
     )
     .filter(
       (item) =>
         typeof item.id === "string" &&
         typeof item.field === "string" &&
-        typeof item.operator === "string",
+        typeof item.operator === "string"
     )
     .map((item) => ({
       id: item.id as string,
@@ -167,24 +175,28 @@ function op(id: string, shape: FilterOperatorShape = "scalar"): FilterOperator {
   return { id, label: OPERATOR_LABELS[id] ?? id, shape };
 }
 
-/** The default operator set for a field type, in display order. */
+/**
+The default operator set for a field type, in display order.
+*/
 export function defaultOperatorsFor(type: FilterFieldType): FilterOperator[] {
   switch (type) {
-    case "select":
+    case "select": {
       return [
         op("is"),
         op("is_not"),
         op("is_empty", "none"),
         op("is_not_empty", "none"),
       ];
-    case "multiselect":
+    }
+    case "multiselect": {
       return [
         op("is_any_of"),
         op("is_not_any_of"),
         op("includes_all"),
         op("is_empty", "none"),
       ];
-    case "text":
+    }
+    case "text": {
       return [
         op("contains"),
         op("not_contains"),
@@ -193,31 +205,42 @@ export function defaultOperatorsFor(type: FilterFieldType): FilterOperator[] {
         op("is"),
         op("is_empty", "none"),
       ];
-    case "number":
+    }
+    case "number": {
       return [op("eq"), op("neq"), op("gt"), op("lt"), op("between", "range")];
+    }
     case "custom":
-    default:
+    default: {
       return [op("is")];
+    }
   }
 }
 
-/** Resolves the operators available for a field, honoring overrides. */
+/**
+Resolves the operators available for a field, honoring overrides.
+*/
 export function resolveOperators(field: FilterField): FilterOperator[] {
   const base = field.operators ?? defaultOperatorsFor(field.type);
-  if (!field.disabledOperators?.length) return base;
+  if (!field.disabledOperators?.length) {
+    return base;
+  }
   const disabled = new Set(field.disabledOperators);
   return base.filter((operator) => !disabled.has(operator.id));
 }
 
-/** The value shape an operator declares (`valueless` is sugar for `"none"`). */
+/**
+The value shape an operator declares (`valueless` is sugar for `"none"`).
+*/
 export function operatorShape(operator: FilterOperator): FilterOperatorShape {
   return operator.shape ?? (operator.valueless ? "none" : "scalar");
 }
 
-/** Resolves the value shape for a field's operator by id. */
+/**
+Resolves the value shape for a field's operator by id.
+*/
 export function operatorShapeFor(
   field: FilterField,
-  operatorId: string,
+  operatorId: string
 ): FilterOperatorShape {
   const operator = resolveOperators(field).find((o) => o.id === operatorId);
   return operator ? operatorShape(operator) : "scalar";
@@ -229,53 +252,65 @@ export function operatorShapeFor(
  */
 export function allowsDuplicates(
   field: FilterField,
-  barDefault: boolean,
+  barDefault: boolean
 ): boolean {
-  if (isOptionField(field)) return false;
-  return field.allowDuplicates ?? barDefault;
+  return isOptionField(field) ? false : (field.allowDuplicates ?? barDefault);
 }
 
-/** A search field's accessible name: its placeholder without the trailing "..." or "…". */
+/**
+A search field's accessible name: its placeholder without the trailing "..." or "…".
+*/
 export function nameFromPlaceholder(placeholder: string): string {
   return placeholder.replace(/\s*(\.{3}|…)$/, "");
 }
 
-/** Whether `field` picks from a list of options (select or multiselect). */
+/**
+Whether `field` picks from a list of options (select or multiselect).
+*/
 export function isOptionField(
-  field: FilterField,
+  field: FilterField
 ): field is SelectFilterField | MultiSelectFilterField {
   return field.type === "select" || field.type === "multiselect";
 }
 
-/** A typed empty value for a fresh filter of `field` with `operatorId`. */
+/**
+A typed empty value for a fresh filter of `field` with `operatorId`.
+*/
 export function emptyValueFor(field: FilterField, operatorId: string): unknown {
   const shape = operatorShapeFor(field, operatorId);
-  if (shape === "none") return null;
+  if (shape === "none") {
+    return null;
+  }
   if (shape === "range") {
     return { min: null, max: null } satisfies NumberRange;
   }
-  if (field.type === "multiselect") return [] as string[];
-  if (field.type === "text") return "";
-  if (field.type === "custom") return field.defaultValue ?? null;
+  if (field.type === "multiselect") {
+    return [] as string[];
+  }
+  if (field.type === "text") {
+    return "";
+  }
+  if (field.type === "custom") {
+    return field.defaultValue ?? null;
+  }
   return null;
 }
 
 function generateId(): string {
   // `crypto.randomUUID` is absent in non-secure contexts (plain-HTTP LAN dev);
   // ids only need list-key uniqueness.
-  if (
-    typeof crypto !== "undefined" &&
+  return typeof crypto !== "undefined" &&
     typeof crypto.randomUUID === "function"
-  ) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/** Creates a `FilterValue`, defaulting to the field's first operator and a typed empty value. */
+/**
+Creates a `FilterValue`, defaulting to the field's first operator and a typed empty value.
+*/
 export function createFilter(
   field: FilterField,
-  partial?: Partial<Omit<FilterValue, "field">>,
+  partial?: Partial<Omit<FilterValue, "field">>
 ): FilterValue {
   const operators = resolveOperators(field);
   const operator = partial?.operator ?? operators[0]?.id ?? "is";
@@ -290,17 +325,19 @@ export function createFilter(
   };
 }
 
-/** Applies a patch; an operator change to a different value shape reseeds the value. */
+/**
+Applies a patch; an operator change to a different value shape reseeds the value.
+*/
 export function patchFilter(
   field: FilterField | undefined,
   filter: FilterValue,
-  patch: Partial<Omit<FilterValue, "id">>,
+  patch: Partial<Omit<FilterValue, "id">>
 ): FilterValue {
   const next: FilterValue = { ...filter, ...patch };
-  const operatorChanged =
+  const isOperatorChanged =
     patch.operator !== undefined && patch.operator !== filter.operator;
   if (
-    operatorChanged &&
+    isOperatorChanged &&
     !("value" in patch) &&
     field &&
     operatorShapeFor(field, filter.operator) !==
@@ -311,26 +348,37 @@ export function patchFilter(
   return next;
 }
 
-/** Human-readable value, shared by the visible controls and the aria summary so they match. */
+/**
+Human-readable value, shared by the visible controls and the aria summary so they match.
+*/
 export function formatFilterValue(
   field: FilterField,
-  filter: FilterValue,
+  filter: FilterValue
 ): string {
   const shape = operatorShapeFor(field, filter.operator);
-  if (shape === "none") return "";
+  if (shape === "none") {
+    return "";
+  }
   if (shape === "range") {
     const { min, max } = asNumberRange(filter.value);
-    if (min === null && max === null) return "";
-    if (min === null) return `up to ${max}`;
-    if (max === null) return `from ${min}`;
+    if (min === null && max === null) {
+      return "";
+    }
+    if (min === null) {
+      return `up to ${max}`;
+    }
+    if (max === null) {
+      return `from ${min}`;
+    }
     return `${min} to ${max}`;
   }
   switch (field.type) {
-    case "select":
+    case "select": {
       return (
         field.options.find((option) => option.value === filter.value)?.label ??
         ""
       );
+    }
     case "multiselect": {
       const values = asStringArray(filter.value);
       return field.options
@@ -338,62 +386,78 @@ export function formatFilterValue(
         .map((option) => option.label)
         .join(", ");
     }
-    case "text":
+    case "text": {
       return asString(filter.value);
+    }
     case "number": {
       const numeric = asNumberOrNull(filter.value);
       return numeric === null ? "" : String(numeric);
     }
     case "custom": {
-      if (field.formatValue) return field.formatValue(filter.value);
-      const value = filter.value;
+      if (field.formatValue) {
+        return field.formatValue(filter.value);
+      }
+      const { value } = filter;
       return typeof value === "string" ||
         typeof value === "number" ||
         typeof value === "boolean"
         ? String(value)
         : "";
     }
-    default:
+    default: {
       return "";
+    }
   }
 }
 
-/** The field's first single-value operator, so a value picked in the add menu has somewhere to go. */
+/**
+The field's first single-value operator, so a value picked in the add menu has somewhere to go.
+*/
 export function scalarOperatorFor(
-  field: FilterField,
+  field: FilterField
 ): FilterOperator | undefined {
   return resolveOperators(field).find(
-    (operator) => operatorShape(operator) === "scalar",
+    (operator) => operatorShape(operator) === "scalar"
   );
 }
 
-/** Folds a picked option into the value: appended (once) for multiselect, else replaces it. */
+/**
+Folds a picked option into the value: appended (once) for multiselect, else replaces it.
+*/
 export function withOption(
   field: FilterField,
   current: unknown,
-  optionValue: string,
+  optionValue: string
 ): unknown {
-  if (field.type !== "multiselect") return optionValue;
+  if (field.type !== "multiselect") {
+    return optionValue;
+  }
   const values = asStringArray(current);
-  if (values.includes(optionValue)) return values;
+  if (values.includes(optionValue)) {
+    return values;
+  }
   if (field.maxSelections != null && values.length >= field.maxSelections) {
     return values;
   }
   return [...values, optionValue];
 }
 
-/** Display name: the `labels.operators` translation, else the operator's own `label`. */
+/**
+Display name: the `labels.operators` translation, else the operator's own `label`.
+*/
 export function operatorLabel(
   operator: FilterOperator,
-  names?: Partial<Record<string, string>>,
+  names?: Partial<Record<string, string>>
 ): string {
   return names?.[operator.id] ?? operator.label;
 }
 
-/** Whether a filter narrows anything yet (valueless operator, or a value set). */
+/**
+Whether a filter narrows anything yet (valueless operator, or a value set).
+*/
 export function isFilterComplete(
   field: FilterField,
-  filter: FilterValue,
+  filter: FilterValue
 ): boolean {
   return (
     operatorShapeFor(field, filter.operator) === "none" ||
@@ -401,14 +465,16 @@ export function isFilterComplete(
   );
 }
 
-/** Plain-language summary for screen readers; `operatorNames` is `labels.operators`. */
+/**
+Plain-language summary for screen readers; `operatorNames` is `labels.operators`.
+*/
 export function describeFilter(
   field: FilterField,
   filter: FilterValue,
-  operatorNames?: Partial<Record<string, string>>,
+  operatorNames?: Partial<Record<string, string>>
 ): string {
   const operator = resolveOperators(field).find(
-    (candidate) => candidate.id === filter.operator,
+    (candidate) => candidate.id === filter.operator
   );
   const operatorText = operator
     ? operatorLabel(operator, operatorNames)

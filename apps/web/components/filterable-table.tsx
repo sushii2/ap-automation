@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
+import { useMemo, useState } from "react";
 
 import {
   DataTable,
@@ -11,15 +11,16 @@ import {
   DataTablePagination,
   DataTableSearch,
   DataTableToolbar,
-  type ColumnDef,
-} from "@workspace/ui/components/ui/cubby-ui/data-table/data-table"
-import {
-  Filters,
-  type FilterField,
-  type FilterValue,
-} from "@workspace/ui/components/ui/cubby-ui/filters/filters"
+} from "@workspace/ui/components/ui/cubby-ui/data-table/data-table";
+import { Filters } from "@workspace/ui/components/ui/cubby-ui/filters/filters";
+import type { ColumnDef } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table";
+import type {
+  FilterField,
+  FilterValue,
+} from "@workspace/ui/components/ui/cubby-ui/filters/filters";
 
-import { applyFilters, type FilterAccessors } from "@/lib/apply-filters"
+import type { FilterAccessors } from "@/lib/apply-filters";
+import { applyFilters } from "@/lib/apply-filters";
 
 /**
  * A sortable, searchable table with a filter bar above it. Filtering runs on
@@ -34,18 +35,18 @@ export function FilterableTable<T extends { id: string }>({
   searchPlaceholder,
   emptyState = "No results.",
 }: {
-  columns: ColumnDef<T>[]
-  data: T[]
-  fields: FilterField[]
-  accessors: FilterAccessors<T>
-  searchPlaceholder?: string
-  emptyState?: React.ReactNode
+  readonly columns: ColumnDef<T>[];
+  readonly data: T[];
+  readonly fields: FilterField[];
+  readonly accessors: FilterAccessors<T>;
+  readonly searchPlaceholder?: string;
+  readonly emptyState?: React.ReactNode;
 }) {
-  const [filters, setFilters] = useState<FilterValue[]>([])
+  const [filters, setFilters] = useState<FilterValue[]>([]);
   const rows = useMemo(
     () => applyFilters(data, filters, fields, accessors),
     [data, filters, fields, accessors]
-  )
+  );
 
   return (
     <div className="flex flex-col gap-3">
@@ -70,5 +71,5 @@ export function FilterableTable<T extends { id: string }>({
         <DataTablePagination showSelectedCount={false} />
       </DataTable>
     </div>
-  )
+  );
 }

@@ -1,15 +1,15 @@
-import "server-only"
+import "server-only";
 
-import { z } from "zod"
+import { z } from "zod";
 
 // Production guards run when the server boots (instrumentation.ts), not during `next build`.
 const isProd =
   process.env.NODE_ENV === "production" &&
-  process.env.NEXT_PHASE !== "phase-production-build"
+  process.env.NEXT_PHASE !== "phase-production-build";
 
 // Vercel preview (staging) deployments run with NODE_ENV=production but hold no
 // production data, so they may use a staging-only local keyring until KMS exists.
-const isVercelPreview = process.env.VERCEL_ENV === "preview"
+const isVercelPreview = process.env.VERCEL_ENV === "preview";
 
 const schema = z
   .object({
@@ -44,14 +44,14 @@ const schema = z
         code: "custom",
         path: ["APP_URL"],
         message: "must be https in production",
-      })
+      });
     }
     if (isProd && !env.NEXT_PUBLIC_WORKOS_REDIRECT_URI.startsWith("https://")) {
       ctx.addIssue({
         code: "custom",
         path: ["NEXT_PUBLIC_WORKOS_REDIRECT_URI"],
         message: "must be https in production",
-      })
+      });
     }
     if (isProd && !isVercelPreview && env.ENCRYPTION_PROVIDER === "local") {
       ctx.addIssue({
@@ -59,7 +59,7 @@ const schema = z
         path: ["ENCRYPTION_PROVIDER"],
         message:
           "local keyring is not allowed in production; use a KMS-backed provider",
-      })
+      });
     }
     if (
       env.ENCRYPTION_PROVIDER === "local" &&
@@ -70,7 +70,7 @@ const schema = z
         path: ["ENCRYPTION_KEYRING"],
         message:
           "ENCRYPTION_KEYRING and ENCRYPTION_ACTIVE_KEY_ID are required for the local provider",
-      })
+      });
     }
     if (
       isProd &&
@@ -81,8 +81,8 @@ const schema = z
         code: "custom",
         path: ["DATABASE_URL"],
         message: "must use sslmode=verify-full in production",
-      })
+      });
     }
-  })
+  });
 
-export const env = schema.parse(process.env)
+export const env = schema.parse(process.env);

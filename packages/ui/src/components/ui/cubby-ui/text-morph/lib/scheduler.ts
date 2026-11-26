@@ -1,10 +1,10 @@
 export type MorphSteps = Generator<void, Animation[], void>;
 
-export type MorphJob = {
+export interface MorphJob {
   root: HTMLElement;
   steps: MorphSteps;
   done: (started: Animation[]) => void;
-};
+}
 
 const queue: MorphJob[] = [];
 
@@ -21,17 +21,25 @@ function flushMorphs(): void {
         job.done([]);
         return false;
       }
-      if (!step.done) return true;
+      if (!step.done) {
+        return true;
+      }
       job.done(step.value);
       return false;
     });
   }
 }
 
-/** Run a change with the others from this update, before the next paint. */
+/**
+Run a change with the others from this update, before the next paint.
+*/
 export function scheduleMorph(job: MorphJob): void {
   // A second change to the same label before the batch runs goes after it.
-  if (queue.some((queued) => queued.root === job.root)) flushMorphs();
+  if (queue.some((queued) => queued.root === job.root)) {
+    flushMorphs();
+  }
   queue.push(job);
-  if (queue.length === 1) queueMicrotask(flushMorphs);
+  if (queue.length === 1) {
+    queueMicrotask(flushMorphs);
+  }
 }

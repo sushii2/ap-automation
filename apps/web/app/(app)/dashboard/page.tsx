@@ -1,17 +1,16 @@
-import Link from "next/link"
-import { Upload } from "lucide-react"
+import Link from "next/link";
+import { Upload } from "lucide-react";
 
-import { Button } from "@workspace/ui/components/ui/cubby-ui/button"
+import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
 
-import { PageHeader } from "@/components/page-header"
-import { requireOrganization } from "@/lib/auth"
+import { InvoiceChat } from "./invoice-chat";
+import { PageHeader } from "@/components/page-header";
+import { requireOrganization } from "@/lib/auth";
 
-import { InvoiceChat } from "./invoice-chat"
-
-export const metadata = { title: "Dashboard · AP Automation" }
+export const metadata = { title: "Dashboard · AP Automation" };
 
 export default async function DashboardPage() {
-  const { user } = await requireOrganization()
+  const { user } = await requireOrganization();
 
   return (
     // Fills the viewport (minus the layout's padding) so the chat input stays
@@ -31,5 +30,5 @@ export default async function DashboardPage() {
       </PageHeader>
       <InvoiceChat />
     </div>
-  )
+  );
 }

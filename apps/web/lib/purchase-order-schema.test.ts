@@ -1,13 +1,13 @@
-import assert from "node:assert/strict"
-import { test } from "node:test"
+import assert from "node:assert/strict";
+import { test } from "node:test";
 
 import {
   purchaseOrderSchema,
   reconcilePurchaseOrder,
-  type ExtractedPurchaseOrder,
-} from "./purchase-order-schema.ts"
+} from "./purchase-order-schema.ts";
+import type { ExtractedPurchaseOrder } from "./purchase-order-schema.ts";
 
-const party = { name: null, address: null, taxId: null, email: null }
+const party = { name: null, address: null, taxId: null, email: null };
 const line = {
   itemCode: "SKU-1",
   description: "Boxes",
@@ -15,7 +15,7 @@ const line = {
   unit: "each",
   unitPrice: 4,
   amount: 40,
-}
+};
 
 function order(
   overrides: Partial<ExtractedPurchaseOrder> = {}
@@ -37,12 +37,12 @@ function order(
     confidence: 0.9,
     notes: [],
     ...overrides,
-  }
+  };
 }
 
 test("a consistent order has no warnings", () => {
-  assert.deepEqual(reconcilePurchaseOrder(order()), [])
-})
+  assert.deepEqual(reconcilePurchaseOrder(order()), []);
+});
 
 test("treats absent tax and shipping as zero", () => {
   assert.deepEqual(
@@ -50,48 +50,48 @@ test("treats absent tax and shipping as zero", () => {
       order({ taxAmount: null, shippingAmount: null, totalAmount: 40 })
     ),
     []
-  )
-})
+  );
+});
 
 test("flags a line whose quantity times unit price is not its amount", () => {
-  const lineItems = [line, { ...line, quantity: 3, amount: 40 }]
+  const lineItems = [line, { ...line, quantity: 3, amount: 40 }];
   assert.deepEqual(
     reconcilePurchaseOrder(order({ lineItems, subtotal: 80, totalAmount: 90 })),
     ["Line 2: quantity times unit price does not equal the amount."]
-  )
-})
+  );
+});
 
 test("flags line items that do not sum to the subtotal", () => {
   const [warning] = reconcilePurchaseOrder(
     order({ subtotal: 45, totalAmount: 55 })
-  )
-  assert.match(warning ?? "", /sum to 40\.00 but subtotal is 45\.00/)
-})
+  );
+  assert.match(warning ?? "", /sum to 40\.00 but subtotal is 45\.00/);
+});
 
 test("flags a total that leaves out shipping", () => {
   assert.deepEqual(reconcilePurchaseOrder(order({ totalAmount: 44 })), [
     "Subtotal plus tax and shipping does not equal the total amount.",
-  ])
-})
+  ]);
+});
 
 test("skips line checks whose inputs are missing", () => {
-  const lineItems = [{ ...line, quantity: null, amount: null }]
-  assert.deepEqual(reconcilePurchaseOrder(order({ lineItems })), [])
-})
+  const lineItems = [{ ...line, quantity: null, amount: null }];
+  assert.deepEqual(reconcilePurchaseOrder(order({ lineItems })), []);
+});
 
 test("flags a missing PO number and total", () => {
   assert.deepEqual(
     reconcilePurchaseOrder(order({ poNumber: null, totalAmount: null })),
     ["PO number is missing.", "Total amount is missing."]
-  )
-})
+  );
+});
 
 test("schema accepts nulls but not omitted or mistyped fields", () => {
-  assert.ok(purchaseOrderSchema.safeParse(order()).success)
+  assert.ok(purchaseOrderSchema.safeParse(order()).success);
 
-  const { shipTo: _shipTo, ...withoutShipTo } = order()
-  assert.ok(!purchaseOrderSchema.safeParse(withoutShipTo).success)
+  const { shipTo: _shipTo, ...withoutShipTo } = order();
+  assert.ok(!purchaseOrderSchema.safeParse(withoutShipTo).success);
   assert.ok(
     !purchaseOrderSchema.safeParse({ ...order(), totalAmount: "50" }).success
-  )
-})
+  );
+});

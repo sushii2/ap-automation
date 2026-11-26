@@ -3,6 +3,21 @@
 import * as React from "react";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PlusSignIcon } from "@hugeicons/core-free-icons";
+import { revealInScroller } from "@workspace/ui/components/ui/cubby-ui/filters/lib/flow-presence";
+import {
+  allowsDuplicates,
+  asStringArray,
+  createFilter,
+  isOptionField,
+  nameFromPlaceholder,
+  operatorLabel,
+  FILTER_SEGMENT,
+  FILTER_SEGMENT_INTERACTIVE,
+  operatorShapeFor,
+  scalarOperatorFor,
+} from "@workspace/ui/components/ui/cubby-ui/filters/lib/filters-utils";
 import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
 import {
@@ -39,23 +54,10 @@ import {
   TooltipTrigger,
 } from "@workspace/ui/components/ui/cubby-ui/tooltip";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { PlusSignIcon } from "@hugeicons/core-free-icons";
-
-import { useFiltersActions, useFiltersState } from "@workspace/ui/components/ui/cubby-ui/filters/filters-context";
-import { revealInScroller } from "@workspace/ui/components/ui/cubby-ui/filters/lib/flow-presence";
 import {
-  allowsDuplicates,
-  asStringArray,
-  createFilter,
-  isOptionField,
-  nameFromPlaceholder,
-  operatorLabel,
-  FILTER_SEGMENT,
-  FILTER_SEGMENT_INTERACTIVE,
-  operatorShapeFor,
-  scalarOperatorFor,
-} from "@workspace/ui/components/ui/cubby-ui/filters/lib/filters-utils";
+  useFiltersActions,
+  useFiltersState,
+} from "@workspace/ui/components/ui/cubby-ui/filters/filters-context";
 import type {
   FilterField,
   FilterOption,
@@ -71,16 +73,18 @@ function FieldIcon({
   className,
   children,
 }: {
-  className?: string;
-  children?: React.ReactNode;
+  readonly className?: string;
+  readonly children?: React.ReactNode;
 }) {
-  if (!children) return null;
+  if (!children) {
+    return null;
+  }
   return (
     <span
       aria-hidden
       className={cn(
-        "text-muted-foreground flex shrink-0 items-center [&_svg]:size-3.5",
-        className,
+        "flex shrink-0 items-center text-muted-foreground [&_svg]:size-3.5",
+        className
       )}
     >
       {children}
@@ -88,7 +92,7 @@ function FieldIcon({
   );
 }
 
-function OptionContent({ option }: { option: FilterOption }) {
+function OptionContent({ option }: { readonly option: FilterOption }) {
   return (
     <span className="flex min-w-0 items-center gap-2.5">
       {option.icon}
@@ -101,7 +105,9 @@ function hasValueStep(field: FilterField): boolean {
   return field.type !== "custom" && scalarOperatorFor(field) !== undefined;
 }
 
-/** An option field with a value step: its submenu edits its one chip. */
+/**
+An option field with a value step: its submenu edits its one chip.
+*/
 function editsInPlace(field: FilterField): field is OptionsField {
   return isOptionField(field) && hasValueStep(field);
 }
@@ -112,39 +118,48 @@ const DECIMAL = /^[+-]?(\d+\.?\d*|\.\d+)$/;
 // the list, and each sits beside its own row.
 const SUBMENU_POSITIONER_STATIC = "transition-none";
 
-/** Closes the menu, optionally handing focus to a newly added filter. */
+/**
+Closes the menu, optionally handing focus to a newly added filter.
+*/
 type OnDone = (focusFilterId?: string) => void;
 
 interface SubmenuProps<F extends FilterField> {
-  field: F;
-  disabled: boolean;
-  onDone: OnDone;
+  readonly field: F;
+  readonly disabled: boolean;
+  readonly onDone: OnDone;
 }
 
 interface OptionFilter {
-  /** The field's chip, if it has one. */
+  /**
+  The field's chip, if it has one.
+  */
   filterId: string | undefined;
-  /** The checked option values. */
+  /**
+  The checked option values.
+  */
   values: string[];
-  /** Adds the chip, edits it, or removes it once nothing is checked. */
+  /**
+  Adds the chip, edits it, or removes it once nothing is checked.
+  */
   write: (next: string[]) => void;
-  /** Whether a multiselect has reached its `maxSelections`. */
+  /**
+  Whether a multiselect has reached its `maxSelections`.
+  */
   atMax: boolean;
 }
 
 /**
- * An option field's one filter and how to write it, shared by the submenus and
- * search so they agree on what is checked.
+ * An option field's one filter and how to write it, shared by the submenus and search so they agree on what is checked.
  */
 function useOptionFilter(field: OptionsField): OptionFilter {
   const { addFilter, updateFilter, removeFilter } = useFiltersActions();
   const { filters } = useFiltersState();
   const filter = filters.find((candidate) => candidate.field === field.id);
   // An "is empty" chip holds no value; writing one switches it to "is".
-  const valueless =
+  const isValueless =
     filter !== undefined && operatorShapeFor(field, filter.operator) === "none";
   const values =
-    filter === undefined || valueless
+    filter === undefined || isValueless
       ? []
       : field.type === "multiselect"
         ? asStringArray(filter.value)
@@ -154,7 +169,9 @@ function useOptionFilter(field: OptionsField): OptionFilter {
 
   const write = (next: string[]) => {
     const scalar = scalarOperatorFor(field);
-    if (!scalar) return;
+    if (!scalar) {
+      return;
+    }
     const value = field.type === "multiselect" ? next : next[0];
     if (!filter) {
       if (next.length > 0) {
@@ -167,17 +184,17 @@ function useOptionFilter(field: OptionsField): OptionFilter {
       return;
     }
     updateFilter(filter.id, {
-      ...(valueless && { operator: scalar.id }),
+      ...(isValueless && { operator: scalar.id }),
       value,
     });
   };
 
-  const atMax =
+  const isAtMax =
     field.type === "multiselect" &&
     field.maxSelections != null &&
     values.length >= field.maxSelections;
 
-  return { filterId: filter?.id, values, write, atMax };
+  return { filterId: filter?.id, values, write, atMax: isAtMax };
 }
 
 function toggled(values: string[], value: string, checked: boolean): string[] {
@@ -190,8 +207,8 @@ function ValueSubmenuTrigger({
   field,
   disabled,
 }: {
-  field: FilterField;
-  disabled: boolean;
+  readonly field: FilterField;
+  readonly disabled: boolean;
 }) {
   return (
     // Submenus have no exit animation: without the delay a fast sweep closes
@@ -210,19 +227,20 @@ function ValueSubmenuTrigger({
 
 // A field's searchable value submenu. Memoised so a filter change skips the
 // text and number submenus; option submenus read filter state regardless.
-const ValueSubmenu = React.memo(function ValueSubmenu(
-  props: SubmenuProps<FilterField>,
-) {
+const ValueSubmenu = React.memo((props: SubmenuProps<FilterField>) => {
   const { field } = props;
   switch (field.type) {
     case "select":
-    case "multiselect":
+    case "multiselect": {
       return <OptionsSubmenu {...props} field={field} />;
+    }
     case "text":
-    case "number":
+    case "number": {
       return <InputSubmenu {...props} field={field} />;
-    default:
+    }
+    default: {
       return null;
+    }
   }
 });
 
@@ -235,17 +253,23 @@ function OptionItems({
   trailing,
   onEdited,
 }: {
-  field: OptionsField;
-  inSearch?: boolean;
-  /** Shown at the end of each row, e.g. the field's name in search. */
-  trailing?: React.ReactNode;
-  /** Called with the chip's id when a pick changed an existing chip. */
-  onEdited?: (filterId: string) => void;
+  readonly field: OptionsField;
+  readonly inSearch?: boolean;
+  /**
+  Shown at the end of each row, e.g. the field's name in search.
+  */
+  readonly trailing?: React.ReactNode;
+  /**
+  Called with the chip's id when a pick changed an existing chip.
+  */
+  readonly onEdited?: (filterId: string) => void;
 }): React.ReactNode {
   const { filterId, values, write, atMax } = useOptionFilter(field);
   const pick = (next: string[]) => {
     write(next);
-    if (filterId) onEdited?.(filterId);
+    if (filterId) {
+      onEdited?.(filterId);
+    }
   };
 
   if (field.type === "select") {
@@ -276,7 +300,7 @@ function OptionItems({
         key={option.value}
         label={option.label}
         checked={checked}
-        disabled={atMax && !checked}
+        disabled={!!atMax && !checked}
         closeOnClick={inSearch}
         onCheckedChange={(next) => pick(toggled(values, option.value, next))}
       >
@@ -318,7 +342,7 @@ function OptionsSubmenu({
             // Edge to edge; the list's own 4px padding sits above it. The same
             // 4px gutter sizes the band, and the count lines up with the labels.
             <div className="flex items-center justify-between gap-2 border-t p-1 ps-3.5">
-              <span className="text-muted-foreground text-xs tabular-nums">
+              <span className="text-xs text-muted-foreground tabular-nums">
                 {values.length > 0
                   ? labels.selectedCount(values.length, field)
                   : ""}
@@ -351,8 +375,8 @@ function InputSubmenu({
   const decimal = text.trim().replace(",", ".");
   // Plain decimals only: `Number` would also take "0x10" or "1e3".
   const parsed = DECIMAL.test(decimal) ? Number(decimal) : NaN;
-  const valid = text.trim() !== "" && (!isNumber || Number.isFinite(parsed));
-  const invalid = text.trim() !== "" && !valid;
+  const isValid = text.trim() !== "" && (!isNumber || Number.isFinite(parsed));
+  const isInvalid = text.trim() !== "" && !isValid;
   const prefix = typeof field.prefix === "string" ? field.prefix : null;
   const suffix = typeof field.suffix === "string" ? field.suffix : null;
   const operatorText = operator
@@ -381,57 +405,58 @@ function InputSubmenu({
             data-slot="filter-add-input"
             className={cn(POPUP_SEARCH_FIELD, POPUP_SEARCH_MENU_FIELD)}
           >
-            {prefix && (
-              // Pulls in 4px to match the chip's affix spacing.
-              <span className="text-muted-foreground -me-1 shrink-0 text-sm">
+            {!!prefix && (
+              <span className="-me-1 shrink-0 text-sm text-muted-foreground">
                 {prefix}
               </span>
             )}
             <BaseMenu.Input
               ref={inputRef}
               aria-label={`${field.label} ${operatorText}`.trim()}
-              aria-invalid={invalid || undefined}
-              aria-describedby={invalid ? hintId : undefined}
+              aria-invalid={isInvalid || undefined}
+              aria-describedby={isInvalid ? hintId : undefined}
               inputMode={isNumber ? "decimal" : undefined}
               placeholder={field.placeholder ?? labels.enterValue}
               className={cn(
                 POPUP_SEARCH_INPUT,
                 isNumber && "tabular-nums",
-                "aria-invalid:text-danger-foreground",
+                "aria-invalid:text-danger-foreground"
               )}
             />
-            {suffix && (
-              <span className="text-muted-foreground shrink-0 text-sm">
+            {!!suffix && (
+              <span className="shrink-0 text-sm text-muted-foreground">
                 {suffix}
               </span>
             )}
           </div>
           <DropdownMenuEmpty
             id={hintId}
-            className={cn(invalid && "text-danger-foreground")}
+            className={cn(isInvalid && "text-danger-foreground")}
           >
-            {invalid ? labels.invalidNumber : `${field.label} ${operatorText}…`}
+            {isInvalid
+              ? labels.invalidNumber
+              : `${field.label} ${operatorText}…`}
           </DropdownMenuEmpty>
           <DropdownMenuList>
-            {valid && operator && (
+            {!!isValid && !!operator && (
               <DropdownMenuItem
                 onClick={() => {
                   addFilter(
                     createFilter(field, {
                       operator: operator.id,
                       value: isNumber ? parsed : text,
-                    }),
+                    })
                   );
                   onDone();
                 }}
               >
-                <span className="text-muted-foreground shrink-0">
+                <span className="shrink-0 text-muted-foreground">
                   {field.label} {operatorText}
                 </span>
                 <span className="truncate font-medium">
                   {prefix}
                   {isNumber ? parsed : `“${text}”`}
-                  {suffix && ` ${suffix}`}
+                  {!!suffix && ` ${suffix}`}
                 </span>
               </DropdownMenuItem>
             )}
@@ -447,18 +472,26 @@ const CHIP_FOCUS_TARGET =
   '[data-slot="filter-chip-value"]:is(button, input), [data-slot="filter-chip-value"] :is(button, input, select, textarea, [tabindex]:not([tabindex="-1"]))';
 
 interface AddMenuOptions {
-  /** Key that opens this menu from the keyboard (e.g. `"f"`). */
-  shortcut?: string;
-  /** Whether the menu is open (controlled). */
-  open?: boolean;
-  /** Whether the menu starts open (uncontrolled). */
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  /**
+  Key that opens this menu from the keyboard (e.g. `"f"`).
+  */
+  readonly shortcut?: string;
+  /**
+  Whether the menu is open (controlled).
+  */
+  readonly open?: boolean;
+  /**
+  Whether the menu starts open (uncontrolled).
+  */
+  readonly defaultOpen?: boolean;
+  readonly onOpenChange?: (open: boolean) => void;
 }
 
 type AddMenuProps = React.ComponentProps<typeof Button> & AddMenuOptions;
 
-/** `kind="segment"` renders inside the `FilterActions` capsule; `button` standalone. */
+/**
+`kind="segment"` renders inside the `FilterActions` capsule; `button` standalone.
+*/
 function AddMenu({
   children,
   shortcut,
@@ -469,7 +502,7 @@ function AddMenu({
   defaultOpen = false,
   onOpenChange,
   ...props
-}: AddMenuProps & { kind: "button" | "segment" }) {
+}: AddMenuProps & { readonly kind: "button" | "segment" }) {
   const {
     fields,
     labels,
@@ -478,8 +511,8 @@ function AddMenu({
     allowDuplicateFields,
     addFilter,
   } = useFiltersActions();
-  const compact = usedFieldIds.size > 0;
-  const inActions = kind === "segment";
+  const isCompact = usedFieldIds.size > 0;
+  const isInActions = kind === "segment";
   const [open, setOpen] = useControllableState({
     value: openProp,
     defaultValue: defaultOpen,
@@ -488,7 +521,7 @@ function AddMenu({
   // The root's search. Base UI clears it when the menu closes.
   const [query, setQuery] = React.useState("");
   // Values join the list only while searching.
-  const searching = query.trim() !== "";
+  const isSearching = query.trim() !== "";
 
   const focusFilterIdRef = React.useRef<string | null>(null);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
@@ -497,7 +530,7 @@ function AddMenu({
     const scope =
       triggerRef.current?.closest('[data-slot="filters"]') ?? document;
     return scope.querySelector<HTMLElement>(
-      `[data-slot="filter-chip"][data-filter-id="${CSS.escape(filterId)}"]`,
+      `[data-slot="filter-chip"][data-filter-id="${CSS.escape(filterId)}"]`
     );
   }, []);
 
@@ -509,26 +542,36 @@ function AddMenu({
   const [shownOpen, setShownOpen] = React.useState(open);
   if (open !== shownOpen) {
     setShownOpen(open);
-    if (!open) setQuietTooltip(true);
+    if (!open) {
+      setQuietTooltip(true);
+    }
   }
   const changeOpen = React.useCallback(
     (nextOpen: boolean) => setOpen(nextOpen),
-    [setOpen],
+    [setOpen]
   );
   const wakeTooltip = React.useCallback(() => setQuietTooltip(false), []);
 
   React.useEffect(() => {
-    if (!shortcut) return;
+    if (!shortcut) {
+      return;
+    }
     const handleKeyDown = (event: KeyboardEvent) => {
       // Also dedupes multiple Filters instances: the first to accept prevents it.
-      if (event.defaultPrevented) return;
+      if (event.defaultPrevented) {
+        return;
+      }
       if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
         return;
       }
       // Skip IME composition, key repeat, and keyless synthetic keydowns (autofill).
-      if (event.isComposing || event.repeat || !event.key) return;
-      if (event.key.toLowerCase() !== shortcut.toLowerCase()) return;
-      const target = event.target;
+      if (event.isComposing || event.repeat || !event.key) {
+        return;
+      }
+      if (event.key.toLowerCase() !== shortcut.toLowerCase()) {
+        return;
+      }
+      const { target } = event;
       if (target instanceof HTMLElement) {
         if (
           target instanceof HTMLInputElement ||
@@ -541,7 +584,7 @@ function AddMenu({
         // Don't steal the key from open popups (menu typeahead, dialogs).
         if (
           target.closest(
-            '[role="menu"], [role="listbox"], [role="dialog"], [role="alertdialog"]',
+            '[role="menu"], [role="listbox"], [role="dialog"], [role="alertdialog"]'
           )
         ) {
           return;
@@ -559,13 +602,13 @@ function AddMenu({
       focusFilterIdRef.current = focusFilterId ?? null;
       changeOpen(false);
     },
-    [changeOpen],
+    [changeOpen]
   );
 
   // Option fields whose values join the results while searching.
   const optionFields = React.useMemo(
     () => fields.filter(editsInPlace),
-    [fields],
+    [fields]
   );
 
   // An edited chip may sit outside a scrolling bar; bring it into view.
@@ -573,10 +616,12 @@ function AddMenu({
     (filterId: string) => {
       requestAnimationFrame(() => {
         const chip = findChip(filterId);
-        if (chip) revealInScroller(chip);
+        if (chip) {
+          revealInScroller(chip);
+        }
       });
     },
-    [findChip],
+    [findChip]
   );
 
   return (
@@ -586,7 +631,7 @@ function AddMenu({
       <DropdownMenu open={open} onOpenChange={changeOpen} modal={false}>
         {/* Only once folded to "+" (the label is hidden) and while closed. */}
         <Tooltip
-          disabled={!compact || open}
+          disabled={!isCompact || open}
           open={tooltipOpen}
           onOpenChange={(nextOpen, details) => {
             if (
@@ -604,16 +649,16 @@ function AddMenu({
               <DropdownMenuTrigger
                 ref={triggerRef}
                 render={
-                  inActions ? (
+                  isInActions ? (
                     <button
                       type="button"
                       data-slot="filter-add"
                       aria-keyshortcuts={shortcut?.toUpperCase()}
-                      data-compact={compact ? "" : undefined}
+                      data-compact={isCompact ? "" : undefined}
                       onBlur={(event: React.FocusEvent<HTMLButtonElement>) => {
                         // Base UI's event type has extra fields; cast through.
                         onBlur?.(
-                          event as Parameters<NonNullable<typeof onBlur>>[0],
+                          event as Parameters<NonNullable<typeof onBlur>>[0]
                         );
                         wakeTooltip();
                       }}
@@ -622,8 +667,8 @@ function AddMenu({
                         FILTER_SEGMENT_INTERACTIVE,
                         // Folded, the side padding goes and the "+" square
                         // below sets the width.
-                        "text-muted-foreground hover:text-foreground data-popup-open:text-foreground gap-0 px-(--seg-icon-x) data-compact:px-0",
-                        className,
+                        "gap-0 px-(--seg-icon-x) text-muted-foreground hover:text-foreground data-compact:px-0 data-popup-open:text-foreground",
+                        className
                       )}
                       {...(props as React.ComponentProps<"button">)}
                     />
@@ -631,21 +676,21 @@ function AddMenu({
                     <Button
                       data-slot="filter-add"
                       aria-keyshortcuts={shortcut?.toUpperCase()}
-                      data-compact={compact ? "" : undefined}
+                      data-compact={isCompact ? "" : undefined}
                       onBlur={(event: React.FocusEvent<HTMLButtonElement>) => {
                         // Base UI's event type has extra fields; cast through.
                         onBlur?.(
-                          event as Parameters<NonNullable<typeof onBlur>>[0],
+                          event as Parameters<NonNullable<typeof onBlur>>[0]
                         );
                         wakeTooltip();
                       }}
                       variant="outline"
                       size={size}
                       className={cn(
-                        "text-muted-foreground hover:text-foreground data-popup-open:text-foreground gap-0",
+                        "gap-0 text-muted-foreground hover:text-foreground data-popup-open:text-foreground",
                         // Matches the icon side; the label adds the rest when shown.
                         size === "sm" ? "pe-2" : "pe-2.5",
-                        className,
+                        className
                       )}
                       leadingIcon={
                         <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
@@ -655,9 +700,7 @@ function AddMenu({
                   )
                 }
               >
-                {inActions && (
-                  // Folded to "+", a square as tall as the plate, so the
-                  // segment stays square at any display scale.
+                {!!isInActions && (
                   <span className="flex h-full shrink-0 items-center justify-center in-data-compact:aspect-square">
                     <HugeiconsIcon
                       icon={PlusSignIcon}
@@ -678,7 +721,7 @@ function AddMenu({
                     className="flex min-w-0 items-center gap-1.5 overflow-hidden ps-1.5 pe-0.5"
                   >
                     {children ?? labels.add}
-                    {shortcut && (
+                    {!!shortcut && (
                       <Kbd
                         size="sm"
                         variant="ghost"
@@ -695,7 +738,7 @@ function AddMenu({
           />
           <TooltipContent className="flex items-center gap-2">
             {labels.addTooltip}
-            {shortcut && (
+            {!!shortcut && (
               <Kbd size="sm" variant="ghost" className="text-muted-foreground">
                 {shortcut.toUpperCase()}
               </Kbd>
@@ -719,11 +762,11 @@ function AddMenu({
               finalFocus={() => {
                 const id = focusFilterIdRef.current;
                 focusFilterIdRef.current = null;
-                if (!id) return true;
-                return (
-                  findChip(id)?.querySelector<HTMLElement>(CHIP_FOCUS_TARGET) ??
-                  true
-                );
+                return id
+                  ? (findChip(id)?.querySelector<HTMLElement>(
+                      CHIP_FOCUS_TARGET
+                    ) ?? true)
+                  : true;
               }}
             >
               <DropdownMenuInput
@@ -733,20 +776,20 @@ function AddMenu({
               <DropdownMenuEmpty>{labels.noFields}</DropdownMenuEmpty>
               <DropdownMenuList>
                 <DropdownMenuGroup>
-                  {searching && (
+                  {!!isSearching && (
                     <DropdownMenuGroupLabel>
                       {labels.fields}
                     </DropdownMenuGroupLabel>
                   )}
                   {fields.map((field) => {
-                    const valueStep = hasValueStep(field);
+                    const isValueStep = hasValueStep(field);
                     // Option fields edit their one filter in place, so they
                     // stay open; the rest close once used unless they repeat.
                     const disabled =
                       usedFieldIds.has(field.id) &&
-                      !(valueStep && isOptionField(field)) &&
+                      !(isValueStep && isOptionField(field)) &&
                       !allowsDuplicates(field, allowDuplicateFields);
-                    if (!valueStep) {
+                    if (!isValueStep) {
                       return (
                         <DropdownMenuItem
                           key={field.id}
@@ -773,8 +816,8 @@ function AddMenu({
                     );
                   })}
                 </DropdownMenuGroup>
-                {searching && <DropdownMenuSeparator />}
-                {searching && (
+                {!!isSearching && <DropdownMenuSeparator />}
+                {!!isSearching && (
                   <DropdownMenuGroup>
                     <DropdownMenuGroupLabel>
                       {labels.values}
@@ -786,7 +829,7 @@ function AddMenu({
                         inSearch
                         onEdited={revealChip}
                         trailing={
-                          <span className="text-muted-foreground ms-auto shrink-0 text-xs">
+                          <span className="ms-auto shrink-0 text-xs text-muted-foreground">
                             {field.label}
                           </span>
                         }
@@ -803,14 +846,18 @@ function AddMenu({
   );
 }
 
-/** Standalone add-filter outline button with its menu. */
+/**
+Standalone add-filter outline button with its menu.
+*/
 function FilterAddButton(props: AddMenuProps) {
   return <AddMenu {...props} kind="button" />;
 }
 
-/** The add segment of a `FilterActions` capsule, for composing your own. */
+/**
+The add segment of a `FilterActions` capsule, for composing your own.
+*/
 function FilterActionsAdd(
-  props: React.ComponentProps<"button"> & AddMenuOptions,
+  props: React.ComponentProps<"button"> & AddMenuOptions
 ) {
   return <AddMenu {...(props as AddMenuProps)} kind="segment" />;
 }

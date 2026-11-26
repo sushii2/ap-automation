@@ -46,18 +46,18 @@ type ContentMinWidth = "viewport" | "fit-content";
 type ContentHeight = "auto" | "fill";
 
 type ScrollAreaProps = BaseScrollArea.Root.Props & {
-  fadeEdges?: FadeEdges;
-  scrollbarGutter?: boolean;
-  persistScrollbar?: boolean;
-  hideScrollbar?: boolean;
-  nativeScroll?: boolean;
-  overscrollBehavior?: OverscrollBehavior;
+  readonly fadeEdges?: FadeEdges;
+  readonly scrollbarGutter?: boolean;
+  readonly persistScrollbar?: boolean;
+  readonly hideScrollbar?: boolean;
+  readonly nativeScroll?: boolean;
+  readonly overscrollBehavior?: OverscrollBehavior;
   /**
    * How wide the content wrapper is allowed to get. `"viewport"` keeps it at
    * the visible width; `"fit-content"` restores Base UI's default of growing
    * to the widest child. See the note on the `Content` element below.
    */
-  contentMinWidth?: ContentMinWidth;
+  readonly contentMinWidth?: ContentMinWidth;
   /**
    * How tall the content wrapper is allowed to get. `"auto"` tracks the
    * children; `"fill"` stretches it to at least the viewport height so a flex
@@ -65,11 +65,15 @@ type ScrollAreaProps = BaseScrollArea.Root.Props & {
    * size themselves with `flex-1`, not `h-full` — see the note on the `Content`
    * element below.
    */
-  contentHeight?: ContentHeight;
-  /** Ref callback for the scrollable viewport element. Useful for virtualization. */
-  viewportRef?: (element: HTMLDivElement | null) => void;
-  /** Additional className for the viewport element */
-  viewportClassName?: string;
+  readonly contentHeight?: ContentHeight;
+  /**
+  Ref callback for the scrollable viewport element. Useful for virtualization.
+  */
+  readonly viewportRef?: (element: HTMLDivElement | null) => void;
+  /**
+  Additional className for the viewport element
+  */
+  readonly viewportClassName?: string;
   /**
    * Additional className for the content wrapper element. Needed when a child
    * relies on a percentage height against its parent (e.g. Base UI's Select
@@ -77,7 +81,7 @@ type ScrollAreaProps = BaseScrollArea.Root.Props & {
    * resolves if the wrapper has a definite height like `h-full`. Ignored with
    * `nativeScroll` (no content wrapper exists there).
    */
-  contentClassName?: string;
+  readonly contentClassName?: string;
 };
 
 // Root props with no plain-div meaning, dropped on the `nativeScroll` path.
@@ -110,17 +114,17 @@ function ScrollArea({
   if (process.env.NODE_ENV !== "production") {
     if (persistScrollbar && hideScrollbar) {
       console.error(
-        "ScrollArea: `persistScrollbar` and `hideScrollbar` cannot be used together.",
+        "ScrollArea: `persistScrollbar` and `hideScrollbar` cannot be used together."
       );
     }
     if (nativeScroll && persistScrollbar) {
       console.error(
-        "ScrollArea: `persistScrollbar` is not supported with `nativeScroll`.",
+        "ScrollArea: `persistScrollbar` is not supported with `nativeScroll`."
       );
     }
     if (nativeScroll && contentClassName) {
       console.error(
-        "ScrollArea: `contentClassName` is ignored with `nativeScroll` (no content wrapper exists there).",
+        "ScrollArea: `contentClassName` is ignored with `nativeScroll` (no content wrapper exists there)."
       );
     }
   }
@@ -134,7 +138,9 @@ function ScrollArea({
     // `overflowEdgeThreshold`, a state-function `style`, and the scroll/wheel
     // handlers NativeScrollArea doesn't take.
     const divProps: Record<string, unknown> = { ...props };
-    for (const key of NATIVE_DROPPED_PROPS) delete divProps[key];
+    for (const key of NATIVE_DROPPED_PROPS) {
+      delete divProps[key];
+    }
     return (
       <NativeScrollArea
         {...(divProps as React.ComponentProps<typeof NativeScrollArea>)}
@@ -166,7 +172,7 @@ function ScrollArea({
         data-slot="scroll-area-viewport"
         className={cn(
           "h-full rounded-[inherit]",
-          "focus-visible:outline-ring outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 ease-out outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1",
+          "outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 ease-out outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-ring",
           hasFade && "[--scroll-fade-size:min(12%,2.5rem)]",
           fade.top &&
             "mask-t-from-[calc(100%-min(var(--scroll-fade-size),var(--scroll-area-overflow-y-start,0px)))]",
@@ -180,7 +186,7 @@ function ScrollArea({
             "data-has-overflow-x:pb-2.5 data-has-overflow-y:pe-2.5",
           overscrollBehavior === "contain" && "overscroll-contain",
           overscrollBehavior === "none" && "overscroll-none",
-          viewportClassName,
+          viewportClassName
         )}
       >
         <BaseScrollArea.Content
@@ -198,7 +204,7 @@ function ScrollArea({
           // and does nothing).
           className={cn(
             contentHeight === "fill" && "flex min-h-full flex-col",
-            contentClassName,
+            contentClassName
           )}
           // Base UI ships `min-width: fit-content` here. That turns on an
           // intrinsic sizing pass, and anything un-shrinkable in the subtree
@@ -240,7 +246,7 @@ function ScrollBar({
   persist = false,
   ...props
 }: BaseScrollArea.Scrollbar.Props & {
-  persist?: boolean;
+  readonly persist?: boolean;
 }) {
   return (
     <BaseScrollArea.Scrollbar
@@ -251,13 +257,13 @@ function ScrollBar({
           "opacity-0 transition-opacity delay-200 data-hovering:opacity-100 data-hovering:delay-0 data-hovering:duration-100 data-scrolling:opacity-100 data-scrolling:delay-0 data-scrolling:duration-100",
         "data-[orientation=vertical]:w-1.5",
         "data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:flex-col",
-        className,
+        className
       )}
       {...props}
     >
       <BaseScrollArea.Thumb
         data-slot="scroll-area-thumb"
-        className="bg-scrollbar/50 hover:bg-scrollbar data-scrolling:bg-scrollbar relative flex-1 rounded-full transition-colors"
+        className="relative flex-1 rounded-full bg-scrollbar/50 transition-colors hover:bg-scrollbar data-scrolling:bg-scrollbar"
       />
     </BaseScrollArea.Scrollbar>
   );
@@ -282,12 +288,12 @@ function NativeScrollArea({
   React.ComponentProps<"div">,
   "onScroll" | "onScrollCapture" | "onWheel" | "onWheelCapture"
 > & {
-  fadeEdges?: FadeEdges;
-  hideScrollbar?: boolean;
-  scrollbarGutter?: boolean;
-  overscrollBehavior?: OverscrollBehavior;
-  viewportClassName?: string;
-  ref?: (element: HTMLDivElement | null) => void;
+  readonly fadeEdges?: FadeEdges;
+  readonly hideScrollbar?: boolean;
+  readonly scrollbarGutter?: boolean;
+  readonly overscrollBehavior?: OverscrollBehavior;
+  readonly viewportClassName?: string;
+  readonly ref?: (element: HTMLDivElement | null) => void;
 }) {
   const fade = parseFadeEdges(fadeEdges);
   const hasFade = fade.top || fade.bottom || fade.left || fade.right;
@@ -336,7 +342,7 @@ function NativeScrollArea({
       data-native-scroll
       className={cn(
         "size-full min-h-0 overflow-auto rounded-[inherit]",
-        "focus-visible:outline-ring outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 ease-out outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1",
+        "outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 ease-out outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-ring",
         hasFade && "[--scroll-fade-size:min(12%,2.5rem)]",
         // Mask amounts come from CSS variables driven by scroll-driven
         // animations where supported, and from a static fallback otherwise.
@@ -350,7 +356,7 @@ function NativeScrollArea({
         overscrollBehavior === "contain" && "overscroll-contain",
         overscrollBehavior === "none" && "overscroll-none",
         className,
-        viewportClassName,
+        viewportClassName
       )}
       style={{ ...animationStyle, ...style }}
       tabIndex={0}

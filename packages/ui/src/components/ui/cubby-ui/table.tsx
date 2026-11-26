@@ -4,15 +4,11 @@ import * as React from "react";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 
+import { elevatedSurface } from "@workspace/ui/lib/cubby-ui/elevated";
 import { cn } from "@workspace/ui/lib/utils";
-import {
-  elevatedSurface,
-  type SurfaceLevel,
-} from "@workspace/ui/lib/cubby-ui/elevated";
-import {
-  ScrollArea,
-  type ScrollAreaProps,
-} from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
+import { ScrollArea } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
+import type { SurfaceLevel } from "@workspace/ui/lib/cubby-ui/elevated";
+import type { ScrollAreaProps } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
 
 export interface TableProps
   extends
@@ -25,14 +21,18 @@ export interface TableProps
       | "persistScrollbar"
       | "hideScrollbar"
     > {
-  bordered?: boolean;
-  striped?: boolean;
-  hoverable?: boolean;
-  rowDividers?: boolean;
-  /** Surface elevation level (1-8). Defaults to 3. */
-  level?: SurfaceLevel;
-  /** Shadow weight (1-8). Defaults to 1 — flat outlined card, just rim. */
-  shadowLevel?: SurfaceLevel;
+  readonly bordered?: boolean;
+  readonly striped?: boolean;
+  readonly hoverable?: boolean;
+  readonly rowDividers?: boolean;
+  /**
+  Surface elevation level (1-8). Defaults to 3.
+  */
+  readonly level?: SurfaceLevel;
+  /**
+  Shadow weight (1-8). Defaults to 1 — flat outlined card, just rim.
+  */
+  readonly shadowLevel?: SurfaceLevel;
 }
 
 function Table({
@@ -64,8 +64,7 @@ function Table({
         // Same pattern as Card inset outer — gray frame with elevation shadow + rim.
         // Inner body cells drop to `bg-surface-3 dark:bg-surface-1` (see TableBody)
         // to create the mode-asymmetric "card-on-tray (light) / well (dark)" look.
-        // pt-0 because TableHead's py-2 already provides the header's top padding —
-        // adding outer pt would stack and create a too-thick top strip.
+        // pt-0 because TableHead's py-2 already provides the header's top padding — adding outer pt would stack and create a too-thick top strip.
         // has-[tfoot]:pb-0 mirrors that logic: when a footer is present its own
         // py-2 carries the bottom padding. Without a footer, the outer keeps
         // pb-1 to give the body's last row breathing room before the frame edge.
@@ -75,7 +74,7 @@ function Table({
         // would let the header bg cover the rim line at the top in dark mode.
         elevatedSurface(level, shadowLevel),
         "bg-muted",
-        className,
+        className
       )}
     >
       <ScrollArea
@@ -90,7 +89,7 @@ function Table({
           data-slot="table"
           className={cn(
             "w-full caption-bottom text-sm",
-            bordered && "border-separate border-spacing-0",
+            bordered && "border-separate border-spacing-0"
           )}
           {...props}
         >
@@ -116,7 +115,7 @@ function TableHeader({ className, render, ...props }: TableHeaderProps) {
       // z-1 keeps the header above scrolling body rows but below the table
       // container's ::after rim (z-2) so the rim stays visible in dark mode.
       "sticky top-0 z-1",
-      className,
+      className
     ),
   };
 
@@ -138,12 +137,12 @@ function TableBody({ className, render, ...props }: TableBodyProps) {
       "[&_tr_td]:bg-surface-3 dark:[&_tr_td]:bg-surface-1",
       "[&_tr:first-child_td:first-child]:rounded-tl-lg [&_tr:first-child_td:last-child]:rounded-tr-lg",
       "[&_tr:last-child_td:first-child]:rounded-bl-lg [&_tr:last-child_td:last-child]:rounded-br-lg",
-      "group-data-[row-dividers]/table:[&_tr:not(:last-child)]:border-b group-data-[row-dividers]/table:[&_tr]:border-border/60",
+      "group-data-[row-dividers]/table:[&_tr]:border-border/60 group-data-[row-dividers]/table:[&_tr:not(:last-child)]:border-b",
       "group-data-bordered/table:[&_tr:first-child_td]:border-t group-data-bordered/table:[&_tr:first-child_td]:border-border",
 
       "group-data-hoverable/table:[&_tr:hover_td]:bg-surface-hover",
       "group-data-striped/table:[&_tr:nth-child(even)_td]:bg-muted/50",
-      className,
+      className
     ),
   };
 
@@ -165,7 +164,7 @@ function TableFooter({ className, render, ...props }: TableFooterProps) {
       "[&_tr_td:first-child]:rounded-l-lg [&_tr_td:last-child]:rounded-r-lg",
       "[&_tr_td]:py-2",
       "font-medium",
-      className,
+      className
     ),
   };
 
@@ -186,7 +185,7 @@ function TableRow({ className, render, selected, ...props }: TableRowProps) {
     "data-state": selected ? "selected" : undefined,
     className: cn(
       "transition-colors duration-100 hover:transition-none",
-      className,
+      className
     ),
   };
 
@@ -203,15 +202,15 @@ function TableHead({ className, render, ...props }: TableHeadProps) {
   const defaultProps = {
     "data-slot": "table-head",
     className: cn(
-      "text-muted-foreground relative px-3 py-2 text-left align-middle text-sm font-medium whitespace-nowrap",
+      "relative px-3 py-2 text-left align-middle text-sm font-medium whitespace-nowrap text-muted-foreground",
       "[&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       // Short "tick" separator between header cells via ::after. Hidden on the
       // last cell so the row ends cleanly. Uses bg-border (translucent) so it
       // reads as a faint divider on the bg-muted header strip.
-      "after:absolute after:right-0 after:top-1/2 after:h-4 after:w-px after:-translate-y-1/2 after:bg-border after:content-['']",
+      "after:absolute after:top-1/2 after:right-0 after:h-4 after:w-px after:-translate-y-1/2 after:bg-border after:content-['']",
       "last:after:hidden",
       "group-data-[bordered]/table:border-r group-data-[bordered]/table:border-border group-data-[bordered]/table:last:border-r-0",
-      className,
+      className
     ),
   };
 
@@ -230,11 +229,11 @@ function TableCell({ className, render, ...props }: TableCellProps) {
     className: cn(
       "px-3 py-2.5 align-middle whitespace-nowrap",
       "[&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-      "group-data-bordered/table:border-b group-data-bordered/table:border-r group-data-bordered/table:first:border-l group-data-bordered/table:border-border",
+      "group-data-bordered/table:border-r group-data-bordered/table:border-b group-data-bordered/table:border-border group-data-bordered/table:first:border-l",
       // ! to override the dark-mode TableBody base bg-surface-1 which would
       // otherwise win on specificity (.dark .body tr td vs. [data-state=selected] td).
       "[[data-state=selected]_&]:bg-surface-selected dark:[[data-state=selected]_&]:bg-surface-selected",
-      className,
+      className
     ),
   };
 
@@ -250,7 +249,7 @@ export type TableCaptionProps = useRender.ComponentProps<"caption">;
 function TableCaption({ className, render, ...props }: TableCaptionProps) {
   const defaultProps = {
     "data-slot": "table-caption",
-    className: cn("text-muted-foreground mt-4 text-xs", className),
+    className: cn("mt-4 text-xs text-muted-foreground", className),
   };
 
   return useRender({

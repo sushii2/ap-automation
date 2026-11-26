@@ -1,4 +1,8 @@
-import { config } from "@workspace/eslint-config/react-internal"
+/* eslint-disable import-x/no-extraneous-dependencies, import-x/no-relative-packages -- imports the presets and config of the root package */
+import react from "ultracite/eslint/react";
 
-/** @type {import("eslint").Linter.Config} */
-export default config
+import root from "../../eslint.config.mjs";
+
+// ESLint lints each file with its nearest config alone, so this spreads the
+// root config before the workspace's presets.
+export default [...root, ...react];

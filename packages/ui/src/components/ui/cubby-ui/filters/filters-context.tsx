@@ -10,26 +10,34 @@ import type {
   FiltersLabels,
 } from "@workspace/ui/components/ui/cubby-ui/filters/lib/filters-types";
 
-/** Fast-changing: `filters` gets a new identity on every edit, including keystrokes. */
+/**
+Fast-changing: `filters` gets a new identity on every edit, including keystrokes.
+*/
 interface FiltersStateContextValue {
   filters: FilterValue[];
 }
 
-/** Config and actions; stable across value edits, so leaves don't re-render per keystroke. */
+/**
+Config and actions; stable across value edits, so leaves don't re-render per keystroke.
+*/
 interface FiltersActionsContextValue {
   fields: FilterField[];
   size: FilterSize;
   variant: FilterVariant;
   labels: FiltersLabels;
   fieldsById: Map<string, FilterField>;
-  /** Field ids with at least one active filter. Stable across value edits. */
+  /**
+  Field ids with at least one active filter. Stable across value edits.
+  */
   usedFieldIds: Set<string>;
   allowDuplicateFields: boolean;
   addFilter: (filter: FilterValue) => void;
   updateFilter: (id: string, patch: Partial<Omit<FilterValue, "id">>) => void;
   removeFilter: (id: string) => void;
   clearAll: () => void;
-  /** The filters as of the last render, for handlers that shouldn't subscribe. */
+  /**
+  The filters as of the last render, for handlers that shouldn't subscribe.
+  */
   getFilters: () => FilterValue[];
 }
 
@@ -41,7 +49,9 @@ const FiltersStateContext =
 const FiltersActionsContext =
   React.createContext<FiltersActionsContextValue | null>(null);
 
-/** The bar's fast-changing state (`filters`). Re-renders on every edit. */
+/**
+The bar's fast-changing state (`filters`). Re-renders on every edit.
+*/
 function useFiltersState(): FiltersStateContextValue {
   const context = React.use(FiltersStateContext);
   if (!context) {
@@ -50,7 +60,9 @@ function useFiltersState(): FiltersStateContextValue {
   return context;
 }
 
-/** The bar's config and actions. Stable while a filter value is being edited. */
+/**
+The bar's config and actions. Stable while a filter value is being edited.
+*/
 function useFiltersActions(): FiltersActionsContextValue {
   const context = React.use(FiltersActionsContext);
   if (!context) {
@@ -59,7 +71,9 @@ function useFiltersActions(): FiltersActionsContextValue {
   return context;
 }
 
-/** Both contexts merged; re-renders on every edit (prefer `useFiltersActions` when that matters). */
+/**
+Both contexts merged; re-renders on every edit (prefer `useFiltersActions` when that matters).
+*/
 function useFilters(): FiltersContextValue {
   const state = useFiltersState();
   const actions = useFiltersActions();
@@ -72,7 +86,9 @@ interface FilterChipContextValue {
   size: FilterSize;
 }
 
-/** `count` bumps per announcement so a repeated message still registers. */
+/**
+`count` bumps per announcement so a repeated message still registers.
+*/
 interface FiltersAnnouncementValue {
   text: string;
   count: number;
@@ -82,7 +98,7 @@ const FiltersAnnouncementContext =
   React.createContext<FiltersAnnouncementValue>({ text: "", count: 0 });
 
 const FilterChipContext = React.createContext<FilterChipContextValue | null>(
-  null,
+  null
 );
 
 function useFilterChip(): FilterChipContextValue {

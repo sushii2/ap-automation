@@ -1,30 +1,31 @@
-"use client"
+"use client";
 
-import { useActionState, useState } from "react"
+import { useActionState, useState } from "react";
 
-import { Button } from "@workspace/ui/components/ui/cubby-ui/button"
-import { Input } from "@workspace/ui/components/ui/cubby-ui/input"
+import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
+import { Input } from "@workspace/ui/components/ui/cubby-ui/input";
 
-import { selectOrganization, type OnboardingState } from "./actions"
+import { selectOrganization } from "./actions";
+import type { OnboardingState } from "./actions";
 
-const NEW_ORGANIZATION = "new"
+const NEW_ORGANIZATION = "new";
 
 const optionClass =
-  "flex cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm transition-colors hover:bg-muted/50 has-checked:border-primary has-checked:bg-muted/50 has-focus-visible:outline-2 has-focus-visible:outline-ring"
+  "flex cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm transition-colors hover:bg-muted/50 has-checked:border-primary has-checked:bg-muted/50 has-focus-visible:outline-2 has-focus-visible:outline-ring";
 
 export function OnboardingForm({
   organizations,
 }: {
-  organizations: { id: string; name: string }[]
+  readonly organizations: { id: string; name: string }[];
 }) {
   const [state, formAction, pending] = useActionState<
     OnboardingState,
     FormData
-  >(selectOrganization, {})
+  >(selectOrganization, {});
   const [choice, setChoice] = useState(
     organizations.length === 0 ? NEW_ORGANIZATION : ""
-  )
-  const creating = choice === NEW_ORGANIZATION
+  );
+  const isCreating = choice === NEW_ORGANIZATION;
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -55,7 +56,7 @@ export function OnboardingForm({
               type="radio"
               name="organization"
               value={NEW_ORGANIZATION}
-              checked={creating}
+              checked={isCreating}
               onChange={() => setChoice(NEW_ORGANIZATION)}
               className="accent-primary"
             />
@@ -64,7 +65,7 @@ export function OnboardingForm({
         </div>
       </fieldset>
 
-      {creating && (
+      {!!isCreating && (
         <div className="flex flex-col gap-1.5">
           <label htmlFor="organization-name" className="text-sm font-medium">
             Organization name
@@ -81,15 +82,15 @@ export function OnboardingForm({
         </div>
       )}
 
-      {choice && (
+      {!!choice && (
         <p className="text-sm text-muted-foreground">
-          {creating
+          {isCreating
             ? "You will be the Admin of the new organization."
             : "You will join as a Viewer. An Admin can change your role."}
         </p>
       )}
 
-      {state.error && (
+      {!!state.error && (
         <p role="alert" className="text-sm text-destructive">
           {state.error}
         </p>
@@ -99,5 +100,5 @@ export function OnboardingForm({
         Continue
       </Button>
     </form>
-  )
+  );
 }

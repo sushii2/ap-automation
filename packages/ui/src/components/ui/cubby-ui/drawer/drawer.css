@@ -5,9 +5,9 @@
  * .mini-player { opacity: calc(1 - var(--drawer-snap-progress, 0)); }
  */
 @property --drawer-snap-progress {
-  syntax: "<number>";
   inherits: true;
   initial-value: 0;
+  syntax: "<number>";
 }
 
 /**
@@ -16,15 +16,16 @@
  * would restyle the parent's whole subtree on every frame.
  */
 @property --nested-drag-progress {
-  syntax: "<number>";
   inherits: false;
   initial-value: 0;
+  syntax: "<number>";
 }
 
 @keyframes drawer-snap-progress {
   from {
     --drawer-snap-progress: 0;
   }
+
   to {
     --drawer-snap-progress: 1;
   }
@@ -34,6 +35,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

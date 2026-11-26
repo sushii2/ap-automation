@@ -30,7 +30,7 @@ export interface UseCreatableComboboxReturn<
   /**
    * Items array with pseudo "Create X" item injected when applicable
    */
-  itemsWithCreatable: Array<T & { creatable?: string }>;
+  itemsWithCreatable: (T & { creatable?: string })[];
 
   /**
    * Props to spread onto the Combobox component
@@ -42,7 +42,7 @@ export interface UseCreatableComboboxReturn<
     onInputValueChange: (value: string) => void;
     onOpenChange: (
       open: boolean,
-      details: { event: Event | React.SyntheticEvent },
+      details: { event: Event | React.SyntheticEvent }
     ) => void;
   };
 
@@ -80,8 +80,8 @@ function slugify(value: string): string {
   return value
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]/g, "");
+    .replaceAll(/\s+/g, "-")
+    .replaceAll(/[^\w-]/g, "");
 }
 
 /**
@@ -89,7 +89,7 @@ function slugify(value: string): string {
  */
 function generateUniqueId<T extends { id: string }>(
   value: string,
-  existingItems: T[],
+  existingItems: T[]
 ): string {
   const baseId = slugify(value);
   const existingIds = new Set(existingItems.map((item) => item.id));
@@ -141,9 +141,10 @@ export function useCreatableCombobox<T extends { id: string; value: string }>({
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   // Helper to normalize values for comparison
-  const normalize = React.useCallback((value: string) => {
-    return value.trim().toLowerCase();
-  }, []);
+  const normalize = React.useCallback(
+    (value: string) => value.trim().toLowerCase(),
+    []
+  );
 
   // Helper to check if an item already exists
   const itemExists = React.useCallback(
@@ -151,7 +152,7 @@ export function useCreatableCombobox<T extends { id: string; value: string }>({
       const normalized = normalize(value);
       return items.some((item) => normalize(item.value) === normalized);
     },
-    [items, normalize],
+    [items, normalize]
   );
 
   // Create the items array with pseudo "Create X" item if needed
@@ -176,17 +177,16 @@ export function useCreatableCombobox<T extends { id: string; value: string }>({
   // Handle item creation
   const handleCreate = React.useCallback(() => {
     const value = pendingValue.trim();
-    if (!value) return;
+    if (!value) {
+      return;
+    }
 
     // Check if item already exists
     if (itemExists(value)) {
       const existing = items.find(
-        (item) => normalize(item.value) === normalize(value),
+        (item) => normalize(item.value) === normalize(value)
       );
-      if (
-        existing &&
-        !selectedItems.some((item) => item.id === existing.id)
-      ) {
+      if (existing && selectedItems.every((item) => item.id !== existing.id)) {
         onSelectedItemsChange([...selectedItems, existing]);
       }
       setDialogOpen(false);
@@ -218,7 +218,7 @@ export function useCreatableCombobox<T extends { id: string; value: string }>({
   const handleValueChange = React.useCallback(
     (value: unknown) => {
       const valueArray = Array.isArray(value) ? value : value ? [value] : [];
-      const last = valueArray[valueArray.length - 1];
+      const last = valueArray.at(-1);
 
       // Check if the last selected item is the pseudo "Create X" item
       if (last && "creatable" in last && last.creatable) {
@@ -229,49 +229,50 @@ export function useCreatableCombobox<T extends { id: string; value: string }>({
 
       // Filter out any pseudo items and update selected
       const cleanValue = valueArray.filter(
-        (item) => !("creatable" in item && item.creatable),
+        (item) => !("creatable" in item && item.creatable)
       );
       onSelectedItemsChange(cleanValue as T[]);
       setQuery("");
     },
-    [onSelectedItemsChange],
+    [onSelectedItemsChange]
   );
 
   // Handle combobox open/close - intercept Enter key to open dialog
   const handleOpenChange = React.useCallback(
-    (
-      open: boolean,
-      details: { event: Event | React.SyntheticEvent },
-    ) => {
+    (open: boolean, details: { event: Event | React.SyntheticEvent }) => {
       // Check if Enter key was pressed with a query that doesn't match
-      if (
+      if (!(
         "key" in details.event &&
         (details.event as KeyboardEvent).key === "Enter"
-      ) {
-        const trimmed = query.trim();
-        if (!trimmed) return;
-
-        // Check if item exists
-        if (itemExists(trimmed)) {
-          const existing = items.find(
-            (item) => normalize(item.value) === normalize(trimmed),
-          );
-          if (
-            existing &&
-            !selectedItems.some((item) => item.id === existing.id)
-          ) {
-            onSelectedItemsChange([...selectedItems, existing]);
-          }
-          setQuery("");
-          return;
-        }
-
-        // Open dialog for new item creation
-        setPendingValue(trimmed);
-        setDialogOpen(true);
+      )) {
+        return;
       }
+
+      const trimmed = query.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      // Check if item exists
+      if (itemExists(trimmed)) {
+        const existing = items.find(
+          (item) => normalize(item.value) === normalize(trimmed)
+        );
+        if (
+          existing &&
+          selectedItems.every((item) => item.id !== existing.id)
+        ) {
+          onSelectedItemsChange([...selectedItems, existing]);
+        }
+        setQuery("");
+        return;
+      }
+
+      // Open dialog for new item creation
+      setPendingValue(trimmed);
+      setDialogOpen(true);
     },
-    [query, items, selectedItems, itemExists, normalize, onSelectedItemsChange],
+    [query, items, selectedItems, itemExists, normalize, onSelectedItemsChange]
   );
 
   // Dialog submit handler
@@ -280,7 +281,7 @@ export function useCreatableCombobox<T extends { id: string; value: string }>({
       event.preventDefault();
       handleCreate();
     },
-    [handleCreate],
+    [handleCreate]
   );
 
   // Dialog cancel handler

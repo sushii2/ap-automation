@@ -1,16 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-
+import { cva } from "class-variance-authority";
 import { cn } from "@workspace/ui/lib/utils";
+import type { VariantProps } from "class-variance-authority";
 
 const kbdVariants = cva(
   // Set in the UI face: the base layer gives `kbd` the mono font, which made
   // keys read as code. No variant takes a border: edges are inset shadows,
   // as on surfaces, so they follow the radius and every variant lines up.
-  // No text color either: a key wears the ink of the text around it, so it
-  // reads in muted copy, a tooltip or a primary button alike.
+  // No text color either: a key wears the ink of the text around it, so it reads in muted copy, a tooltip or a primary button alike.
   // Press lands the same frame, like the real key; release eases back.
   "inline-flex shrink-0 items-center justify-center gap-0.5 font-sans font-medium whitespace-nowrap transition-[background-color,box-shadow,translate] duration-100 ease-out data-pressed:translate-y-px data-pressed:duration-0 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
@@ -30,7 +29,7 @@ const kbdVariants = cva(
         // inverse surface too (the last rule outranks the inverse one).
         default: [
           "bg-[color-mix(in_oklab,currentColor_var(--kbd-fill),transparent)] shadow-(--kbd-lip) data-pressed:bg-[color-mix(in_oklab,currentColor_calc(var(--kbd-fill)_+_4%),transparent)] data-pressed:shadow-none",
-          "[--kbd-fill:7%] in-data-[slot=button]:[--kbd-fill:14%] [--kbd-lip:inset_0_-1px_0_oklch(0_0_0/0.08)] dark:[--kbd-lip:inset_0_1px_0_oklch(1_0_0/0.06)]",
+          "[--kbd-fill:7%] [--kbd-lip:inset_0_-1px_0_oklch(0_0_0/0.08)] in-data-[slot=button]:[--kbd-fill:14%] dark:[--kbd-lip:inset_0_1px_0_oklch(1_0_0/0.06)]",
           "[[data-surface=inverse]_&]:[--kbd-fill:10%] [[data-surface=inverse]_&]:[--kbd-lip:inset_0_1px_0_oklch(1_0_0/0.06)] dark:[[data-surface=inverse]_&]:[--kbd-lip:inset_0_-1px_0_oklch(0_0_0/0.08)]",
           "[[data-surface=inverse]_[data-slot=button]_&]:[--kbd-fill:14%]",
         ],
@@ -43,12 +42,16 @@ const kbdVariants = cva(
       size: "md",
       variant: "default",
     },
-  },
+  }
 );
 
 type Platform = "mac" | "windows";
 
-type KeyLegend = { mac: string; windows: string; label?: string };
+interface KeyLegend {
+  mac: string;
+  windows: string;
+  label?: string;
+}
 
 // Named keys a `keys` array can use. `label` names the symbol legend for
 // screen readers.
@@ -102,11 +105,15 @@ function renderKey(key: string, platform: Platform): React.ReactNode {
   const legend: KeyLegend | undefined = (
     KEY_LEGENDS as Record<string, KeyLegend>
   )[key.toLowerCase()];
-  if (!legend) return key.length === 1 ? key.toUpperCase() : key;
+  if (!legend) {
+    return key.length === 1 ? key.toUpperCase() : key;
+  }
 
   const glyph = legend[platform];
   // Only a one-glyph symbol needs a spoken name; "Ctrl" says itself.
-  if (!legend.label || glyph.length > 1) return glyph;
+  if (!legend.label || glyph.length > 1) {
+    return glyph;
+  }
   return (
     <>
       <span aria-hidden="true">{glyph}</span>
@@ -119,13 +126,15 @@ export type KbdProps = React.ComponentProps<"kbd"> &
   VariantProps<typeof kbdVariants> & {
     /** Keys of one shortcut, drawn on a single cap. Named keys like `mod`,
      * `shift` and `enter` become the platform's legend. */
-    keys?: KbdKey[];
+    readonly keys?: KbdKey[];
     /** Placed between `keys`. Defaults to none on Mac and `+` elsewhere;
      * `null` shows none. */
-    separator?: React.ReactNode;
-    platform?: Platform | "auto";
-    /** Draws the key pushed down, as when it's held. */
-    pressed?: boolean;
+    readonly separator?: React.ReactNode;
+    readonly platform?: Platform | "auto";
+    /**
+    Draws the key pushed down, as when it's held.
+    */
+    readonly pressed?: boolean;
   };
 
 function Kbd({
@@ -183,7 +192,7 @@ function KbdGroup({ className, ...props }: React.ComponentProps<"kbd">) {
       data-slot="kbd-group"
       className={cn(
         "inline-flex items-center gap-1 font-sans text-xs [&>span]:opacity-60",
-        className,
+        className
       )}
       {...props}
     />

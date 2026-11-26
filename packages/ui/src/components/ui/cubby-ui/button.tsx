@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import { Button as BaseButton } from "@base-ui/react/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 // Package root, not a subpath. Since 4.3 the root is a barrel of per-icon
@@ -12,6 +12,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 // should add "@hugeicons/core-free-icons" to its own `optimizePackageImports`.
 import { Loading03Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@workspace/ui/lib/utils";
+import type { VariantProps } from "class-variance-authority";
 
 // The button's fill and border render on a ::before pseudo-element that
 // scales down on press (the pill shrinks, the label stays put). Because the
@@ -28,12 +29,12 @@ import { cn } from "@workspace/ui/lib/utils";
 // (className="[--btn-bg:...]") and restyle the border via `before:` classes
 // (className="before:border-dashed").
 const buttonBase = cn(
-  "relative isolate inline-flex items-center cursor-pointer justify-center whitespace-nowrap rounded-lg font-medium data-disabled:pointer-events-none data-disabled:opacity-60 data-disabled:focus-visible:outline-ring [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 focus-visible:outline-ring outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color,scale,opacity,background-color,color] duration-100 ease-out outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 aria-invalid:outline-destructive aria-invalid:outline-2 aria-invalid:-outline-offset-1 aria-invalid:outline-solid",
+  "relative isolate inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg font-medium whitespace-nowrap outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color,scale,opacity,background-color,color] duration-100 ease-out outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-ring aria-invalid:outline-2 aria-invalid:-outline-offset-1 aria-invalid:outline-destructive aria-invalid:outline-solid data-disabled:pointer-events-none data-disabled:opacity-60 data-disabled:focus-visible:outline-ring [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   // State machine: unset tokens fall through to transparent. Pressing shows
   // the active paint — except on popup triggers (aria-haspopup), which skip
   // pressed feedback entirely (mirroring the press-scale guard) and simply
   // hold their hover paint while open (data-popup-open, stamped by Base UI).
-  "[--btn-paint:var(--btn-bg,transparent)] hover:[--btn-paint:var(--btn-bg-hover,var(--btn-bg,transparent))] active:not-aria-[haspopup]:[--btn-paint:var(--btn-bg-active,var(--btn-bg-hover,var(--btn-bg,transparent)))] data-popup-open:[--btn-paint:var(--btn-bg-hover,var(--btn-bg,transparent))]",
+  "[--btn-paint:var(--btn-bg,transparent)] hover:[--btn-paint:var(--btn-bg-hover,var(--btn-bg,transparent))] active:not-aria-[haspopup]:[--btn-paint:var(--btn-bg-active,var(--btn-bg-hover,var(--btn-bg,transparent)))] data-popup-open:[--btn-paint:var(--btn-bg-hover,var(--btn-bg,transparent))]"
 );
 
 // The paint pseudo-element: 1px border + fill from the resolved vars,
@@ -140,9 +141,9 @@ const buttonVariants = cva(cn(buttonBase, buttonPaint), {
 
 export type ButtonProps = BaseButton.Props &
   Omit<VariantProps<typeof buttonVariants>, "iconLeft" | "iconRight"> & {
-    loading?: boolean;
-    leadingIcon?: React.ReactNode;
-    trailingIcon?: React.ReactNode;
+    readonly loading?: boolean;
+    readonly leadingIcon?: React.ReactNode;
+    readonly trailingIcon?: React.ReactNode;
   };
 
 function Button({
@@ -183,7 +184,7 @@ function Button({
           iconLeft: !!leadingIcon,
           iconRight: !!trailingIcon,
         }),
-        className,
+        className
       )}
       disabled={disabled || loading}
       aria-busy={loading || undefined}

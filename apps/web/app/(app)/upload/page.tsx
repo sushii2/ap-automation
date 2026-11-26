@@ -1,12 +1,16 @@
-import { z } from "zod"
+import { z } from "zod";
 
-import { DocumentUpload } from "@/components/document-upload"
-import { PageHeader } from "@/components/page-header"
-import { invoiceSchema } from "@/lib/invoice-schema"
+import { DocumentUpload } from "@/components/document-upload";
+import { PageHeader } from "@/components/page-header";
+import { invoiceSchema } from "@/lib/invoice-schema";
 
-export const metadata = { title: "Upload · AP Automation" }
+export const metadata = { title: "Upload · AP Automation" };
 
-const EXTRACTION_SCHEMA = JSON.stringify(z.toJSONSchema(invoiceSchema), null, 2)
+const EXTRACTION_SCHEMA = JSON.stringify(
+  z.toJSONSchema(invoiceSchema),
+  null,
+  2
+);
 
 export default function UploadPage() {
   return (
@@ -28,5 +32,5 @@ export default function UploadPage() {
         </pre>
       </details>
     </div>
-  )
+  );
 }

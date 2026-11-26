@@ -1,20 +1,19 @@
-"use client"
+"use client";
 
-import { Fragment, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
+import { Fragment, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   ChartColumn,
   FilePlus,
   FileText,
   LayoutDashboard,
-  type LucideIcon,
   Search,
   Settings,
   ShoppingCart,
   SunMoon,
   Upload,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Command,
@@ -28,64 +27,122 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@workspace/ui/components/ui/cubby-ui/command"
-import { Kbd } from "@workspace/ui/components/ui/cubby-ui/kbd"
+} from "@workspace/ui/components/ui/cubby-ui/command";
+import { Kbd } from "@workspace/ui/components/ui/cubby-ui/kbd";
+import type { LucideIcon } from "lucide-react";
 
-type CommandEntry = {
-  value: string
-  label: string
-  icon: LucideIcon
-  /** A route to open, or `theme` to switch between light and dark. */
-  action: { href: string } | "theme"
+interface CommandEntry {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+  /**
+  A route to open, or `theme` to switch between light and dark.
+  */
+  action: "theme" | { href: string };
 }
 
-type CommandGroupData = { label: string; items: CommandEntry[] }
+interface CommandGroupData {
+  label: string;
+  items: CommandEntry[];
+}
 
 const GROUPS: CommandGroupData[] = [
   {
     label: "Actions",
     items: [
-      { value: "upload-invoice", label: "Upload invoice", icon: Upload, action: { href: "/upload" } },
-      { value: "new-purchase-order", label: "New purchase order", icon: FilePlus, action: { href: "/purchase-orders?new=manual" } },
-      { value: "upload-purchase-order", label: "Upload purchase order", icon: Upload, action: { href: "/purchase-orders?new=upload" } },
-      { value: "toggle-theme", label: "Toggle theme", icon: SunMoon, action: "theme" },
+      {
+        value: "upload-invoice",
+        label: "Upload invoice",
+        icon: Upload,
+        action: { href: "/upload" },
+      },
+      {
+        value: "new-purchase-order",
+        label: "New purchase order",
+        icon: FilePlus,
+        action: { href: "/purchase-orders?new=manual" },
+      },
+      {
+        value: "upload-purchase-order",
+        label: "Upload purchase order",
+        icon: Upload,
+        action: { href: "/purchase-orders?new=upload" },
+      },
+      {
+        value: "toggle-theme",
+        label: "Toggle theme",
+        icon: SunMoon,
+        action: "theme",
+      },
     ],
   },
   {
     label: "Go to",
     items: [
-      { value: "dashboard", label: "Dashboard", icon: LayoutDashboard, action: { href: "/dashboard" } },
-      { value: "invoices", label: "Invoice log", icon: FileText, action: { href: "/invoices" } },
-      { value: "purchase-orders", label: "Purchase orders", icon: ShoppingCart, action: { href: "/purchase-orders" } },
-      { value: "analytics", label: "Analytics", icon: ChartColumn, action: { href: "/analytics" } },
-      { value: "settings", label: "Settings", icon: Settings, action: { href: "/settings" } },
+      {
+        value: "dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        action: { href: "/dashboard" },
+      },
+      {
+        value: "invoices",
+        label: "Invoice log",
+        icon: FileText,
+        action: { href: "/invoices" },
+      },
+      {
+        value: "purchase-orders",
+        label: "Purchase orders",
+        icon: ShoppingCart,
+        action: { href: "/purchase-orders" },
+      },
+      {
+        value: "analytics",
+        label: "Analytics",
+        icon: ChartColumn,
+        action: { href: "/analytics" },
+      },
+      {
+        value: "settings",
+        label: "Settings",
+        icon: Settings,
+        action: { href: "/settings" },
+      },
     ],
   },
-]
+];
 
-/** The ⌘K command palette, with the sidebar button that opens it. */
-export function CommandMenu({ className }: { className?: string }) {
-  const [open, setOpen] = useState(false)
-  const router = useRouter()
-  const { resolvedTheme, setTheme } = useTheme()
+/**
+The ⌘K command palette, with the sidebar button that opens it.
+*/
+export function CommandMenu({ className }: { readonly className?: string }) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault()
-        setOpen((current) => !current)
+      if (!(
+        event.key.toLowerCase() === "k" &&
+        (event.metaKey || event.ctrlKey)
+      )) {
+        return;
       }
-    }
-    document.addEventListener("keydown", onKeyDown)
-    return () => document.removeEventListener("keydown", onKeyDown)
-  }, [])
+
+      event.preventDefault();
+      setOpen((current) => !current);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function run({ action }: CommandEntry) {
-    setOpen(false)
+    setOpen(false);
     if (action === "theme") {
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
     } else {
-      router.push(action.href)
+      router.push(action.href);
     }
   }
 
@@ -128,5 +185,5 @@ export function CommandMenu({ className }: { className?: string }) {
         </CommandDialogPopup>
       </CommandDialog>
     </>
-  )
+  );
 }

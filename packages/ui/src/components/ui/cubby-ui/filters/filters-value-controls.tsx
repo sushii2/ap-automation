@@ -2,21 +2,7 @@
 
 import * as React from "react";
 
-import { cn } from "@workspace/ui/lib/utils";
-import {
-  Combobox,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxPopup,
-  ComboboxTrigger,
-} from "@workspace/ui/components/ui/cubby-ui/combobox/combobox";
-import { TextMorph } from "@workspace/ui/components/ui/cubby-ui/text-morph/text-morph";
 import { NumberField as BaseNumberField } from "@base-ui/react/number-field";
-
-import { OptionContent } from "@workspace/ui/components/ui/cubby-ui/filters/filters-add-menu";
-import { useFilterChip, useFiltersActions } from "@workspace/ui/components/ui/cubby-ui/filters/filters-context";
 import {
   asNumberOrNull,
   asNumberRange,
@@ -28,6 +14,23 @@ import {
   nameFromPlaceholder,
   operatorShapeFor,
 } from "@workspace/ui/components/ui/cubby-ui/filters/lib/filters-utils";
+import { cn } from "@workspace/ui/lib/utils";
+import {
+  Combobox,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxPopup,
+  ComboboxTrigger,
+} from "@workspace/ui/components/ui/cubby-ui/combobox/combobox";
+import { TextMorph } from "@workspace/ui/components/ui/cubby-ui/text-morph/text-morph";
+
+import { OptionContent } from "@workspace/ui/components/ui/cubby-ui/filters/filters-add-menu";
+import {
+  useFilterChip,
+  useFiltersActions,
+} from "@workspace/ui/components/ui/cubby-ui/filters/filters-context";
 import type {
   FilterField,
   FilterOption,
@@ -44,31 +47,37 @@ import type {
 const LIST_PADDING = "py-1 not-has-[[data-slot=combobox-item]]:py-0";
 
 interface ValueControlProps<F extends FilterField> {
-  field: F;
-  filter: FilterValue;
-  onValueChange: (value: unknown) => void;
-  className?: string;
+  readonly field: F;
+  readonly filter: FilterValue;
+  readonly onValueChange: (value: unknown) => void;
+  readonly className?: string;
 }
 
-/** A chip's value control for its field type; renders nothing for valueless operators (`is empty`). */
+/**
+A chip's value control for its field type; renders nothing for valueless operators (`is empty`).
+*/
 function FilterChipValue({
   className,
 }: {
-  /** Merged into the value segment (both segments of a `between` range). */
-  className?: string;
+  /**
+  Merged into the value segment (both segments of a `between` range).
+  */
+  readonly className?: string;
 }) {
   const { field, filter, size } = useFilterChip();
   const { updateFilter } = useFiltersActions();
   const onValueChange = React.useCallback(
     (nextValue: unknown) => updateFilter(filter.id, { value: nextValue }),
-    [updateFilter, filter.id],
+    [updateFilter, filter.id]
   );
 
-  if (operatorShapeFor(field, filter.operator) === "none") return null;
+  if (operatorShapeFor(field, filter.operator) === "none") {
+    return null;
+  }
 
   switch (field.type) {
     case "select":
-    case "multiselect":
+    case "multiselect": {
       return (
         <OptionsValueControl
           field={field}
@@ -77,7 +86,8 @@ function FilterChipValue({
           className={className}
         />
       );
-    case "text":
+    }
+    case "text": {
       return (
         <TextValueControl
           field={field}
@@ -86,7 +96,8 @@ function FilterChipValue({
           className={className}
         />
       );
-    case "number":
+    }
+    case "number": {
       return (
         <NumberValueControl
           field={field}
@@ -95,7 +106,8 @@ function FilterChipValue({
           className={className}
         />
       );
-    case "custom":
+    }
+    case "custom": {
       return (
         <div
           data-slot="filter-chip-value"
@@ -110,8 +122,10 @@ function FilterChipValue({
           />
         </div>
       );
-    default:
+    }
+    default: {
       return null;
+    }
   }
 }
 
@@ -121,21 +135,27 @@ function CustomValue(props: FilterValueControlProps) {
   return props.field.renderValue(props);
 }
 
-/** Accessible name for a value input, folding in string affixes ("$", "hrs"). */
+/**
+Accessible name for a value input, folding in string affixes ("$", "hrs").
+*/
 function valueAriaLabel(
   field: TextFilterField | NumberFilterField,
-  part: string,
+  part: string
 ): string {
   const affixes = [field.prefix, field.suffix].filter(
-    (affix): affix is string => typeof affix === "string",
+    (affix): affix is string => typeof affix === "string"
   );
   return [`${field.label} ${part}`, ...affixes].join(" ");
 }
 
-/** Up to three overlapping option icons, ringed in the chip fill to separate them. */
-function StackedIcons({ options }: { options: FilterOption[] }) {
+/**
+Up to three overlapping option icons, ringed in the chip fill to separate them.
+*/
+function StackedIcons({ options }: { readonly options: FilterOption[] }) {
   const withIcons = options.filter((option) => option.icon).slice(0, 3);
-  if (withIcons.length === 0) return null;
+  if (withIcons.length === 0) {
+    return null;
+  }
   return (
     <span aria-hidden className="flex shrink-0 items-center">
       {withIcons.map((option, index) => (
@@ -145,7 +165,7 @@ function StackedIcons({ options }: { options: FilterOption[] }) {
           className={cn(
             "relative flex items-center justify-center rounded-full bg-(--filter-chip-bg) ring-[1.5px] ring-(--filter-chip-bg)",
             index > 0 && "-ms-0.5",
-            "transition-[scale,opacity] duration-150 ease-out motion-reduce:transition-none starting:scale-50 starting:opacity-0",
+            "transition-[scale,opacity] duration-150 ease-out motion-reduce:transition-none starting:scale-50 starting:opacity-0"
           )}
         >
           {option.icon}
@@ -162,12 +182,14 @@ function FilterSearchPopup({
   className,
   children,
 }: {
-  placeholder: string;
-  /** The search field's accessible name, e.g. "Search status". */
-  label: string;
-  empty: React.ReactNode;
-  className?: string;
-  children: React.ComponentProps<typeof ComboboxList>["children"];
+  readonly placeholder: string;
+  /**
+  The search field's accessible name, e.g. "Search status".
+  */
+  readonly label: string;
+  readonly empty: React.ReactNode;
+  readonly className?: string;
+  readonly children: React.ComponentProps<typeof ComboboxList>["children"];
 }) {
   return (
     <ComboboxPopup
@@ -196,18 +218,18 @@ function OptionsValueControl({
 }: ValueControlProps<SelectFilterField | MultiSelectFilterField>) {
   const { labels } = useFiltersActions();
   const placeholder = field.placeholder ?? labels.selectValue;
-  const multiple = field.type === "multiselect";
+  const isMultiple = field.type === "multiselect";
 
-  const values = multiple
+  const values = isMultiple
     ? asStringArray(filter.value)
     : typeof filter.value === "string"
       ? [filter.value]
       : [];
   const selected = field.options.filter((option) =>
-    values.includes(option.value),
+    values.includes(option.value)
   );
-  const atMax =
-    multiple &&
+  const isAtMax =
+    isMultiple &&
     field.maxSelections != null &&
     values.length >= field.maxSelections;
   const text =
@@ -236,8 +258,8 @@ function OptionsValueControl({
             FILTER_SEGMENT,
             FILTER_SEGMENT_INTERACTIVE,
             "font-medium",
-            selected.length === 0 && "text-muted-foreground font-normal",
-            className,
+            selected.length === 0 && "font-normal text-muted-foreground",
+            className
           )}
         >
           <StackedIcons options={selected} />
@@ -262,7 +284,7 @@ function OptionsValueControl({
         <ComboboxItem
           key={option.value}
           value={option}
-          disabled={atMax && !values.includes(option.value)}
+          disabled={!!isAtMax && !values.includes(option.value)}
           className="my-0!"
         >
           <OptionContent option={option} />
@@ -271,7 +293,7 @@ function OptionsValueControl({
     </FilterSearchPopup>
   );
 
-  if (multiple) {
+  if (isMultiple) {
     return (
       <Combobox<FilterOption, true>
         items={field.options}
@@ -314,12 +336,12 @@ const INPUT_SEGMENT = cn(
   FILTER_SEGMENT,
   // Inputs can't render ::before, so their plate is their own background,
   // and their focus ring an inset one (an outline where forced colors drop it).
-  "hover:bg-(--filter-highlight) focus-visible:bg-(--filter-highlight) cursor-text bg-transparent font-medium [transition-duration:0ms,0ms,100ms]",
+  "cursor-text bg-transparent font-medium [transition-duration:0ms,0ms,100ms] hover:bg-(--filter-highlight) focus-visible:bg-(--filter-highlight)",
   "focus-visible:inset-ring-2 focus-visible:inset-ring-ring forced-colors:focus-visible:outline-2 forced-colors:focus-visible:-outline-offset-2 forced-colors:focus-visible:outline-[Highlight]",
-  "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground placeholder:font-normal",
+  "selection:bg-primary selection:text-primary-foreground placeholder:font-normal placeholder:text-muted-foreground",
   "field-sizing-content max-w-48 min-w-[1ch] not-supports-[field-sizing:content]:w-28",
   // 16px on small screens, below which iOS zooms in on a focused input.
-  "max-md:text-base",
+  "max-md:text-base"
 );
 
 function ValueSegment({
@@ -328,10 +350,10 @@ function ValueSegment({
   className,
   children,
 }: {
-  prefix?: React.ReactNode;
-  suffix?: React.ReactNode;
-  className?: string;
-  children: React.ReactNode;
+  readonly prefix?: React.ReactNode;
+  readonly suffix?: React.ReactNode;
+  readonly className?: string;
+  readonly children: React.ReactNode;
 }) {
   return (
     <div
@@ -340,17 +362,17 @@ function ValueSegment({
         "flex h-full items-center",
         prefix != null && "[&_input]:ps-1",
         suffix != null && "[&_input]:pe-1",
-        className,
+        className
       )}
     >
       {prefix != null && (
-        <span className="text-muted-foreground ps-(--seg-x) select-none">
+        <span className="ps-(--seg-x) text-muted-foreground select-none">
           {prefix}
         </span>
       )}
       {children}
       {suffix != null && (
-        <span className="text-muted-foreground pe-(--seg-x) select-none">
+        <span className="pe-(--seg-x) text-muted-foreground select-none">
           {suffix}
         </span>
       )}
@@ -394,14 +416,14 @@ function NumberValueField({
   "aria-label": ariaLabel,
   onValueChange,
 }: {
-  value: number | null;
-  className?: string;
-  step?: number;
-  placeholder?: string;
-  prefix?: React.ReactNode;
-  suffix?: React.ReactNode;
-  "aria-label": string;
-  onValueChange: (value: number | null) => void;
+  readonly value: number | null;
+  readonly className?: string;
+  readonly step?: number;
+  readonly placeholder?: string;
+  readonly prefix?: React.ReactNode;
+  readonly suffix?: React.ReactNode;
+  readonly "aria-label": string;
+  readonly onValueChange: (value: number | null) => void;
 }) {
   // `allowWheelScrub` only acts while focused and hovered, so page scroll is safe.
   return (
@@ -419,7 +441,7 @@ function NumberValueField({
           placeholder={placeholder}
           className={cn(
             INPUT_SEGMENT,
-            "tabular-nums not-supports-[field-sizing:content]:w-16",
+            "tabular-nums not-supports-[field-sizing:content]:w-16"
           )}
         />
       </BaseNumberField.Root>
@@ -451,7 +473,7 @@ function NumberValueControl({
         />
         <span
           aria-hidden
-          className="text-muted-foreground shrink-0 px-0.5 select-none"
+          className="shrink-0 px-0.5 text-muted-foreground select-none"
         >
           {labels.and}
         </span>

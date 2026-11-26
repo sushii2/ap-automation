@@ -5,6 +5,7 @@
   from {
     translate: -100% 0;
   }
+
   to {
     translate: 250% 0;
   }
@@ -15,6 +16,7 @@
   100% {
     opacity: 0.35;
   }
+
   50% {
     opacity: 0.7;
   }

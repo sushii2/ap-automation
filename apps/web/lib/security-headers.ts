@@ -19,7 +19,7 @@ export const securityHeaders = [
     value:
       "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
   },
-]
+];
 
 export function buildCsp(nonce: string, isDev: boolean) {
   return [
@@ -36,5 +36,5 @@ export function buildCsp(nonce: string, isDev: boolean) {
     "form-action 'self' https://api.workos.com",
     "frame-ancestors 'none'",
     ...(isDev ? [] : ["upgrade-insecure-requests"]),
-  ].join("; ")
+  ].join("; ");
 }

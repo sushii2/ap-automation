@@ -10,11 +10,8 @@ import {
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 
+import { solidSurface } from "@workspace/ui/lib/cubby-ui/elevated";
 import { cn } from "@workspace/ui/lib/utils";
-import {
-  solidSurface,
-  type SurfaceLevel,
-} from "@workspace/ui/lib/cubby-ui/elevated";
 import {
   POPUP_ITEM,
   POPUP_SEARCH_CLEAR,
@@ -24,10 +21,9 @@ import {
   POPUP_SEARCH_MENU_FIELD,
 } from "@workspace/ui/lib/cubby-ui/popup-search";
 import { ScrollArea } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
-import {
-  SwitchVisual,
-  type SwitchVisualProps,
-} from "@workspace/ui/components/ui/cubby-ui/switch/switch";
+import { SwitchVisual } from "@workspace/ui/components/ui/cubby-ui/switch/switch";
+import type { SurfaceLevel } from "@workspace/ui/lib/cubby-ui/elevated";
+import type { SwitchVisualProps } from "@workspace/ui/components/ui/cubby-ui/switch/switch";
 
 // Shared shell for checkbox and radio items. Padding matches the plain menu
 // item so labels line up across every item type; the indicator lives in a
@@ -87,17 +83,21 @@ function DropdownMenuPopup({
   children,
   ...props
 }: React.ComponentProps<typeof BaseMenu.Popup> & {
-  /** Surface elevation (1-8) for the popup bg. Bump inside a Dialog or other elevated container. Defaults to 3. */
-  level?: SurfaceLevel;
-  /** Shadow weight (1-8). Defaults to 3 so the menu looks the same at any nesting depth. */
-  shadowLevel?: SurfaceLevel;
+  /**
+  Surface elevation (1-8) for the popup bg. Bump inside a Dialog or other elevated container. Defaults to 3.
+  */
+  readonly level?: SurfaceLevel;
+  /**
+  Shadow weight (1-8). Defaults to 3 so the menu looks the same at any nesting depth.
+  */
+  readonly shadowLevel?: SurfaceLevel;
 }) {
   return (
     <BaseMenu.Popup
       data-slot="dropdown-menu-popup"
       data-level={level}
       className={cn(
-        "text-popover-foreground relative max-h-(--available-height) max-w-(--available-width) min-w-[12rem] overflow-hidden rounded-xl outline-none",
+        "relative max-h-(--available-height) max-w-(--available-width) min-w-[12rem] overflow-hidden rounded-xl text-popover-foreground outline-none",
         solidSurface(level, shadowLevel),
         "origin-(--transform-origin) transition-[scale,opacity] duration-100 ease-(--ease-out-expo)",
         "data-starting-style:scale-95 data-starting-style:opacity-0",
@@ -111,7 +111,7 @@ function DropdownMenuPopup({
         // suppressing 'dismiss' kills the exit, and 'click' is inferred from
         // `event.detail === 0`, which every right-click matches.
         "data-[instant=trigger-change]:transition-none",
-        className,
+        className
       )}
       {...props}
     >
@@ -164,7 +164,7 @@ function DropdownMenuViewport({
         // transitions and transition-property doesn't inherit.
         "[[data-instant=trigger-change]_&_[data-current]]:transition-none [[data-instant=trigger-change]_&_[data-previous]]:transition-none",
         "motion-reduce:**:data-current:transition-none motion-reduce:**:data-previous:transition-none",
-        className,
+        className
       )}
       {...props}
     />
@@ -181,20 +181,24 @@ function DropdownMenuContent({
   side = "bottom",
   ...props
 }: React.ComponentProps<typeof DropdownMenuPopup> & {
-  /** Classes for the positioner (the element Base UI moves into place), merged last. */
-  positionerClassName?: string;
-  /** Classes for the padded box around the items, e.g. `p-0` for a filterable menu. */
-  viewportClassName?: string;
-  align?: BaseMenu.Positioner.Props["align"];
-  sideOffset?: BaseMenu.Positioner.Props["sideOffset"];
-  side?: BaseMenu.Positioner.Props["side"];
+  /**
+  Classes for the positioner (the element Base UI moves into place), merged last.
+  */
+  readonly positionerClassName?: string;
+  /**
+  Classes for the padded box around the items, e.g. `p-0` for a filterable menu.
+  */
+  readonly viewportClassName?: string;
+  readonly align?: BaseMenu.Positioner.Props["align"];
+  readonly sideOffset?: BaseMenu.Positioner.Props["sideOffset"];
+  readonly side?: BaseMenu.Positioner.Props["side"];
 }) {
   return (
     <DropdownMenuPortal>
       <DropdownMenuPositioner
         className={cn(
           "z-50 h-(--positioner-height) max-h-(--available-height) w-(--positioner-width) max-w-(--available-width) transition-[top,left,right,bottom,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] data-instant:transition-none motion-reduce:transition-none",
-          positionerClassName,
+          positionerClassName
         )}
         sideOffset={sideOffset}
         align={align}
@@ -209,7 +213,7 @@ function DropdownMenuContent({
             // as cramped, and width is the least visible of the three.
             "h-(--popup-height,auto) w-(--popup-width,auto)",
             "transition-[width,height,scale,opacity] duration-[150ms,150ms,100ms,100ms] ease-[cubic-bezier(0.22,1,0.36,1),cubic-bezier(0.22,1,0.36,1),var(--ease-out-expo),var(--ease-out-expo)]",
-            className,
+            className
           )}
           {...props}
         >
@@ -234,8 +238,8 @@ function DropdownMenuItem({
   variant = "default",
   ...props
 }: React.ComponentProps<typeof BaseMenu.Item> & {
-  inset?: boolean;
-  variant?: "default" | "destructive";
+  readonly inset?: boolean;
+  readonly variant?: "default" | "destructive";
 }) {
   return (
     <BaseMenu.Item
@@ -244,8 +248,8 @@ function DropdownMenuItem({
       data-variant={variant}
       className={cn(
         POPUP_ITEM,
-        "data-highlighted:bg-surface-hover data-highlighted:text-accent-foreground data-[variant=destructive]:text-destructive data-[variant=destructive]:data-highlighted:bg-destructive/20 data-[variant=destructive]:data-highlighted:text-destructive-foreground data-[variant=destructive]:*:[svg]:text-destructive! data-highlighted:data-[variant=destructive]:*:[svg]:text-destructive-foreground! [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-60 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className,
+        "relative flex cursor-default items-center gap-2 outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-60 data-highlighted:bg-surface-hover data-highlighted:text-accent-foreground data-inset:pl-8 data-[variant=destructive]:text-destructive data-[variant=destructive]:data-highlighted:bg-destructive/20 data-[variant=destructive]:data-highlighted:text-destructive-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground data-[variant=destructive]:*:[svg]:text-destructive! data-highlighted:data-[variant=destructive]:*:[svg]:text-destructive-foreground!",
+        className
       )}
       {...props}
     />
@@ -260,8 +264,8 @@ function DropdownMenuShortcut({
     <span
       data-slot="dropdown-menu-shortcut"
       className={cn(
-        "text-muted-foreground ml-auto text-xs tracking-widest",
-        className,
+        "ml-auto text-xs tracking-widest text-muted-foreground",
+        className
       )}
       {...props}
     />
@@ -279,11 +283,11 @@ function DropdownMenuSeparator({
       // viewport's p-1 plus the item's px-2.5, so the rule starts where the
       // text does instead of running into the popup's rounded corners.
       className={cn(
-        "bg-border mx-2.5 my-1 h-px",
+        "mx-2.5 my-1 h-px bg-border",
         // While filtering, Base UI hides emptied groups. Drop a rule that
         // would follow one, or that has nothing left to separate below it.
         "[&:not(:has(~:not([hidden]):not([role=separator])))]:hidden [[hidden]+&]:hidden",
-        className,
+        className
       )}
       {...props}
     />
@@ -295,7 +299,7 @@ function DropdownMenuLabel({
   inset,
   ...props
 }: React.ComponentProps<"div"> & {
-  inset?: boolean;
+  readonly inset?: boolean;
 }) {
   return (
     <div
@@ -303,7 +307,7 @@ function DropdownMenuLabel({
       data-inset={inset || undefined}
       className={cn(
         "px-2.5 py-1.5 text-xs font-medium data-inset:pl-8",
-        className,
+        className
       )}
       {...props}
     />
@@ -315,7 +319,7 @@ function DropdownMenuGroupLabel({
   inset,
   ...props
 }: React.ComponentProps<typeof BaseMenu.GroupLabel> & {
-  inset?: boolean;
+  readonly inset?: boolean;
 }) {
   return (
     <BaseMenu.GroupLabel
@@ -323,7 +327,7 @@ function DropdownMenuGroupLabel({
       data-inset={inset || undefined}
       className={cn(
         "px-2.5 py-1.5 text-xs font-medium data-inset:pl-8",
-        className,
+        className
       )}
       {...props}
     />
@@ -342,17 +346,27 @@ function DropdownMenuCheckboxItem({
   switchMotion = "default",
   ...props
 }: React.ComponentProps<typeof BaseMenu.CheckboxItem> & {
-  inset?: boolean;
-  /** Which indicator sits in the right-hand column. `"switch"` is visual only — the item keeps the `menuitemcheckbox` role. */
-  indicator?: "check" | "switch";
-  /** Checked track colour, when `indicator="switch"`. */
-  switchColor?: SwitchVisualProps["color"];
-  /** Thumb silhouette, when `indicator="switch"`. */
-  switchShape?: SwitchVisualProps["shape"];
-  /** Thumb size, when `indicator="switch"`. Defaults to `xs`, which matches the row's text. */
-  switchSize?: SwitchVisualProps["size"];
-  /** How the thumb travels, when `indicator="switch"`. */
-  switchMotion?: SwitchVisualProps["motion"];
+  readonly inset?: boolean;
+  /**
+  Which indicator sits in the right-hand column. `"switch"` is visual only — the item keeps the `menuitemcheckbox` role.
+  */
+  readonly indicator?: "check" | "switch";
+  /**
+  Checked track colour, when `indicator="switch"`.
+  */
+  readonly switchColor?: SwitchVisualProps["color"];
+  /**
+  Thumb silhouette, when `indicator="switch"`.
+  */
+  readonly switchShape?: SwitchVisualProps["shape"];
+  /**
+  Thumb size, when `indicator="switch"`. Defaults to `xs`, which matches the row's text.
+  */
+  readonly switchSize?: SwitchVisualProps["size"];
+  /**
+  How the thumb travels, when `indicator="switch"`.
+  */
+  readonly switchMotion?: SwitchVisualProps["motion"];
 }) {
   return (
     <BaseMenu.CheckboxItem
@@ -364,7 +378,7 @@ function DropdownMenuCheckboxItem({
         indicator === "switch"
           ? "grid-cols-[1fr_auto] gap-3"
           : "grid-cols-[1fr_1rem] gap-2",
-        className,
+        className
       )}
       checked={checked}
       {...props}
@@ -414,7 +428,7 @@ function DropdownMenuRadioItem({
   inset,
   ...props
 }: React.ComponentProps<typeof BaseMenu.RadioItem> & {
-  inset?: boolean;
+  readonly inset?: boolean;
 }) {
   return (
     <BaseMenu.RadioItem
@@ -445,7 +459,7 @@ function DropdownMenuLinkItem({
   inset,
   ...props
 }: React.ComponentProps<typeof BaseMenu.LinkItem> & {
-  inset?: boolean;
+  readonly inset?: boolean;
 }) {
   return (
     <BaseMenu.LinkItem
@@ -453,8 +467,8 @@ function DropdownMenuLinkItem({
       data-inset={inset || undefined}
       className={cn(
         POPUP_ITEM,
-        "data-highlighted:bg-surface-hover data-highlighted:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 no-underline outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-60 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className,
+        "relative flex cursor-default items-center gap-2 no-underline outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-60 data-highlighted:bg-surface-hover data-highlighted:text-accent-foreground data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground",
+        className
       )}
       {...props}
     />
@@ -475,7 +489,7 @@ function DropdownMenuSubTrigger({
   closeDelay = 0,
   ...props
 }: React.ComponentProps<typeof BaseMenu.SubmenuTrigger> & {
-  inset?: boolean;
+  readonly inset?: boolean;
 }) {
   return (
     <BaseMenu.SubmenuTrigger
@@ -485,8 +499,8 @@ function DropdownMenuSubTrigger({
       closeDelay={closeDelay}
       className={cn(
         POPUP_ITEM,
-        "data-highlighted:bg-surface-hover data-highlighted:text-accent-foreground data-popup-open:bg-surface-hover data-popup-open:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground flex cursor-default items-center gap-2 outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-60 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className,
+        "flex cursor-default items-center gap-2 outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-60 data-highlighted:bg-surface-hover data-highlighted:text-accent-foreground data-inset:pl-8 data-popup-open:bg-surface-hover data-popup-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground",
+        className
       )}
       {...props}
     >
@@ -515,21 +529,29 @@ function DropdownMenuSubContent({
   shadowLevel = 3,
   ...props
 }: React.ComponentProps<typeof BaseMenu.Popup> & {
-  /** Classes for the positioner (the element Base UI moves into place), merged last. */
-  positionerClassName?: string;
-  align?: BaseMenu.Positioner.Props["align"];
-  alignOffset?: BaseMenu.Positioner.Props["alignOffset"];
-  sideOffset?: BaseMenu.Positioner.Props["sideOffset"];
-  /** Surface elevation level for the submenu bg (1-8). Defaults to the parent menu's level. */
-  level?: SurfaceLevel;
-  /** Shadow weight (1-8). Pinned to 3 by default so the submenu reads the same dropdown weight as its parent. */
-  shadowLevel?: SurfaceLevel;
-  /** Classes for the padded box around the items, e.g. `p-0` for a filterable menu. */
-  viewportClassName?: string;
+  /**
+  Classes for the positioner (the element Base UI moves into place), merged last.
+  */
+  readonly positionerClassName?: string;
+  readonly align?: BaseMenu.Positioner.Props["align"];
+  readonly alignOffset?: BaseMenu.Positioner.Props["alignOffset"];
+  readonly sideOffset?: BaseMenu.Positioner.Props["sideOffset"];
+  /**
+  Surface elevation level for the submenu bg (1-8). Defaults to the parent menu's level.
+  */
+  readonly level?: SurfaceLevel;
+  /**
+  Shadow weight (1-8). Pinned to 3 by default so the submenu reads the same dropdown weight as its parent.
+  */
+  readonly shadowLevel?: SurfaceLevel;
+  /**
+  Classes for the padded box around the items, e.g. `p-0` for a filterable menu.
+  */
+  readonly viewportClassName?: string;
 }) {
   const parentLevel = React.use(DropdownMenuLevelContext);
   // Default alignOffset to -5 when align is not "center" to line up first item with trigger
-  const defaultAlignOffset = align !== "center" ? -4 : undefined;
+  const defaultAlignOffset = align === "center" ? undefined : -4;
 
   return (
     <DropdownMenuPortal>
@@ -538,7 +560,7 @@ function DropdownMenuSubContent({
       <DropdownMenuPositioner
         className={cn(
           "z-50 max-h-(--available-height) max-w-(--available-width) transition-[top,left,right,bottom,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] data-instant:transition-none motion-reduce:transition-none",
-          positionerClassName,
+          positionerClassName
         )}
         sideOffset={sideOffset}
         align={align}
@@ -558,7 +580,7 @@ function DropdownMenuSubContent({
           <div
             className={cn(
               "flex max-h-(--available-height) flex-col overflow-x-hidden overflow-y-auto p-1",
-              viewportClassName,
+              viewportClassName
             )}
           >
             {children}
@@ -587,12 +609,18 @@ function DropdownMenuInput({
   "aria-label": ariaLabel = "Search",
   ...props
 }: BaseMenu.Input.Props & {
-  /** Class applied to the inner `<input>`. `className` styles the field. */
-  inputClassName?: string;
-  /** Show a clear button while the query has text. */
-  showClear?: boolean;
-  /** Accessible name of the clear button. Defaults to "Clear search". */
-  clearLabel?: string;
+  /**
+  Class applied to the inner `<input>`. `className` styles the field.
+  */
+  readonly inputClassName?: string;
+  /**
+  Show a clear button while the query has text.
+  */
+  readonly showClear?: boolean;
+  /**
+  Accessible name of the clear button. Defaults to "Clear search".
+  */
+  readonly clearLabel?: string;
 }) {
   return (
     <div
@@ -613,7 +641,7 @@ function DropdownMenuInput({
         aria-label={ariaLabel}
         {...props}
       />
-      {showClear && <DropdownMenuClear aria-label={clearLabel} />}
+      {!!showClear && <DropdownMenuClear aria-label={clearLabel} />}
     </div>
   );
 }
@@ -642,8 +670,10 @@ function DropdownMenuList({
   className,
   ...props
 }: Omit<BaseMenu.List.Props, "className"> & {
-  /** Styles the scroll area around the list, e.g. to change its height cap. */
-  className?: string;
+  /**
+  Styles the scroll area around the list, e.g. to change its height cap.
+  */
+  readonly className?: string;
 }) {
   return (
     // Scrolls on its own so the field stays put. Padding sits inside the scroll so
@@ -666,8 +696,8 @@ function DropdownMenuEmpty({ className, ...props }: BaseMenu.Empty.Props) {
       // Lines up with the item labels. The list's 8px padding still renders below,
       // so it sits 10px from the field and the bottom.
       className={cn(
-        "text-muted-foreground shrink-0 px-3.5 pt-2.5 pb-0.5 text-sm",
-        className,
+        "shrink-0 px-3.5 pt-2.5 pb-0.5 text-sm text-muted-foreground",
+        className
       )}
       {...props}
     />

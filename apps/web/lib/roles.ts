@@ -21,14 +21,14 @@ export const ROLES = [
     name: "Viewer",
     description: "Read-only access.",
   },
-] as const
+] as const;
 
-export type RoleSlug = (typeof ROLES)[number]["slug"]
+export type RoleSlug = (typeof ROLES)[number]["slug"];
 
 // Whoever creates an organization runs it; self-joiners start read-only.
-export const CREATOR_ROLE: RoleSlug = "admin"
-export const JOINER_ROLE: RoleSlug = "viewer"
+export const CREATOR_ROLE: RoleSlug = "admin";
+export const JOINER_ROLE: RoleSlug = "viewer";
 
 export function roleName(slug: string | undefined) {
-  return ROLES.find((role) => role.slug === slug)?.name ?? slug ?? "—"
+  return ROLES.find((role) => role.slug === slug)?.name ?? slug ?? "—";
 }

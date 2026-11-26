@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod";
 
 // Shared by the ingestion task and the UI. Keep this free of server-only imports.
 
@@ -11,7 +11,7 @@ export const DOCUMENT_TYPES = [
   "quote",
   "remittance_advice",
   "other",
-] as const
+] as const;
 
 export const classificationSchema = z.object({
   documentType: z
@@ -23,14 +23,14 @@ export const classificationSchema = z.object({
   reasoning: z
     .string()
     .describe("One or two sentences citing the evidence in the document."),
-})
+});
 
 export const partySchema = z.object({
   name: z.string().nullable(),
   address: z.string().nullable(),
   taxId: z.string().nullable().describe("VAT, GST, EIN or similar tax ID."),
   email: z.string().nullable(),
-})
+});
 
 export const invoiceSchema = z.object({
   invoiceNumber: z.string().nullable(),
@@ -64,46 +64,56 @@ export const invoiceSchema = z.object({
     .describe(
       "Anything a reviewer should know: ambiguous values, illegible areas, assumptions made. Empty if none."
     ),
-})
+});
 
-export type InvoiceClassification = z.infer<typeof classificationSchema>
-export type ExtractedInvoice = z.infer<typeof invoiceSchema>
+export type InvoiceClassification = z.infer<typeof classificationSchema>;
+export type ExtractedInvoice = z.infer<typeof invoiceSchema>;
 
 export const ingestPayloadSchema = z
   .object({
     fileName: z.string().min(1),
-    /** A URL the task can fetch the document from, e.g. a presigned URL. */
+    /**
+    A URL the task can fetch the document from, e.g. a presigned URL.
+    */
     fileUrl: z.url().optional(),
-    /** A `reducto://` ID, when the caller already uploaded the file. */
+    /**
+    A `reducto://` ID, when the caller already uploaded the file.
+    */
     reductoFileId: z.string().startsWith("reducto://").optional(),
-    /** Pathname of the original in the private Blob store, when it was saved. */
+    /**
+    Pathname of the original in the private Blob store, when it was saved.
+    */
     blobPathname: z.string().min(1).optional(),
   })
   .refine(
     (payload) => Boolean(payload.fileUrl) !== Boolean(payload.reductoFileId),
     { message: "Provide exactly one of fileUrl or reductoFileId" }
-  )
+  );
 
-/** True when two amounts differ by more than a rounding error. */
+/**
+True when two amounts differ by more than a rounding error.
+*/
 export function differs(a: number, b: number) {
-  return Math.abs(a - b) > 0.01
+  return Math.abs(a - b) > 0.01;
 }
 
-/** Cross-checks the model's numbers; mismatches are flagged, not corrected. */
+/**
+Cross-checks the model's numbers; mismatches are flagged, not corrected.
+*/
 export function reconcile(invoice: ExtractedInvoice) {
-  const warnings: string[] = []
+  const warnings: string[] = [];
 
-  const lineAmounts = invoice.lineItems.map((item) => item.amount)
+  const lineAmounts = invoice.lineItems.map((item) => item.amount);
   if (
     invoice.subtotal !== null &&
     lineAmounts.length > 0 &&
     lineAmounts.every((amount) => amount !== null)
   ) {
-    const sum = lineAmounts.reduce((total, amount) => total + amount, 0)
+    const sum = lineAmounts.reduce((total, amount) => total + amount, 0);
     if (differs(sum, invoice.subtotal)) {
       warnings.push(
         `Line items sum to ${sum.toFixed(2)} but subtotal is ${invoice.subtotal.toFixed(2)}.`
-      )
+      );
     }
   }
 
@@ -113,11 +123,15 @@ export function reconcile(invoice: ExtractedInvoice) {
     invoice.totalAmount !== null &&
     differs(invoice.subtotal + invoice.taxAmount, invoice.totalAmount)
   ) {
-    warnings.push("Subtotal plus tax does not equal the total amount.")
+    warnings.push("Subtotal plus tax does not equal the total amount.");
   }
 
-  if (!invoice.invoiceNumber) warnings.push("Invoice number is missing.")
-  if (invoice.totalAmount === null) warnings.push("Total amount is missing.")
+  if (!invoice.invoiceNumber) {
+    warnings.push("Invoice number is missing.");
+  }
+  if (invoice.totalAmount === null) {
+    warnings.push("Total amount is missing.");
+  }
 
-  return warnings
+  return warnings;
 }

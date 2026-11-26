@@ -1,28 +1,28 @@
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-
+import { cva } from "class-variance-authority";
 import { cn } from "@workspace/ui/lib/utils";
+import type { VariantProps } from "class-variance-authority";
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-md border px-2.5 py-1 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-2 [&>svg]:pointer-events-none focus-visible:outline-ring outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 ease-out outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 aria-invalid:outline-destructive aria-invalid:outline-2 aria-invalid:-outline-offset-1 aria-invalid:outline-solid",
+  "inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded-md border px-2.5 py-1 text-xs font-medium whitespace-nowrap outline-0 -outline-offset-1 outline-transparent transition-[outline-width,outline-color] duration-100 ease-out outline-solid focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-ring aria-invalid:outline-2 aria-invalid:-outline-offset-1 aria-invalid:outline-destructive aria-invalid:outline-solid [&>svg]:pointer-events-none [&>svg]:size-3",
   {
     variants: {
       variant: {
         default:
-          "bg-primary border-transparent text-primary-foreground shadow-[0_1px_3px_0_oklch(0.22_0_0_/_0.12)]",
-        neutral: "bg-neutral border-transparent text-neutral-foreground",
-        outline: "text-foreground bg-(--outline) border-(--outline-border)",
-        secondary: "bg-secondary border-transparent text-secondary-foreground",
-        success: "bg-success border-transparent text-success-foreground",
-        warning: "bg-warning border-transparent text-warning-foreground",
-        info: "bg-info border-transparent text-info-foreground",
-        danger: "bg-danger border-transparent text-danger-foreground",
+          "border-transparent bg-primary text-primary-foreground shadow-[0_1px_3px_0_oklch(0.22_0_0_/_0.12)]",
+        neutral: "border-transparent bg-neutral text-neutral-foreground",
+        outline: "border-(--outline-border) bg-(--outline) text-foreground",
+        secondary: "border-transparent bg-secondary text-secondary-foreground",
+        success: "border-transparent bg-success text-success-foreground",
+        warning: "border-transparent bg-warning text-warning-foreground",
+        info: "border-transparent bg-info text-info-foreground",
+        danger: "border-transparent bg-danger text-danger-foreground",
       },
     },
     defaultVariants: {
       variant: "default",
     },
-  },
+  }
 );
 
 function Badge({

@@ -3,24 +3,20 @@
 import * as React from "react";
 import { Autocomplete as AutocompleteBase } from "@base-ui/react/autocomplete";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
+import { solidSurface } from "@workspace/ui/lib/cubby-ui/elevated";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Search01Icon } from "@hugeicons/core-free-icons";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@workspace/ui/components/ui/cubby-ui/input-group";
-import {
-  ScrollArea,
-  type ScrollAreaProps,
-} from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
+import { ScrollArea } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
 
 import { cn } from "@workspace/ui/lib/utils";
-import {
-  solidSurface,
-  type SurfaceLevel,
-} from "@workspace/ui/lib/cubby-ui/elevated";
+import type { ScrollAreaProps } from "@workspace/ui/components/ui/cubby-ui/scroll-area/scroll-area";
+import type { SurfaceLevel } from "@workspace/ui/lib/cubby-ui/elevated";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Search01Icon } from "@hugeicons/core-free-icons";
 const useCommandFilter = AutocompleteBase.useFilter;
 const useCommandFilteredItems = AutocompleteBase.useFilteredItems;
 
@@ -37,11 +33,15 @@ function Command<ItemValue>({
   shadowLevel = 3,
   ...props
 }: AutocompleteBase.Root.Props<ItemValue> & {
-  className?: string;
-  /** Surface elevation level for the outer Command frame (1-8). Defaults to 3. Bump to 7 when used inside CommandDialog so the palette pops above the dialog. */
-  level?: SurfaceLevel;
-  /** Shadow weight (1-8). Pinned to 3 by default. */
-  shadowLevel?: SurfaceLevel;
+  readonly className?: string;
+  /**
+  Surface elevation level for the outer Command frame (1-8). Defaults to 3. Bump to 7 when used inside CommandDialog so the palette pops above the dialog.
+  */
+  readonly level?: SurfaceLevel;
+  /**
+  Shadow weight (1-8). Pinned to 3 by default.
+  */
+  readonly shadowLevel?: SurfaceLevel;
 }) {
   return (
     <div
@@ -51,10 +51,10 @@ function Command<ItemValue>({
         // Outer frame is surface-2 (bg-muted); CommandContent drops back to
         // surface-1 inside, creating a "panel with well" effect. bg-muted pins
         // the outer color regardless of level — only shadow weight varies.
-        "text-popover-foreground flex min-h-0 flex-1 flex-col rounded-4xl p-1",
+        "flex min-h-0 flex-1 flex-col rounded-4xl p-1 text-popover-foreground",
         solidSurface(level, shadowLevel),
         "bg-muted",
-        className,
+        className
       )}
     >
       <AutocompleteRoot
@@ -91,9 +91,9 @@ function CommandDialogBackdrop({
     <BaseDialog.Backdrop
       data-slot="command-dialog-backdrop"
       className={cn(
-        "ease-out-expo fixed inset-0 min-h-dvh bg-black/40 transition-all duration-200 supports-[-webkit-touch-callout:none]:absolute",
+        "fixed inset-0 min-h-dvh bg-black/40 transition-all duration-200 ease-out-expo supports-[-webkit-touch-callout:none]:absolute",
         "backdrop-blur-sm data-ending-style:opacity-0 data-starting-style:opacity-0",
-        className,
+        className
       )}
       {...props}
     />
@@ -109,7 +109,7 @@ function CommandDialogViewport({
       data-slot="command-dialog-viewport"
       className={cn(
         "fixed inset-0 flex flex-col items-center justify-center overflow-hidden px-4 py-6",
-        className,
+        className
       )}
       {...props}
     />
@@ -133,10 +133,10 @@ function CommandDialogPopup({
             "-translate-y-[calc(1.25rem*var(--nested-dialogs))]",
             "scale-[calc(1-0.1*var(--nested-dialogs))]",
             // Animation
-            "ease-out-expo transition-all duration-200",
+            "transition-all duration-200 ease-out-expo",
             "data-starting-style:translate-y-5 data-starting-style:scale-95 data-starting-style:opacity-0",
             "data-ending-style:translate-y-5 data-ending-style:scale-95 data-ending-style:opacity-0",
-            className,
+            className
           )}
           {...props}
         >
@@ -151,7 +151,7 @@ function CommandInput({
   className,
   loading = false,
   ...props
-}: AutocompleteBase.Input.Props & { loading?: boolean }) {
+}: AutocompleteBase.Input.Props & { readonly loading?: boolean }) {
   return (
     <InputGroup className={cn("mt-2 w-[calc(100%-1rem)]", className)}>
       <AutocompleteBase.Input
@@ -164,7 +164,7 @@ function CommandInput({
           icon={Search01Icon}
           className={cn(
             "size-4",
-            loading && "animation-duration-400 animate-pulse",
+            loading && "animation-duration-400 animate-pulse"
           )}
           strokeWidth={2}
         />
@@ -184,8 +184,8 @@ function CommandContent({
       className={cn(
         // A white well (page-dark in dark mode) inside the muted frame; the fill
         // step alone defines the edge.
-        "bg-surface-3 dark:bg-surface-1 flex min-h-0 flex-1 flex-col items-center overflow-hidden rounded-2xl",
-        className,
+        "flex min-h-0 flex-1 flex-col items-center overflow-hidden rounded-2xl bg-surface-3 dark:bg-surface-1",
+        className
       )}
       {...props}
     >
@@ -213,13 +213,13 @@ function CommandList({
     | "persistScrollbar"
     | "hideScrollbar"
   > & {
-    emptyMessage?: React.ReactNode;
+    readonly emptyMessage?: React.ReactNode;
   }) {
   return (
     <>
       <AutocompleteBase.Empty
         data-slot="command-empty"
-        className="text-muted-foreground px-1 py-7 text-center text-sm empty:m-0 empty:p-0"
+        className="px-1 py-7 text-center text-sm text-muted-foreground empty:m-0 empty:p-0"
       >
         {emptyMessage}
       </AutocompleteBase.Empty>
@@ -255,15 +255,15 @@ function CommandVirtualizedList({
   ...props
 }: Omit<React.ComponentProps<"div">, "ref"> &
   Pick<ScrollAreaProps, "fadeEdges" | "nativeScroll"> & {
-    scrollRef: (element: HTMLDivElement | null) => void;
-    totalSize: number;
-    emptyMessage?: React.ReactNode;
+    readonly scrollRef: (element: HTMLDivElement | null) => void;
+    readonly totalSize: number;
+    readonly emptyMessage?: React.ReactNode;
   }) {
   return (
     <>
       <AutocompleteBase.Empty
         data-slot="command-empty"
-        className="text-muted-foreground px-1 py-7 text-center text-sm empty:m-0 empty:p-0"
+        className="px-1 py-7 text-center text-sm text-muted-foreground empty:m-0 empty:p-0"
       >
         {emptyMessage}
       </AutocompleteBase.Empty>
@@ -301,7 +301,7 @@ function CommandGroup({
   return (
     <AutocompleteBase.Group
       data-slot="command-group"
-      className={cn("text-foreground block", className)}
+      className={cn("block text-foreground", className)}
       {...props}
     >
       {children}
@@ -317,8 +317,8 @@ function CommandGroupLabel({
     <AutocompleteBase.GroupLabel
       data-slot="command-group-label"
       className={cn(
-        "text-muted-foreground mx-2 px-2.5 py-1.5 text-xs font-semibold",
-        className,
+        "mx-2 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground",
+        className
       )}
       {...props}
     />
@@ -332,7 +332,7 @@ function CommandSeparator({
   return (
     <AutocompleteBase.Separator
       data-slot="command-separator"
-      className={cn("bg-border mx-2 my-1 h-px min-h-px", className)}
+      className={cn("mx-2 my-1 h-px min-h-px bg-border", className)}
       {...props}
     />
   );
@@ -343,17 +343,17 @@ function CommandItem({
   ref,
   ...props
 }: AutocompleteBase.Item.Props & {
-  ref?: React.Ref<HTMLDivElement>;
+  readonly ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
     <AutocompleteBase.Item
       ref={ref}
       data-slot="command-item"
       className={cn(
-        "group data-highlighted:text-accent-foreground data-highlighted:[&_svg:not([class*='text-'])]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground text-foreground data-highlighted:bg-surface-hover relative flex cursor-default items-center gap-2 rounded-md p-2.5 text-sm font-medium outline-hidden transition-[colors,background-color,box-shadow] duration-100 ease-out select-none data-disabled:pointer-events-none data-disabled:opacity-60 data-highlighted:duration-0 sm:py-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group relative flex cursor-default items-center gap-2 rounded-md p-2.5 text-sm font-medium text-foreground outline-hidden transition-[colors,background-color,box-shadow] duration-100 ease-out select-none data-disabled:pointer-events-none data-disabled:opacity-60 data-highlighted:bg-surface-hover data-highlighted:text-accent-foreground data-highlighted:duration-0 sm:py-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground data-highlighted:[&_svg:not([class*='text-'])]:text-accent-foreground",
         // Spacing from list edges (matches input's calc(100%-1rem) gap)
         "mx-2",
-        className,
+        className
       )}
       {...props}
     />
@@ -374,8 +374,8 @@ function CommandShortcut({
     <span
       data-slot="command-shortcut"
       className={cn(
-        "text-muted-foreground ml-auto flex items-center gap-1 text-xs tracking-widest",
-        className,
+        "ml-auto flex items-center gap-1 text-xs tracking-widest text-muted-foreground",
+        className
       )}
       {...props}
     />
@@ -387,8 +387,8 @@ function CommandFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="command-footer"
       className={cn(
-        "text-muted-foreground flex items-center justify-between px-3 py-2 pb-1 text-xs",
-        className,
+        "flex items-center justify-between px-3 py-2 pb-1 text-xs text-muted-foreground",
+        className
       )}
       {...props}
     />

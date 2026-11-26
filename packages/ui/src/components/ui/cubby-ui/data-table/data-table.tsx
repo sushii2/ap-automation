@@ -1,20 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  useTable,
-  flexRender,
-  type ColumnDef as TanStackColumnDef,
-  type SortingState,
-  type RowSelectionState,
-  type ColumnFiltersState,
-  type PaginationState,
-  type ColumnVisibilityState,
-  type OnChangeFn,
-  type Row as TanStackRow,
-  type Column as TanStackColumn,
-  type RowData,
-} from "@tanstack/react-table";
+import { useTable, flexRender } from "@tanstack/react-table";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowUpDownIcon,
@@ -22,20 +9,15 @@ import {
   SortByUp01Icon,
 } from "@hugeicons/core-free-icons";
 
-import { cn } from "@workspace/ui/lib/utils";
 import { elevatedSurface } from "@workspace/ui/lib/cubby-ui/elevated";
+import { cn } from "@workspace/ui/lib/utils";
 import { Checkbox } from "@workspace/ui/components/ui/cubby-ui/checkbox";
 import {
   DataTableContext,
   dataTableFeatures,
   useDataTable,
-  type DataTableFeatures,
 } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-context";
-import {
-  Toolbar,
-  ToolbarSeparator,
-  type ToolbarProps,
-} from "@workspace/ui/components/ui/cubby-ui/toolbar/toolbar";
+import { Toolbar } from "@workspace/ui/components/ui/cubby-ui/toolbar/toolbar";
 import {
   Table,
   TableHeader,
@@ -44,11 +26,23 @@ import {
   TableHead,
   TableRow,
   TableCell,
-  type TableProps,
 } from "@workspace/ui/components/ui/cubby-ui/table";
-import { DataTableSearch } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-search";
-import { DataTableColumnToggle } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-column-toggle";
-import { DataTablePagination } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-pagination";
+
+import type { TableProps } from "@workspace/ui/components/ui/cubby-ui/table";
+import type { ToolbarProps } from "@workspace/ui/components/ui/cubby-ui/toolbar/toolbar";
+import type { DataTableFeatures } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-context";
+import type {
+  ColumnDef as TanStackColumnDef,
+  SortingState,
+  RowSelectionState,
+  ColumnFiltersState,
+  PaginationState,
+  ColumnVisibilityState,
+  OnChangeFn,
+  Row as TanStackRow,
+  Column as TanStackColumn,
+  RowData,
+} from "@tanstack/react-table";
 
 // TanStack v9 types take the table's feature set first. These bind it to
 // DataTable's, so column definitions stay `ColumnDef<Row>[]`.
@@ -66,33 +60,37 @@ type Column<TData extends RowData, TValue = unknown> = TanStackColumn<
 type VisibilityState = ColumnVisibilityState;
 
 export interface DataTableProps<TData extends RowData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  children: React.ReactNode;
-  className?: string;
+  readonly columns: ColumnDef<TData, TValue>[];
+  readonly data: TData[];
+  readonly children: React.ReactNode;
+  readonly className?: string;
 
-  enableSorting?: boolean;
-  enableRowSelection?: boolean | ((row: Row<TData>) => boolean);
-  enableMultiRowSelection?: boolean;
-  enableFiltering?: boolean;
-  enablePagination?: boolean;
+  readonly enableSorting?: boolean;
+  readonly enableRowSelection?: boolean | ((row: Row<TData>) => boolean);
+  readonly enableMultiRowSelection?: boolean;
+  readonly enableFiltering?: boolean;
+  readonly enablePagination?: boolean;
 
-  showSelectionColumn?: boolean;
+  readonly showSelectionColumn?: boolean;
 
-  sorting?: SortingState;
-  onSortingChange?: OnChangeFn<SortingState>;
-  rowSelection?: RowSelectionState;
-  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
-  columnFilters?: ColumnFiltersState;
-  onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
-  pagination?: PaginationState;
-  onPaginationChange?: OnChangeFn<PaginationState>;
-  columnVisibility?: VisibilityState;
-  onColumnVisibilityChange?: OnChangeFn<VisibilityState>;
-  globalFilter?: string;
-  onGlobalFilterChange?: OnChangeFn<string>;
+  readonly sorting?: SortingState;
+  readonly onSortingChange?: OnChangeFn<SortingState>;
+  readonly rowSelection?: RowSelectionState;
+  readonly onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  readonly columnFilters?: ColumnFiltersState;
+  readonly onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
+  readonly pagination?: PaginationState;
+  readonly onPaginationChange?: OnChangeFn<PaginationState>;
+  readonly columnVisibility?: VisibilityState;
+  readonly onColumnVisibilityChange?: OnChangeFn<VisibilityState>;
+  readonly globalFilter?: string;
+  readonly onGlobalFilterChange?: OnChangeFn<string>;
 
-  getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string;
+  readonly getRowId?: (
+    originalRow: TData,
+    index: number,
+    parent?: Row<TData>
+  ) => string;
 }
 
 function DataTable<TData extends RowData, TValue>({
@@ -121,7 +119,7 @@ function DataTable<TData extends RowData, TValue>({
   getRowId,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = React.useState<SortingState>(
-    [],
+    []
   );
   const [internalRowSelection, setInternalRowSelection] =
     React.useState<RowSelectionState>({});
@@ -232,7 +230,7 @@ function DataTable<TData extends RowData, TValue>({
           // children (DataTableToolbar, table header) in dark mode.
           elevatedSurface(3, 1),
           "bg-muted",
-          className,
+          className
         )}
       >
         {children}
@@ -255,7 +253,7 @@ function DataTableToolbar({
       highlight={highlight}
       className={cn(
         "w-full items-center gap-1 rounded-b-none px-2 pt-2 pb-0 data-[orientation=horizontal]:h-auto",
-        className,
+        className
       )}
       {...props}
     />
@@ -263,7 +261,7 @@ function DataTableToolbar({
 }
 
 export interface DataTableContentProps extends Omit<TableProps, "children"> {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }
 
 function DataTableContent({
@@ -286,7 +284,7 @@ function DataTableContent({
         // `after:hidden` removes the dark-mode rim ::after (would paint a
         // square-cornered rim over the DataTable's rounded one).
         "rounded-none bg-transparent shadow-none ring-0 after:hidden",
-        className,
+        className
       )}
       {...tableProps}
     >
@@ -302,19 +300,19 @@ function SortableHeader<TData extends RowData>({
   isFirst,
   isLast,
 }: {
-  column: Column<TData, unknown>;
-  children: React.ReactNode;
-  align?: "left" | "center" | "right";
-  isFirst?: boolean;
-  isLast?: boolean;
+  readonly column: Column<TData, unknown>;
+  readonly children: React.ReactNode;
+  readonly align?: "left" | "center" | "right";
+  readonly isFirst?: boolean;
+  readonly isLast?: boolean;
 }) {
   return (
     <button
       type="button"
       className={cn(
-        "group hover:text-foreground -mx-3 -my-2 flex w-[calc(100%+1.5rem)] cursor-pointer items-center gap-1.5 px-3 py-2 transition-colors",
+        "group -mx-3 -my-2 flex w-[calc(100%+1.5rem)] cursor-pointer items-center gap-1.5 px-3 py-2 transition-colors hover:text-foreground",
         isFirst && "rounded-l-lg",
-        isLast && "rounded-r-lg",
+        isLast && "rounded-r-lg"
       )}
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
     >
@@ -322,7 +320,7 @@ function SortableHeader<TData extends RowData>({
         className={cn(
           "flex flex-1 items-center",
           align === "right" && "justify-end",
-          align === "center" && "justify-center",
+          align === "center" && "justify-center"
         )}
       >
         {children}
@@ -353,7 +351,7 @@ function SortableHeader<TData extends RowData>({
 export interface DataTableHeaderProps extends React.ComponentProps<
   typeof TableHeader
 > {
-  enableSorting?: boolean;
+  readonly enableSorting?: boolean;
 }
 
 function DataTableHeader({
@@ -366,15 +364,16 @@ function DataTableHeader({
   const renderHeader = (
     header: ReturnType<typeof table.getHeaderGroups>[0]["headers"][0],
     index: number,
-    totalHeaders: number,
+    totalHeaders: number
   ) => {
-    if (header.isPlaceholder) return null;
+    if (header.isPlaceholder) {
+      return null;
+    }
 
     const headerDef = header.column.columnDef.header;
     const canSort = header.column.getCanSort();
     const meta = header.column.columnDef.meta as
-      | { align?: "left" | "center" | "right" }
-      | undefined;
+      { align?: "left" | "center" | "right" } | undefined;
 
     if (typeof headerDef === "string" && enableSorting && canSort) {
       return (
@@ -410,7 +409,7 @@ function DataTableHeader({
 export interface DataTableBodyProps extends React.ComponentProps<
   typeof TableBody
 > {
-  emptyState?: React.ReactNode;
+  readonly emptyState?: React.ReactNode;
 }
 
 function DataTableBody({
@@ -461,25 +460,25 @@ function DataTableFooter({
 export {
   DataTable,
   DataTableToolbar,
-  ToolbarSeparator as DataTableToolbarSeparator,
-  DataTableSearch,
-  DataTableColumnToggle,
   DataTableContent,
   DataTableHeader,
   DataTableBody,
   DataTableFooter,
-  DataTablePagination,
-  useDataTable,
 };
 
-export type {
-  ColumnDef,
-  Row,
-  Column,
-  DataTableFeatures,
-  SortingState,
-  RowSelectionState,
-  ColumnFiltersState,
-  VisibilityState,
-  PaginationState,
-};
+export type { ColumnDef, Row, Column, VisibilityState };
+
+export { ToolbarSeparator as DataTableToolbarSeparator } from "@workspace/ui/components/ui/cubby-ui/toolbar/toolbar";
+export {
+  useDataTable,
+  type DataTableFeatures,
+} from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-context";
+export { DataTableSearch } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-search";
+export { DataTableColumnToggle } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-column-toggle";
+export { DataTablePagination } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table-pagination";
+export {
+  type SortingState,
+  type RowSelectionState,
+  type ColumnFiltersState,
+  type PaginationState,
+} from "@tanstack/react-table";

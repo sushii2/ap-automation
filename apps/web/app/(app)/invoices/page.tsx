@@ -1,14 +1,13 @@
-import Link from "next/link"
-import { Upload } from "lucide-react"
+import Link from "next/link";
+import { Upload } from "lucide-react";
 
-import { Button } from "@workspace/ui/components/ui/cubby-ui/button"
+import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
 
-import { PageHeader } from "@/components/page-header"
-import { PLACEHOLDER_INVOICES } from "@/lib/placeholder-data"
+import { InvoiceTable } from "./invoice-table";
+import { PageHeader } from "@/components/page-header";
+import { PLACEHOLDER_INVOICES } from "@/lib/placeholder-data";
 
-import { InvoiceTable } from "./invoice-table"
-
-export const metadata = { title: "Invoice log · AP Automation" }
+export const metadata = { title: "Invoice log · AP Automation" };
 
 export default function InvoicesPage() {
   return (
@@ -27,5 +26,5 @@ export default function InvoicesPage() {
       </PageHeader>
       <InvoiceTable invoices={PLACEHOLDER_INVOICES} />
     </>
-  )
+  );
 }

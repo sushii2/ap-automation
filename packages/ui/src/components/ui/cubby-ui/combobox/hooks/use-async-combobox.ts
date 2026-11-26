@@ -65,7 +65,7 @@ export interface UseAsyncComboboxReturn<T extends { id: string }> {
     inputValue: string;
     onInputValueChange: (
       value: string,
-      details: { reason: string; event: Event | React.SyntheticEvent },
+      details: { reason: string; event: Event | React.SyntheticEvent }
     ) => void;
     filter: null;
     onOpenChangeComplete: (open: boolean) => void;
@@ -112,10 +112,10 @@ export interface UseAsyncComboboxReturn<T extends { id: string }> {
  * ```
  */
 export function useAsyncCombobox<T extends { id: string }>(
-  options: UseAsyncComboboxSingleOptions<T>,
+  options: UseAsyncComboboxSingleOptions<T>
 ): UseAsyncComboboxReturn<T>;
 export function useAsyncCombobox<T extends { id: string }>(
-  options: UseAsyncComboboxMultipleOptions<T>,
+  options: UseAsyncComboboxMultipleOptions<T>
 ): UseAsyncComboboxReturn<T>;
 // `onValueChange` is accepted (it belongs on the options object alongside
 // `value` so callers configure selection in one place) but not destructured —
@@ -136,7 +136,7 @@ export function useAsyncCombobox<T extends { id: string }>({
 
   const abortControllerRef = React.useRef<AbortController | null>(null);
   const debounceTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null,
+    null
   );
 
   const query = inputValue.trim();
@@ -151,19 +151,15 @@ export function useAsyncCombobox<T extends { id: string }>({
       // Add selected values that aren't already in search results
       const searchIds = new Set(searchResults.map((item) => item.id));
       const missingSelected = selectedValues.filter(
-        (item) => !searchIds.has(item.id),
+        (item) => !searchIds.has(item.id)
       );
       return [...searchResults, ...missingSelected];
-    } else {
-      const selectedValue = value as T | null | undefined;
-      if (
-        !selectedValue ||
-        searchResults.some((item) => item.id === selectedValue.id)
-      ) {
-        return searchResults;
-      }
-      return [...searchResults, selectedValue];
     }
+    const selectedValue = value as T | null | undefined;
+    return !selectedValue ||
+      searchResults.some((item) => item.id === selectedValue.id)
+      ? searchResults
+      : [...searchResults, selectedValue];
   }, [searchResults, value, multiple]);
 
   // Perform search
@@ -187,26 +183,29 @@ export function useAsyncCombobox<T extends { id: string }>({
           startTransition(() => {
             setSearchResults(results);
           });
-        } catch (err) {
+        } catch (error_) {
           if (controller.signal.aborted) {
             return;
           }
 
           const message =
-            err instanceof Error ? err.message : "Search failed. Try again.";
+            // eslint-disable-next-line unicorn/prefer-error-is-error -- Error.isError is ES2026; the tsconfig lib is es2022
+            error_ instanceof Error
+              ? error_.message
+              : "Search failed. Try again.";
           setError(message);
           setSearchResults([]);
         }
       });
     },
-    [searchFn],
+    [searchFn]
   );
 
   // Handle input value changes
   const handleInputValueChange = React.useCallback(
     (
       nextValue: string,
-      details: { reason: string; event: Event | React.SyntheticEvent },
+      details: { reason: string; event: Event | React.SyntheticEvent }
     ) => {
       setInputValue(nextValue);
 
@@ -239,39 +238,42 @@ export function useAsyncCombobox<T extends { id: string }>({
         performSearch(trimmed);
       }
     },
-    [debounceMs, performSearch],
+    [debounceMs, performSearch]
   );
 
   // Handle popup close - reset to only show selected values
   const handleOpenChangeComplete = React.useCallback(
     (open: boolean) => {
-      if (!open) {
-        if (multiple) {
-          const selectedValues = (value as T[] | undefined) ?? [];
-          setSearchResults(selectedValues);
-          // Clear input for multiple selection (chips show the selections)
-          setInputValue("");
-        } else {
-          const selectedValue = value as T | null | undefined;
-          setSearchResults(selectedValue ? [selectedValue] : []);
-          // Don't clear input for single selection - Base UI handles
-          // displaying the selected value via itemToStringLabel
-        }
-        setError(null);
+      if (open) {
+        return;
       }
+
+      if (multiple) {
+        const selectedValues = (value as T[] | undefined) ?? [];
+        setSearchResults(selectedValues);
+        // Clear input for multiple selection (chips show the selections)
+        setInputValue("");
+      } else {
+        const selectedValue = value as T | null | undefined;
+        setSearchResults(selectedValue ? [selectedValue] : []);
+        // Don't clear input for single selection - Base UI handles
+        // displaying the selected value via itemToStringLabel
+      }
+      setError(null);
     },
-    [value, multiple],
+    [value, multiple]
   );
 
   // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
+  React.useEffect(
+    () => () => {
       abortControllerRef.current?.abort();
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
-    };
-  }, []);
+    },
+    []
+  );
 
   return {
     items,

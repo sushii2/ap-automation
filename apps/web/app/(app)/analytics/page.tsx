@@ -4,11 +4,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/ui/cubby-ui/card"
+} from "@workspace/ui/components/ui/cubby-ui/card";
 
-import { PageHeader } from "@/components/page-header"
+import { PageHeader } from "@/components/page-header";
 
-export const metadata = { title: "Analytics · AP Automation" }
+export const metadata = { title: "Analytics · AP Automation" };
 
 // Placeholder widgets; metrics get wired up later.
 const METRICS = [
@@ -16,7 +16,7 @@ const METRICS = [
   "Average extraction accuracy",
   "PO match rate",
   "Awaiting review",
-]
+];
 
 export default function AnalyticsPage() {
   return (
@@ -39,5 +39,5 @@ export default function AnalyticsPage() {
         ))}
       </div>
     </>
-  )
+  );
 }

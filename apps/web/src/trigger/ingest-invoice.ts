@@ -1,11 +1,11 @@
-import { schemaTask } from "@trigger.dev/sdk"
+import { schemaTask } from "@trigger.dev/sdk";
 
 import {
   ingestPayloadSchema,
   invoiceSchema,
   reconcile,
-} from "../../lib/invoice-schema.ts"
-import { ingestDocument } from "./ingest-document.ts"
+} from "../../lib/invoice-schema.ts";
+import { ingestDocument } from "./ingest-document.ts";
 
 export const ingestInvoice = schemaTask({
   id: "ingest-invoice",
@@ -17,7 +17,7 @@ export const ingestInvoice = schemaTask({
       label: "invoices",
       schema: invoiceSchema,
       reconcile,
-    })
-    return { ...result, invoice: data }
+    });
+    return { ...result, invoice: data };
   },
-})
+});

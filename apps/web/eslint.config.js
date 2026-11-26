@@ -1,4 +1,21 @@
-import { nextJsConfig } from "@workspace/eslint-config/next-js"
+/* eslint-disable import-x/no-extraneous-dependencies, import-x/no-relative-packages -- imports the presets and config of the root package */
+import next from "ultracite/eslint/next";
+import react from "ultracite/eslint/react";
 
-/** @type {import("eslint").Linter.Config} */
-export default nextJsConfig
+import root from "../../eslint.config.mjs";
+
+// ESLint lints each file with its nearest config alone, so this spreads the
+// root config before the workspace's presets.
+export default [
+  ...root,
+  ...react,
+  ...next,
+  {
+    // Lets @next/next rules find this app when ESLint runs from the repo root.
+    settings: {
+      next: {
+        rootDir: import.meta.dirname,
+      },
+    },
+  },
+];

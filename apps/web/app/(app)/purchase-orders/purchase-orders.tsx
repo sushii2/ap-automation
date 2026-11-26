@@ -1,13 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { Plus, Upload } from "lucide-react"
-import { z } from "zod"
+import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Plus, Upload } from "lucide-react";
+import { z } from "zod";
 
-import { Badge } from "@workspace/ui/components/ui/cubby-ui/badge"
-import { Button } from "@workspace/ui/components/ui/cubby-ui/button"
-import type { ColumnDef } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table"
+import { Badge } from "@workspace/ui/components/ui/cubby-ui/badge";
+import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
 import {
   Drawer,
   DrawerBody,
@@ -17,36 +16,37 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from "@workspace/ui/components/ui/cubby-ui/drawer/drawer"
+} from "@workspace/ui/components/ui/cubby-ui/drawer/drawer";
 import {
   Field,
   FieldControl,
   FieldError,
   FieldLabel,
-} from "@workspace/ui/components/ui/cubby-ui/field"
-import type { FilterField } from "@workspace/ui/components/ui/cubby-ui/filters/filters"
-import { Form } from "@workspace/ui/components/ui/cubby-ui/form"
+} from "@workspace/ui/components/ui/cubby-ui/field";
+import { Form } from "@workspace/ui/components/ui/cubby-ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/ui/cubby-ui/select"
-import { Textarea } from "@workspace/ui/components/ui/cubby-ui/textarea"
+} from "@workspace/ui/components/ui/cubby-ui/select";
+import { Textarea } from "@workspace/ui/components/ui/cubby-ui/textarea";
+import type { FilterField } from "@workspace/ui/components/ui/cubby-ui/filters/filters";
+import type { ColumnDef } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table";
 
-import { DocumentUpload } from "@/components/document-upload"
-import { FilterableTable } from "@/components/filterable-table"
-import { PageHeader } from "@/components/page-header"
-import type { FilterAccessors } from "@/lib/apply-filters"
-import { formatCurrency, formatDate } from "@/lib/format"
+import type { FilterAccessors } from "@/lib/apply-filters";
 import type {
   PurchaseOrder,
   PurchaseOrderSource,
   PurchaseOrderStatus,
-} from "@/lib/placeholder-data"
+} from "@/lib/placeholder-data";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { PageHeader } from "@/components/page-header";
+import { FilterableTable } from "@/components/filterable-table";
+import { DocumentUpload } from "@/components/document-upload";
 
-type BadgeVariant = React.ComponentProps<typeof Badge>["variant"]
+type BadgeVariant = React.ComponentProps<typeof Badge>["variant"];
 
 const STATUS: Record<
   PurchaseOrderStatus,
@@ -56,16 +56,16 @@ const STATUS: Record<
   partially_received: { label: "Partially received", variant: "warning" },
   closed: { label: "Closed", variant: "success" },
   cancelled: { label: "Cancelled", variant: "neutral" },
-}
+};
 
 const SOURCE: Record<PurchaseOrderSource, string> = {
   upload: "Uploaded",
   manual: "Entered manually",
-}
+};
 
 const statusOptions = (Object.keys(STATUS) as PurchaseOrderStatus[]).map(
   (value) => ({ value, label: STATUS[value].label })
-)
+);
 
 const columns: ColumnDef<PurchaseOrder>[] = [
   {
@@ -95,8 +95,8 @@ const columns: ColumnDef<PurchaseOrder>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = STATUS[row.original.status]
-      return <Badge variant={status.variant}>{status.label}</Badge>
+      const status = STATUS[row.original.status];
+      return <Badge variant={status.variant}>{status.label}</Badge>;
     },
   },
   {
@@ -114,10 +114,15 @@ const columns: ColumnDef<PurchaseOrder>[] = [
       </div>
     ),
   },
-]
+];
 
 const fields: FilterField[] = [
-  { id: "status", label: "Status", type: "multiselect", options: statusOptions },
+  {
+    id: "status",
+    label: "Status",
+    type: "multiselect",
+    options: statusOptions,
+  },
   {
     id: "source",
     label: "Source",
@@ -130,7 +135,7 @@ const fields: FilterField[] = [
   { id: "vendor", label: "Vendor", type: "text" },
   { id: "amount", label: "Amount", type: "number", prefix: "$" },
   { id: "matchedInvoices", label: "Matched invoices", type: "number" },
-]
+];
 
 const accessors: FilterAccessors<PurchaseOrder> = {
   status: (order) => order.status,
@@ -138,7 +143,7 @@ const accessors: FilterAccessors<PurchaseOrder> = {
   vendor: (order) => order.vendor,
   amount: (order) => order.amount,
   matchedInvoices: (order) => order.matchedInvoices,
-}
+};
 
 const schema = z.object({
   poNumber: z.string().trim().min(1, "Enter a PO number").max(50),
@@ -149,27 +154,33 @@ const schema = z.object({
   issuedAt: z.iso.date("Pick an issue date"),
   status: z.enum(["open", "partially_received", "closed", "cancelled"]),
   notes: z.string().max(2000).optional(),
-})
+});
 
-/** Which drawer the `?new=` search param opens. */
-type DrawerMode = "manual" | "upload"
+/**
+Which drawer the `?new=` search param opens.
+*/
+type DrawerMode = "manual" | "upload";
 
-export function PurchaseOrders({ initial }: { initial: PurchaseOrder[] }) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const param = useSearchParams().get("new")
+export function PurchaseOrders({
+  initial,
+}: {
+  readonly initial: PurchaseOrder[];
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const param = useSearchParams().get("new");
   const mode: DrawerMode | null =
-    param === "manual" || param === "upload" ? param : null
+    param === "manual" || param === "upload" ? param : null;
 
   // TODO: persist through a server action once purchase orders have a table.
-  const [orders, setOrders] = useState(initial)
-  const [errors, setErrors] = useState<Record<string, string[]>>({})
+  const [orders, setOrders] = useState(initial);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-  const open = (next: DrawerMode) => router.push(`${pathname}?new=${next}`)
+  const open = (next: DrawerMode) => router.push(`${pathname}?new=${next}`);
   const close = () => {
-    setErrors({})
-    router.replace(pathname)
-  }
+    setErrors({});
+    router.replace(pathname);
+  };
 
   return (
     <>
@@ -218,12 +229,12 @@ export function PurchaseOrders({ initial }: { initial: PurchaseOrder[] }) {
             className="contents"
             errors={errors}
             onFormSubmit={(values) => {
-              const result = schema.safeParse(values)
+              const result = schema.safeParse(values);
               if (!result.success) {
-                setErrors(z.flattenError(result.error).fieldErrors)
-                return
+                setErrors(z.flattenError(result.error).fieldErrors);
+                return;
               }
-              const { notes: _notes, ...order } = result.data
+              const { notes: _notes, ...order } = result.data;
               setOrders((current) => [
                 {
                   ...order,
@@ -232,8 +243,8 @@ export function PurchaseOrders({ initial }: { initial: PurchaseOrder[] }) {
                   matchedInvoices: 0,
                 },
                 ...current,
-              ])
-              close()
+              ]);
+              close();
             }}
           >
             <DrawerBody>
@@ -328,10 +339,12 @@ export function PurchaseOrders({ initial }: { initial: PurchaseOrder[] }) {
             />
           </DrawerBody>
           <DrawerFooter>
-            <DrawerClose render={<Button variant="outline" />}>Done</DrawerClose>
+            <DrawerClose render={<Button variant="outline" />}>
+              Done
+            </DrawerClose>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
     </>
-  )
+  );
 }
