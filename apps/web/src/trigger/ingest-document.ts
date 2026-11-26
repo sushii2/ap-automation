@@ -1,7 +1,9 @@
 import { AbortTaskRunError, logger, metadata } from "@trigger.dev/sdk";
-import { generateText, Output } from "ai";
+import { embed, generateText, Output } from "ai";
 import Reducto from "reductoai";
+import { EMBEDDING_MODEL } from "../../lib/document-embedding.ts";
 import { classificationSchema } from "../../lib/invoice-schema.ts";
+import type { EmbeddingInput } from "../../lib/document-embedding.ts";
 import type {
   DOCUMENT_TYPES,
   ingestPayloadSchema,
@@ -40,8 +42,22 @@ interface IngestOptions<T> {
 }
 
 /**
+ * Embeds the text built from an extracted document, ready to be stored next
+ * to it. Must be called from inside a task run.
+ */
+export const embedDocument = async (input: EmbeddingInput) => {
+  metadata.set("stage", "embedding");
+  const { embedding, usage } = await embed({
+    model: EMBEDDING_MODEL,
+    value: input.content,
+  });
+  return { ...input, usage, model: EMBEDDING_MODEL, vector: embedding };
+};
+
+/**
  * The pipeline shared by every document ingestion task: upload to Reducto,
- * parse, classify, then extract with `schema` if the type matches.
+ * parse, classify, then extract with `schema` if the type matches. The caller
+ * embeds and saves the extracted document and sets the final stage.
  * Must be called from inside a task run.
  */
 export async function ingestDocument<T>({
@@ -162,7 +178,6 @@ export async function ingestDocument<T>({
   });
   const data = extract.output;
 
-  metadata.set("stage", "complete");
   return {
     status: "extracted" as const,
     classification,

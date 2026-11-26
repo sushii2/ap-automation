@@ -2,6 +2,7 @@ import { tasks } from "@trigger.dev/sdk";
 import { withAuth } from "@workos-inc/authkit-nextjs";
 import Reducto from "reductoai";
 
+import { syncMembership } from "@/lib/directory";
 import { storeDocument } from "@/lib/document-storage";
 import type { DocumentKind } from "@/lib/document-storage";
 import "@/lib/trigger";
@@ -21,7 +22,7 @@ const TASKS = {
  * Receives one document, saves the original to Blob storage, hands a copy to Reducto for parsing and starts the ingestion run.
  */
 export async function POST(request: Request) {
-  const { user, organizationId } = await withAuth();
+  const { user, organizationId, role } = await withAuth();
   if (!user || !organizationId) {
     return Response.json({ error: "Not signed in" }, { status: 401 });
   }
@@ -46,6 +47,9 @@ export async function POST(request: Request) {
     );
   }
 
+  // The stored document references its organization and uploader.
+  await syncMembership({ organizationId, role, user });
+
   // Keep the original before anything else touches it: Reducto's copy is temporary.
   const blobPathname = await storeDocument(
     organizationId,
@@ -60,8 +64,10 @@ export async function POST(request: Request) {
   >(
     TASKS[kind as keyof typeof TASKS],
     {
+      organizationId,
       fileName: file.name,
       reductoFileId: upload.file_id,
+      uploadedBy: user.id,
       ...(blobPathname && { blobPathname }),
     },
     // Tagged so only members of this organization can read the run.

@@ -17,6 +17,17 @@ npm run keys:generate   # paste output into apps/web/.env.local
 npm run dev
 ```
 
+## Database
+
+Neon Postgres with pgvector, through Drizzle. The schema is `apps/web/lib/db/schema.ts`; migrations live in `apps/web/drizzle`.
+
+```bash
+npm run db:generate -w web   # after editing the schema: write a migration
+npm run db:migrate -w web    # apply pending migrations (uses DATABASE_URL_UNPOOLED)
+```
+
+The ingestion tasks write to the database, so the Trigger.dev project needs `DATABASE_URL`, `AI_GATEWAY_API_KEY` and the encryption variables too.
+
 ## Adding Cubby UI components
 
 ```bash
