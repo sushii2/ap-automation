@@ -7,6 +7,7 @@ import {
 } from "@workos-inc/authkit-nextjs";
 import { z } from "zod";
 
+import { syncMembership } from "@/lib/directory";
 import { CREATOR_ROLE, JOINER_ROLE } from "@/lib/roles";
 
 export interface OnboardingState {
@@ -35,6 +36,7 @@ export async function selectOrganization(
   }
 
   let organizationId: string;
+  let role: string = JOINER_ROLE;
 
   try {
     const memberships = await workos.userManagement
@@ -52,6 +54,7 @@ export async function selectOrganization(
 
     if (current) {
       organizationId = current.organizationId;
+      role = current.role.slug;
     } else if (choice === NEW_ORGANIZATION) {
       const name = nameSchema.safeParse(formData.get("name"));
       if (!name.success) {
@@ -87,6 +90,7 @@ export async function selectOrganization(
         throw error;
       }
       organizationId = organization.id;
+      role = CREATOR_ROLE;
     } else {
       // Throws if the id doesn't name a real organization.
       const organization = await workos.organizations.getOrganization(choice);
@@ -100,6 +104,14 @@ export async function selectOrganization(
   } catch (error) {
     console.error("Onboarding failed", error);
     return { error: "Something went wrong. Please try again." };
+  }
+
+  // Mirror the membership into our database. Not worth blocking sign-in for:
+  // uploading a document syncs it again.
+  try {
+    await syncMembership({ organizationId, role, user });
+  } catch (error) {
+    console.error("Could not sync the membership to the database", error);
   }
 
   // Re-issues the session scoped to the organization, then redirects.

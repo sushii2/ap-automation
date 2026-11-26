@@ -12,6 +12,8 @@
         "ENCRYPTION_*",
         "BLIND_INDEX_KEY",
         "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
+        "AI_GATEWAY_API_KEY",
         "WORKOS_*",
         "TRIGGER_*",
         "BLOB_*",

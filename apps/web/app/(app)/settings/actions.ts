@@ -4,6 +4,8 @@ import { getWorkOS, withAuth } from "@workos-inc/authkit-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { removeUser } from "@/lib/directory";
+
 export interface DeleteAccountState {
   error?: string;
 }
@@ -63,6 +65,11 @@ export async function deleteAccount(
 
     // Removes the user, their memberships and all of their sessions.
     await workos.userManagement.deleteUser(user.id);
+
+    // Drop our copy of their profile too. Documents they uploaded are kept.
+    await removeUser(user.id).catch((error: unknown) => {
+      console.error("Could not remove the user from the database", error);
+    });
 
     await Promise.allSettled(
       emptiedOrganizationIds.map((id) =>

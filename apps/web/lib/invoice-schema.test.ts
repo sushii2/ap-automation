@@ -79,12 +79,27 @@ test("flags a missing invoice number and total", () => {
   );
 });
 
+const owner = { organizationId: "org_1", uploadedBy: "user_1" };
+
+test("payload needs an owning organization and uploader", () => {
+  const source = { fileName: "a.pdf", fileUrl: "https://example.com/a.pdf" };
+
+  assert.ok(ingestPayloadSchema.safeParse({ ...owner, ...source }).success);
+  for (const payload of [
+    source,
+    { ...source, organizationId: "org_1" },
+    { ...source, organizationId: "", uploadedBy: "user_1" },
+  ]) {
+    assert.ok(!ingestPayloadSchema.safeParse(payload).success);
+  }
+});
+
 test("payload needs exactly one document source", () => {
   const fileName = "a.pdf";
   const fileUrl = "https://example.com/a.pdf";
   const reductoFileId = "reducto://abc.pdf";
   const ok = (payload: unknown) =>
-    ingestPayloadSchema.safeParse(payload).success;
+    ingestPayloadSchema.safeParse({ ...owner, ...(payload as object) }).success;
 
   assert.ok(ok({ fileName, fileUrl }));
   assert.ok(ok({ fileName, reductoFileId }));
@@ -94,7 +109,7 @@ test("payload needs exactly one document source", () => {
 
 test("payload rejects malformed sources and empty names", () => {
   const ok = (payload: unknown) =>
-    ingestPayloadSchema.safeParse(payload).success;
+    ingestPayloadSchema.safeParse({ ...owner, ...(payload as object) }).success;
 
   assert.ok(!ok({ fileName: "a.pdf", fileUrl: "not a url" }));
   // A plain URL must not be smuggled in as an already-uploaded Reducto file.

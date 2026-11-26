@@ -71,6 +71,14 @@ export type ExtractedInvoice = z.infer<typeof invoiceSchema>;
 
 export const ingestPayloadSchema = z
   .object({
+    /**
+    WorkOS organization that owns the document.
+    */
+    organizationId: z.string().min(1),
+    /**
+    WorkOS user who uploaded it.
+    */
+    uploadedBy: z.string().min(1),
     fileName: z.string().min(1),
     /**
     A URL the task can fetch the document from, e.g. a presigned URL.
