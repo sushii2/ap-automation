@@ -3,9 +3,26 @@ import {
   LocalKeyProvider,
   blindIndex,
 } from "@workspace/crypto";
-import { and, cosineDistance, desc, eq, isNotNull, isNull } from "drizzle-orm";
+import {
+  and,
+  cosineDistance,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { normalizePoNumber, toIsoDate } from "../document-embedding.ts";
+import {
+  checkInvoicesAgainstPurchaseOrder,
+  withPurchaseOrderWarnings,
+} from "../po-matching.ts";
 import { getDb } from "./client.ts";
 import { invoices, purchaseOrders } from "./schema.ts";
 import type { EmbeddingInput } from "../document-embedding.ts";
@@ -180,10 +197,13 @@ export const findPurchaseOrderForInvoice = async ({
     : null;
 };
 
+/**
+ * Stores an invoice without touching its purchase order link, which
+ * `linkInvoiceToPurchaseOrder` makes once the row exists.
+ */
 export const saveInvoice = async (
   record: DocumentRecord,
-  invoice: ExtractedInvoice,
-  match: PurchaseOrderMatch | null
+  invoice: ExtractedInvoice
 ) => {
   const db = getDb();
   const [existing] = await db
@@ -225,9 +245,6 @@ export const saveInvoice = async (
     purchaseOrderNumberNormalized: normalizePoNumber(
       invoice.purchaseOrderNumber
     ),
-    purchaseOrderId: match?.purchaseOrderId ?? null,
-    poMatchMethod: match?.method ?? null,
-    poMatchScore: match?.score ?? null,
   };
 
   await db
@@ -290,10 +307,119 @@ export const savePurchaseOrder = async (
 };
 
 /**
- * Links invoices that arrived before their purchase order: every invoice in the organization that prints this PO number and has no purchase order yet.
- * Returns the linked invoice IDs.
+ * Re-checks every invoice linked to a purchase order against it and stores the outcome in each invoice's warnings, replacing the earlier outcome.
+ * Returns the PO match warnings by invoice ID.
  */
-export const linkInvoicesToPurchaseOrder = async ({
+export const refreshPurchaseOrderChecks = async ({
+  organizationId,
+  purchaseOrderId,
+}: {
+  organizationId: string;
+  purchaseOrderId: string;
+}) => {
+  const db = getDb();
+  const matchWarnings = new Map<string, string[]>();
+  const [order] = await db
+    .select({
+      currency: purchaseOrders.currency,
+      lineItems: purchaseOrders.lineItems,
+      poNumber: purchaseOrders.poNumber,
+      totalAmount: purchaseOrders.totalAmount,
+      vendorName: purchaseOrders.vendorName,
+    })
+    .from(purchaseOrders)
+    .where(
+      and(
+        eq(purchaseOrders.organizationId, organizationId),
+        eq(purchaseOrders.id, purchaseOrderId)
+      )
+    );
+  if (!order) {
+    return matchWarnings;
+  }
+  const linked = await db
+    .select({
+      currency: invoices.currency,
+      id: invoices.id,
+      lineItems: invoices.lineItems,
+      poMatchMethod: invoices.poMatchMethod,
+      poMatchScore: invoices.poMatchScore,
+      totalAmount: invoices.totalAmount,
+      vendorName: invoices.vendorName,
+      warnings: invoices.warnings,
+    })
+    .from(invoices)
+    .where(
+      and(
+        eq(invoices.organizationId, organizationId),
+        eq(invoices.purchaseOrderId, purchaseOrderId)
+      )
+    );
+
+  const checks = checkInvoicesAgainstPurchaseOrder(order, linked);
+  await Promise.all(
+    linked.map(async (invoice, index) => {
+      const warnings = checks[index] ?? [];
+      matchWarnings.set(invoice.id, warnings);
+      await db
+        .update(invoices)
+        .set({
+          warnings: withPurchaseOrderWarnings(invoice.warnings, warnings),
+        })
+        .where(eq(invoices.id, invoice.id));
+    })
+  );
+  return matchWarnings;
+};
+
+/**
+ * Links a saved invoice to the purchase order it bills against, if we hold it, and checks the two against each other.
+ * Runs after the invoice is saved: a purchase order ingested at the same moment then either finds this invoice or is found here.
+ */
+export const linkInvoiceToPurchaseOrder = async ({
+  invoiceId,
+  organizationId,
+  purchaseOrderNumber,
+  embedding,
+}: {
+  invoiceId: string;
+  organizationId: string;
+  purchaseOrderNumber: string | null;
+  embedding: number[];
+}) => {
+  const purchaseOrder = await findPurchaseOrderForInvoice({
+    embedding,
+    organizationId,
+    purchaseOrderNumber,
+  });
+  if (!purchaseOrder) {
+    return { purchaseOrder: null, warnings: [] };
+  }
+  await getDb()
+    .update(invoices)
+    .set({
+      poMatchMethod: purchaseOrder.method,
+      poMatchScore: purchaseOrder.score,
+      purchaseOrderId: purchaseOrder.purchaseOrderId,
+    })
+    .where(eq(invoices.id, invoiceId));
+  const matchWarnings = await refreshPurchaseOrderChecks({
+    organizationId,
+    purchaseOrderId: purchaseOrder.purchaseOrderId,
+  });
+  return { purchaseOrder, warnings: matchWarnings.get(invoiceId) ?? [] };
+};
+
+interface MovedInvoice {
+  id: string;
+  previousPurchaseOrderId: string | null;
+}
+
+/**
+ * Links every invoice that prints this PO number to the purchase order, including invoices linked to an earlier upload of the same number.
+ * Only the newest purchase order with a number takes its invoices, which is also the one a new invoice is linked to.
+ */
+const linkInvoicesByPoNumber = async ({
   organizationId,
   purchaseOrderId,
   poNumber,
@@ -301,21 +427,140 @@ export const linkInvoicesToPurchaseOrder = async ({
   organizationId: string;
   purchaseOrderId: string;
   poNumber: string | null;
-}) => {
+}): Promise<MovedInvoice[]> => {
   const normalized = normalizePoNumber(poNumber);
   if (!normalized) {
     return [];
   }
-  const linked = await getDb()
-    .update(invoices)
-    .set({ purchaseOrderId, poMatchMethod: "po_number", poMatchScore: null })
+  const db = getDb();
+  const [newest] = await db
+    .select({ id: purchaseOrders.id })
+    .from(purchaseOrders)
+    .where(
+      and(
+        eq(purchaseOrders.organizationId, organizationId),
+        eq(purchaseOrders.poNumberNormalized, normalized)
+      )
+    )
+    .orderBy(desc(purchaseOrders.createdAt))
+    .limit(1);
+  if (newest?.id !== purchaseOrderId) {
+    return [];
+  }
+  const moved = await db
+    .select({
+      id: invoices.id,
+      previousPurchaseOrderId: invoices.purchaseOrderId,
+    })
+    .from(invoices)
     .where(
       and(
         eq(invoices.organizationId, organizationId),
         eq(invoices.purchaseOrderNumberNormalized, normalized),
-        isNull(invoices.purchaseOrderId)
+        or(
+          isNull(invoices.purchaseOrderId),
+          ne(invoices.purchaseOrderId, purchaseOrderId)
+        )
       )
+    );
+  if (moved.length > 0) {
+    await db
+      .update(invoices)
+      .set({ purchaseOrderId, poMatchMethod: "po_number", poMatchScore: null })
+      .where(
+        inArray(
+          invoices.id,
+          moved.map((invoice) => invoice.id)
+        )
+      );
+  }
+  return moved;
+};
+
+/**
+ * Links invoices that print no PO number and are similar enough to the purchase order: those with no purchase order yet, and those linked to another one by a weaker similarity.
+ */
+const linkInvoicesBySimilarity = async ({
+  organizationId,
+  purchaseOrderId,
+  embedding,
+}: {
+  organizationId: string;
+  purchaseOrderId: string;
+  embedding: number[];
+}): Promise<MovedInvoice[]> => {
+  const db = getDb();
+  const score = sql<number>`1 - (${cosineDistance(invoices.embedding, embedding)})`;
+  const moved = await db
+    .select({
+      score,
+      id: invoices.id,
+      previousPurchaseOrderId: invoices.purchaseOrderId,
+    })
+    .from(invoices)
+    .where(
+      and(
+        eq(invoices.organizationId, organizationId),
+        isNull(invoices.purchaseOrderNumberNormalized),
+        isNotNull(invoices.embedding),
+        gte(score, MIN_PO_SIMILARITY),
+        or(
+          isNull(invoices.purchaseOrderId),
+          and(
+            eq(invoices.poMatchMethod, "similarity"),
+            ne(invoices.purchaseOrderId, purchaseOrderId),
+            lt(invoices.poMatchScore, score)
+          )
+        )
+      )
+    );
+  await Promise.all(
+    moved.map((invoice) =>
+      db
+        .update(invoices)
+        .set({
+          purchaseOrderId,
+          poMatchMethod: "similarity",
+          poMatchScore: Number(invoice.score),
+        })
+        .where(eq(invoices.id, invoice.id))
     )
-    .returning({ id: invoices.id });
-  return linked.map((invoice) => invoice.id);
+  );
+  return moved;
+};
+
+/**
+ * Links the invoices that belong to a purchase order which arrived after them, by PO number and by similarity, then checks them against it.
+ * Purchase orders that lost an invoice to this one are re-checked too. Returns the linked invoice IDs.
+ */
+export const linkInvoicesToPurchaseOrder = async ({
+  organizationId,
+  purchaseOrderId,
+  poNumber,
+  embedding,
+}: {
+  organizationId: string;
+  purchaseOrderId: string;
+  poNumber: string | null;
+  embedding: number[];
+}) => {
+  // An invoice either prints a PO number or does not, so the two never overlap.
+  const [byPoNumber, bySimilarity] = await Promise.all([
+    linkInvoicesByPoNumber({ organizationId, poNumber, purchaseOrderId }),
+    linkInvoicesBySimilarity({ embedding, organizationId, purchaseOrderId }),
+  ]);
+  const moved = [...byPoNumber, ...bySimilarity];
+
+  const affected = new Set([purchaseOrderId]);
+  for (const invoice of moved) {
+    if (invoice.previousPurchaseOrderId) {
+      affected.add(invoice.previousPurchaseOrderId);
+    }
+  }
+  await Promise.all(
+    [...affected].map((id) =>
+      refreshPurchaseOrderChecks({ organizationId, purchaseOrderId: id })
+    )
+  );
+  return moved.map((invoice) => invoice.id);
 };

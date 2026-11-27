@@ -61,10 +61,12 @@ export const ingestPurchaseOrder = schemaTask({
       purchaseOrder
     );
 
-    // 7. Link invoices that arrived before this purchase order did.
+    // 7. Link invoices that arrived before this purchase order did, and check
+    // them against it.
     metadata.set("stage", "linking");
     const linkedInvoiceIds = await linkInvoicesToPurchaseOrder({
       organizationId,
+      embedding: embedding.vector,
       poNumber: purchaseOrder.poNumber,
       purchaseOrderId: id,
     });
