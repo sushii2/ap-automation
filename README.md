@@ -28,6 +28,17 @@ npm run db:migrate -w web    # apply pending migrations (uses DATABASE_URL_UNPOO
 
 The ingestion tasks write to the database, so the Trigger.dev project needs `DATABASE_URL`, `AI_GATEWAY_API_KEY` and the encryption variables too.
 
+## Invoice chat
+
+The dashboard chat runs on Claude Managed Agents: each chat is a session with its own sandbox, holding a snapshot of the organization's invoices and purchase orders, where the agent runs analysis and builds PDF or spreadsheet reports. The agent and its sandbox environment are defined in `apps/web/lib/chat/agent-config.ts`.
+
+```bash
+# with ANTHROPIC_API_KEY set in apps/web/.env.local
+npm run chat:agent -w web   # creates the agent and environment, prints their IDs
+```
+
+Add the printed `CHAT_AGENT_ID` and `CHAT_ENVIRONMENT_ID` to `.env.local` (and to the deployment). Re-run the command after editing the agent config; it then updates them in place. Without these variables the chat is switched off.
+
 ## Adding Cubby UI components
 
 ```bash
