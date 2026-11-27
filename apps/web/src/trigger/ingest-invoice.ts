@@ -1,7 +1,7 @@
 import { metadata, schemaTask } from "@trigger.dev/sdk";
 
 import {
-  findPurchaseOrderForInvoice,
+  linkInvoiceToPurchaseOrder,
   saveInvoice,
 } from "../../lib/db/documents.ts";
 import { invoiceEmbeddingInput } from "../../lib/document-embedding.ts";
@@ -40,23 +40,9 @@ export const ingestInvoice = schemaTask({
       invoiceEmbeddingInput(invoice, { fileName, organizationId })
     );
 
-    // 6. Link the purchase order this invoice bills against, if we hold it.
-    metadata.set("stage", "linking");
-    const purchaseOrder = await findPurchaseOrderForInvoice({
-      organizationId,
-      embedding: embedding.vector,
-      purchaseOrderNumber: invoice.purchaseOrderNumber,
-    });
-    const warnings = [...extracted.metadata.warnings];
-    if (purchaseOrder?.method === "similarity") {
-      warnings.push(
-        `No PO number on the invoice; linked to purchase order ${purchaseOrder.poNumber ?? purchaseOrder.purchaseOrderId} by similarity (${purchaseOrder.score?.toFixed(2)}). Verify the match.`
-      );
-    }
-
-    // 7. Store the invoice, its embedding and the link.
+    // 6. Store the invoice and its embedding.
     metadata.set("stage", "saving");
-    const { warnings: _reconciled, ...processing } = extracted.metadata;
+    const { warnings: reconciled, ...processing } = extracted.metadata;
     const id = await saveInvoice(
       {
         blobPathname,
@@ -64,7 +50,7 @@ export const ingestInvoice = schemaTask({
         fileName,
         organizationId,
         uploadedBy,
-        warnings,
+        warnings: reconciled,
         processing: {
           ...processing,
           classification: extracted.classification,
@@ -72,9 +58,21 @@ export const ingestInvoice = schemaTask({
         },
         runId: ctx.run.id,
       },
-      invoice,
-      purchaseOrder
+      invoice
     );
+
+    // 7. Link the purchase order this invoice bills against, if we hold it,
+    // and check the invoice against it. This follows the save so that a
+    // purchase order ingested at the same moment cannot miss the invoice.
+    metadata.set("stage", "linking");
+    const { purchaseOrder, warnings: matchWarnings } =
+      await linkInvoiceToPurchaseOrder({
+        organizationId,
+        embedding: embedding.vector,
+        invoiceId: id,
+        purchaseOrderNumber: invoice.purchaseOrderNumber,
+      });
+    const warnings = [...reconciled, ...matchWarnings];
 
     metadata.set("stage", "complete");
     return {
