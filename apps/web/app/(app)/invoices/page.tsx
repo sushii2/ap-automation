@@ -3,13 +3,17 @@ import { Upload } from "lucide-react";
 
 import { Button } from "@workspace/ui/components/ui/cubby-ui/button";
 
-import { InvoiceTable } from "./invoice-table";
 import { PageHeader } from "@/components/page-header";
-import { PLACEHOLDER_INVOICES } from "@/lib/placeholder-data";
+import { requireOrganization } from "@/lib/auth";
+import { listInvoices } from "@/lib/db/document-lists";
+import { InvoiceTable } from "./invoice-table";
 
 export const metadata = { title: "Invoice log · AP Automation" };
 
-export default function InvoicesPage() {
+export default async function InvoicesPage() {
+  const { organizationId } = await requireOrganization();
+  const invoices = await listInvoices(organizationId);
+
   return (
     <>
       <PageHeader
@@ -24,7 +28,7 @@ export default function InvoicesPage() {
           Upload invoice
         </Button>
       </PageHeader>
-      <InvoiceTable invoices={PLACEHOLDER_INVOICES} />
+      <InvoiceTable invoices={invoices} />
     </>
   );
 }

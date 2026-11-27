@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Plus, Upload } from "lucide-react";
 import { z } from "zod";
@@ -32,19 +32,19 @@ import {
   SelectValue,
 } from "@workspace/ui/components/ui/cubby-ui/select";
 import { Textarea } from "@workspace/ui/components/ui/cubby-ui/textarea";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { PageHeader } from "@/components/page-header";
+import { FilterableTable } from "@/components/filterable-table";
+import { DocumentUpload } from "@/components/document-upload";
 import type { FilterField } from "@workspace/ui/components/ui/cubby-ui/filters/filters";
 import type { ColumnDef } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table";
 
 import type { FilterAccessors } from "@/lib/apply-filters";
 import type {
-  PurchaseOrder,
+  PurchaseOrderRow,
   PurchaseOrderSource,
   PurchaseOrderStatus,
-} from "@/lib/placeholder-data";
-import { formatCurrency, formatDate } from "@/lib/format";
-import { PageHeader } from "@/components/page-header";
-import { FilterableTable } from "@/components/filterable-table";
-import { DocumentUpload } from "@/components/document-upload";
+} from "@/lib/db/document-lists";
 
 type BadgeVariant = React.ComponentProps<typeof Badge>["variant"];
 
@@ -67,19 +67,28 @@ const statusOptions = (Object.keys(STATUS) as PurchaseOrderStatus[]).map(
   (value) => ({ value, label: STATUS[value].label })
 );
 
-const columns: ColumnDef<PurchaseOrder>[] = [
+const EMPTY = <span className="text-muted-foreground">—</span>;
+
+const columns: ColumnDef<PurchaseOrderRow>[] = [
   {
     accessorKey: "poNumber",
     header: "PO number",
     cell: ({ row }) => (
-      <span className="font-medium">{row.original.poNumber}</span>
+      <span className="font-medium">
+        {row.original.poNumber ?? row.original.fileName ?? EMPTY}
+      </span>
     ),
   },
-  { accessorKey: "vendor", header: "Vendor" },
+  {
+    accessorKey: "vendor",
+    header: "Vendor",
+    cell: ({ row }) => row.original.vendor ?? EMPTY,
+  },
   {
     accessorKey: "issuedAt",
     header: "Issued",
-    cell: ({ row }) => formatDate(row.original.issuedAt),
+    cell: ({ row }) =>
+      row.original.issuedAt ? formatDate(row.original.issuedAt) : EMPTY,
   },
   {
     accessorKey: "amount",
@@ -87,7 +96,9 @@ const columns: ColumnDef<PurchaseOrder>[] = [
     meta: { align: "right" as const },
     cell: ({ row }) => (
       <div className="text-right tabular-nums">
-        {formatCurrency(row.original.amount)}
+        {row.original.amount === null
+          ? EMPTY
+          : formatCurrency(row.original.amount, row.original.currency)}
       </div>
     ),
   },
@@ -95,6 +106,9 @@ const columns: ColumnDef<PurchaseOrder>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
+      if (!row.original.status) {
+        return EMPTY;
+      }
       const status = STATUS[row.original.status];
       return <Badge variant={status.variant}>{status.label}</Badge>;
     },
@@ -137,7 +151,7 @@ const fields: FilterField[] = [
   { id: "matchedInvoices", label: "Matched invoices", type: "number" },
 ];
 
-const accessors: FilterAccessors<PurchaseOrder> = {
+const accessors: FilterAccessors<PurchaseOrderRow> = {
   status: (order) => order.status,
   source: (order) => order.source,
   vendor: (order) => order.vendor,
@@ -162,9 +176,9 @@ Which drawer the `?new=` search param opens.
 type DrawerMode = "manual" | "upload";
 
 export function PurchaseOrders({
-  initial,
+  saved,
 }: {
-  readonly initial: PurchaseOrder[];
+  readonly saved: PurchaseOrderRow[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -173,13 +187,18 @@ export function PurchaseOrders({
     param === "manual" || param === "upload" ? param : null;
 
   // TODO: persist through a server action once purchase orders have a table.
-  const [orders, setOrders] = useState(initial);
+  const [entered, setEntered] = useState<PurchaseOrderRow[]>([]);
+  const orders = useMemo(() => [...entered, ...saved], [entered, saved]);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
 
   const open = (next: DrawerMode) => router.push(`${pathname}?new=${next}`);
   const close = () => {
     setErrors({});
     router.replace(pathname);
+    if (mode === "upload") {
+      // Pick up the purchase orders that were just ingested.
+      router.refresh();
+    }
   };
 
   return (
@@ -209,7 +228,11 @@ export function PurchaseOrders({
         fields={fields}
         accessors={accessors}
         searchPlaceholder="Search purchase orders"
-        emptyState="No purchase orders match these filters."
+        emptyState={
+          orders.length === 0
+            ? "No purchase orders yet. Upload one or enter it by hand."
+            : "No purchase orders match these filters."
+        }
       />
 
       <Drawer
@@ -235,10 +258,12 @@ export function PurchaseOrders({
                 return;
               }
               const { notes: _notes, ...order } = result.data;
-              setOrders((current) => [
+              setEntered((current) => [
                 {
                   ...order,
                   id: `po_${crypto.randomUUID()}`,
+                  fileName: null,
+                  currency: null,
                   source: "manual",
                   matchedInvoices: 0,
                 },

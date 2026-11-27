@@ -1,22 +1,24 @@
 "use client";
 
 import { Badge } from "@workspace/ui/components/ui/cubby-ui/badge";
+import { FilterableTable } from "@/components/filterable-table";
+import { formatCurrency, formatDate } from "@/lib/format";
 import type { ColumnDef } from "@workspace/ui/components/ui/cubby-ui/data-table/data-table";
 import type { FilterField } from "@workspace/ui/components/ui/cubby-ui/filters/filters";
 
 import type { FilterAccessors } from "@/lib/apply-filters";
-import type { Invoice, InvoiceStatus, PoMatch } from "@/lib/placeholder-data";
-import { FilterableTable } from "@/components/filterable-table";
-import { formatCurrency, formatDate } from "@/lib/format";
+import type {
+  InvoiceRow,
+  InvoiceStatus,
+  PoMatch,
+} from "@/lib/db/document-lists";
 
 type BadgeVariant = React.ComponentProps<typeof Badge>["variant"];
 
 const STATUS: Record<InvoiceStatus, { label: string; variant: BadgeVariant }> =
   {
-    processing: { label: "Processing", variant: "info" },
     extracted: { label: "Extracted", variant: "success" },
     needs_review: { label: "Needs review", variant: "warning" },
-    failed: { label: "Failed", variant: "danger" },
   };
 
 const PO_MATCH: Record<PoMatch, { label: string; variant: BadgeVariant }> = {
@@ -31,19 +33,28 @@ const options = <T extends string>(map: Record<T, { label: string }>) =>
     label: map[value].label,
   }));
 
-const columns: ColumnDef<Invoice>[] = [
+const EMPTY = <span className="text-muted-foreground">—</span>;
+
+const columns: ColumnDef<InvoiceRow>[] = [
   {
     accessorKey: "invoiceNumber",
     header: "Invoice",
     cell: ({ row }) => (
-      <span className="font-medium">{row.original.invoiceNumber}</span>
+      <span className="font-medium">
+        {row.original.invoiceNumber ?? row.original.fileName}
+      </span>
     ),
   },
-  { accessorKey: "vendor", header: "Vendor" },
+  {
+    accessorKey: "vendor",
+    header: "Vendor",
+    cell: ({ row }) => row.original.vendor ?? EMPTY,
+  },
   {
     accessorKey: "issuedAt",
     header: "Issued",
-    cell: ({ row }) => formatDate(row.original.issuedAt),
+    cell: ({ row }) =>
+      row.original.issuedAt ? formatDate(row.original.issuedAt) : EMPTY,
   },
   {
     accessorKey: "amount",
@@ -51,7 +62,9 @@ const columns: ColumnDef<Invoice>[] = [
     meta: { align: "right" as const },
     cell: ({ row }) => (
       <div className="text-right tabular-nums">
-        {formatCurrency(row.original.amount)}
+        {row.original.amount === null
+          ? EMPTY
+          : formatCurrency(row.original.amount, row.original.currency)}
       </div>
     ),
   },
@@ -72,11 +85,7 @@ const columns: ColumnDef<Invoice>[] = [
       const accuracy = row.original.extractionAccuracy;
       return (
         <div className="text-right tabular-nums">
-          {accuracy === null ? (
-            <span className="text-muted-foreground">—</span>
-          ) : (
-            `${accuracy.toFixed(1)}%`
-          )}
+          {accuracy === null ? EMPTY : `${accuracy.toFixed(1)}%`}
         </div>
       );
     },
@@ -137,7 +146,7 @@ const fields: FilterField[] = [
   { id: "amount", label: "Amount", type: "number", prefix: "$" },
 ];
 
-const accessors: FilterAccessors<Invoice> = {
+const accessors: FilterAccessors<InvoiceRow> = {
   status: (invoice) => invoice.status,
   poMatch: (invoice) => invoice.poMatch,
   indexed: (invoice) => (invoice.indexed ? "yes" : "no"),
@@ -146,7 +155,7 @@ const accessors: FilterAccessors<Invoice> = {
   amount: (invoice) => invoice.amount,
 };
 
-export function InvoiceTable({ invoices }: { readonly invoices: Invoice[] }) {
+export function InvoiceTable({ invoices }: { readonly invoices: InvoiceRow[] }) {
   return (
     <FilterableTable
       columns={columns}
@@ -154,7 +163,11 @@ export function InvoiceTable({ invoices }: { readonly invoices: Invoice[] }) {
       fields={fields}
       accessors={accessors}
       searchPlaceholder="Search invoices"
-      emptyState="No invoices match these filters."
+      emptyState={
+        invoices.length === 0
+          ? "No invoices yet. Upload one to get started."
+          : "No invoices match these filters."
+      }
     />
   );
 }
