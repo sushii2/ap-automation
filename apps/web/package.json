@@ -13,12 +13,14 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "workos:roles": "node --env-file=.env.local scripts/sync-workos-roles.ts",
-    "test": "node --test 'lib/**/*.test.ts'",
+    "chat:agent": "node --env-file=.env.local scripts/sync-chat-agent.ts",
+    "test":"node --test 'lib/**/*.test.ts'",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
     "@neondatabase/serverless": "^1.2.1",
     "@trigger.dev/sdk": "^4.8.10",
     "@uploadcn/core": "^0.1.5",
@@ -35,7 +37,9 @@
     "next-themes": "^0.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "react-markdown": "^10.1.0",
     "reductoai": "^0.21.0",
+    "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "zod": "^4.6.7"
   },

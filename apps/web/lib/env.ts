@@ -37,6 +37,12 @@ const schema = z
       .string()
       .min(32, "WORKOS_COOKIE_PASSWORD must be at least 32 characters"),
     NEXT_PUBLIC_WORKOS_REDIRECT_URI: z.url(),
+
+    // Invoice chat (Claude Managed Agents). Optional: without all three the
+    // chat is switched off. The IDs come from `npm run chat:agent -w web`.
+    ANTHROPIC_API_KEY: z.string().optional(),
+    CHAT_AGENT_ID: z.string().optional(),
+    CHAT_ENVIRONMENT_ID: z.string().optional(),
   })
   .superRefine((env, ctx) => {
     if (isProd && !env.APP_URL.startsWith("https://")) {
